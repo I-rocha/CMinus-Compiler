@@ -80,28 +80,3 @@ while {printf("KEY: while\n");
 
 /*TODO: Adicionar erros léxicos*/
 
-/*
-void lookup(var el){
-	var look;
-	look = head;
-
-	while(look != NULL || strcmp(look->name, el->name) != 0){
-		look = look->prox;
-	}
-	printf("look is: %d", look->val);
-}
-
-void add(var el){
-	var look, aux;
-	look = head;
-
-	while(look != NULL)
-		look = look->prox;
-	
-	aux = (var)malloc(sizeof(var*));
-	aux->prox = NULL;
-	aux->val = el->val;
-	aux->name = el->name;
-	look = aux;		
-}
-*/
