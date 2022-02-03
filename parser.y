@@ -31,14 +31,40 @@ extern int yylex(void);
 
 //TODO: Remover esse regex
 tmp:
-  simple_exp 
-  | var_decl 
+  programa 
+  
+
+programa:
+		decl_lista
+
+decl_lista:
+		  decl_lista decl
+		  | decl
+
+decl:
+	var_decl
+	| fun_decl
 
 var_decl:
-		tip_esp ID ';'	
-		| tip_esp ID '[' NUM ']' ';'
+		tipo_esp ID ';'	
+		| tipo_esp ID '[' NUM ']' ';'
 
-tip_esp:
+fun_decl:
+		tipo_esp ID '(' params ')'
+
+params:
+	  param_lista 
+	  | VOID
+
+param_lista:
+		   param_lista ',' param
+		   | param
+		   
+param:
+	 tipo_esp ID
+	 | tipo_esp ID '['']'
+
+tipo_esp:
 		INT	
 		| VOID	
 
