@@ -1,0 +1,6 @@
+y.tab.*
+lex.yy.c
+*.o
+
+#Symtab
+symtab/*.o
