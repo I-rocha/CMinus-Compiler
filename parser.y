@@ -12,7 +12,7 @@ extern int yylex(void);
 	char* s;
 	struct symbol* symb;
 }
-
+//
 // KEYWORDS
 %token IF ELSE INT RETURN VOID WHILE LE GE EQ DIFF
 
