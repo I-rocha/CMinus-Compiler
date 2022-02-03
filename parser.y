@@ -25,8 +25,8 @@ extern int yylex(void);
 %token <val>NUM
 
 // Terminal types
-%type <val>simple_exp <val>soma_exp <val>soma <val>termo <val>mult <val>fator <val>rel
-%type <symb>tip_esp <symb> var_decl
+//%type <val>simple_exp <val>soma_exp <val>soma <val>termo <val>mult <val>fator <val>rel
+//%type <symb>tip_esp <symb> var_decl
 %%
 
 //TODO: Remover esse regex
