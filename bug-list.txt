@@ -1,2 +1,6 @@
 Syntax analysis broken:
 	int 22;
+
+Free symbol table before finish program
+Free ast before finish programi
+
