@@ -51,13 +51,31 @@ void printNested(char* msg, int ntab){
 }
 
 // Free no e seus descendentes
-void freeDesc(ast no){
-	
+int freeDesc(ast no){
+	unsigned int i =0;
 
+	if(no == NULL)
+		return 1;
+
+	while(i < no->n_child){
+		if(no->children[i] == NULL){
+			printf(AST_ERR_0);
+			return -1;
+		}
+
+		freeDesc(no->children[i]);
+		i++;
+	}
+	
+	if(no->children != NULL) free(no->children);
+	free(no->name);
+	free(no);
+	no = NULL;
+	return 1;
 }
 
 // TODO: Remove this
-
+/*
 int main(int argc, char** argv){
 	ast head, child1, child2;
 	ast* children;
@@ -81,14 +99,5 @@ int main(int argc, char** argv){
 	printf("HEAD: %s\n",head->children[1]->name);
 	preorderWalk(head, 0);
 
-	free(child1->name);
-	free(child2->name);
-	
-	free(child1);
-	free(child2);
-	
-	free(head->name);
-	free(head);
-	free(children);
-
-}
+	freeDesc(head);
+}*/
