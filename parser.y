@@ -29,11 +29,6 @@ extern int yylex(void);
 //%type <symb>tip_esp <symb> var_decl
 %%
 
-//TODO: Remover esse regex
-tmp:
-  programa 
-  
-
 programa:
 		decl_lista
 
@@ -49,8 +44,12 @@ var_decl:
 		tipo_esp ID ';'	
 		| tipo_esp ID '[' NUM ']' ';'
 
+tipo_esp:
+		INT	
+		| VOID	
+
 fun_decl:
-		tipo_esp ID '(' params ')'
+		tipo_esp ID '(' params ')' composto_decl
 
 params:
 	  param_lista 
@@ -64,9 +63,51 @@ param:
 	 tipo_esp ID
 	 | tipo_esp ID '['']'
 
-tipo_esp:
-		INT	
-		| VOID	
+
+composto_decl:
+			'{' local_decl statement_lista '}'
+
+local_decl:
+		  local_decl var_decl
+		  | /*epsilon*/;
+
+statement_lista:
+			   statement_lista statement 
+			   | /*epsilon*/;
+
+statement:
+		 exp_decl
+		 | composto_decl
+		 | selecao_decl
+		 | iteracao_decl
+		 | retorno_decl
+
+exp_decl:
+		exp ';'
+		| ';'
+
+selecao_decl:
+	IF '(' exp ')' in_if
+
+in_if:
+	statement
+	| ELSE statement
+
+
+iteracao_decl:
+			 WHILE '(' exp ')' statement
+
+retorno_decl:
+			RETURN ';'
+			| RETURN exp ';'
+
+exp:
+   var '=' exp
+   | simple_exp
+
+var:
+   ID
+   | ID '[' exp ']'
 
 simple_exp:
 		  soma_exp rel soma_exp	
@@ -83,28 +124,37 @@ rel:
 soma_exp:
 		soma_exp soma termo 
 		| termo 
-		;
 
 soma:
 	'+' 	
 	| '-'	
-	;
 
 
 termo:
 	 termo mult fator 
 	| fator 
-	;
+
 
 mult:
 	'*'	
 	| '/'
-	;
 
-/*TODO: Complementar regex*/
 fator:
-	 NUM 
-	 ;
+	 '(' exp ')'
+	 | var
+	 | act
+	 | NUM
+
+act:
+   ID '(' args ')'
+
+args:
+	arg_lista
+	|;
+
+arg_lista:
+		 arg_lista ',' exp
+		 | exp
 
 %%
 
