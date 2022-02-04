@@ -84,8 +84,13 @@ void freeA(ast no){
 	}
 }
 
-void children_concat(ast chA, ast chB){
+int children_concat(ast chA, ast chB){
 	int idxA, idxB, sz;
+
+	if(chA == NULL){ 
+		printf(AST_ERR_1);
+		return -1;
+	}
 
 	idxB = 0;
 	idxA = chA->n_child;					
@@ -95,7 +100,20 @@ void children_concat(ast chA, ast chB){
 		chA->children[idxA++] = chB->children[idxB++];
 	}
 
+	return 1;
+}
 
+int addChild(ast no, ast val){
+	if(no->children == 0)
+		no->children = (ast*)malloc(sizeof(ast));
+	else
+		no->children = (ast*)realloc(no->children, sizeof(ast) * (no->n_child+1));
+	
+	no->children[no->n_child] = val;	// Insere na posicao nova alocada
+	no->n_child++;
+	
+	return 1;
+	
 }
 
 // TODO: Remove this
