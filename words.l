@@ -30,9 +30,6 @@ COMMENT \/\*.*\*\/
 
 {COMMENT} {printf("Comment:\n%s\n", yytext);}
 
-[\t ]+
-
-[\n]
 
 if {printf("KEY: if\n");
 	return IF;}
@@ -75,6 +72,7 @@ while {printf("KEY: while\n");
 	yylval.val = atoi(yytext);
 	return NUM;}
 
+[\t ]+ |
 \n |
 . {/*TODO: Verificar casos de espaços*/}
 
