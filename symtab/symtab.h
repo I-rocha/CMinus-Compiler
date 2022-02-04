@@ -1,3 +1,6 @@
+#ifndef SYMTAB_H
+#define SYMTAB_H
+
 #define H_ERR_0 "0-H_ERR: Comparing nil\n"
 #define H_ERR_1 "1-H_ERR: Lookin for nil\n"
 #define H_MAX 27
@@ -29,3 +32,5 @@ symbol getNo(symbol no);
 
 int printAll();
 int printContent(symbol el);
+
+#endif

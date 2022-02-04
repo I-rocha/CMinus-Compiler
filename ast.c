@@ -16,7 +16,7 @@ ast storeNo(char* noName, ast* children, int n_child){
 
 	else
 	{
-		currNo->children = (ast*)malloc(sizeof(children));
+		currNo->children = (ast*)malloc(sizeof(children));/*TODO: verificar alocacao sobrescrita*/
 		currNo->children = children;
 	}
 
@@ -37,7 +37,7 @@ int preorderWalk(ast no, int depth){
 			return -1;
 		}
 
-		preorderWalk(no->children[i], ++depth);
+		preorderWalk(no->children[i], 1+depth);
 		i++;
 	}
 	return 1;
@@ -74,6 +74,30 @@ int freeDesc(ast no){
 	return 1;
 }
 
+void freeA(ast no){
+	if(no != NULL){
+		if(no->name != NULL)
+			free(no->name);
+		if(no->children != NULL)
+			free(no->children);
+		free(no);
+	}
+}
+
+void children_concat(ast chA, ast chB){
+	int idxA, idxB, sz;
+
+	idxB = 0;
+	idxA = chA->n_child;					
+	sz = chA->n_child + chB->n_child;	// Total size of vec1 + vec2
+
+	while (idxA < sz){
+		chA->children[idxA++] = chB->children[idxB++];
+	}
+
+
+}
+
 // TODO: Remove this
 /*
 int main(int argc, char** argv){
@@ -95,8 +119,7 @@ int main(int argc, char** argv){
 	children[0] = child1;
 	children[1] = child2;
 
-	head = storeNo(name, children, 2);
-	printf("HEAD: %s\n",head->children[1]->name);
+	head = storeNo("ABCD", children, 2);
 	preorderWalk(head, 0);
 
 	freeDesc(head);

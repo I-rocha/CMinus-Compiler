@@ -3,16 +3,19 @@
 #include <string.h>
 #include "symtab/symtab.h"
 #include "defines.h"
+#include "ast.h"
 
 void yyerror(char* err);
 extern int yylex(void);
-%}
 
+ast ast_root = NULL;
+%}
 %union{
 	int val;
 	char* s;
 	char* token;
 	struct symbol* symb;
+	struct ast* ast_type;
 }
 /**/
 // KEYWORDS
@@ -29,6 +32,7 @@ extern int yylex(void);
 // Terminal types
 //%type <val>simple_exp <val>soma_exp <val>soma <val>termo <val>mult <val>fator <val>rel
 //%type <symb>tip_esp <symb> var_decl
+%type <ast_type>termo fator mult
 %%
 
 programa:	
@@ -133,22 +137,36 @@ soma:
 
 
 termo:
-	 termo mult fator 
-	| fator 
+	 termo mult fator{
+	 printf("Termo mult fator\n");
+		$2->children = (ast*)malloc(sizeof(ast) * 2);
+		$2->children[0] = $1;
+		$2->children[1] = $3;
+		$2->n_child = 2;
+	 	
+		$$ = $2;
+		ast_root = $2;
+	} 
+	| fator {
+		$$ = $1;
+	}
 
 
 mult:
-	'*'	
-	| '/'
+	'*'	{$$ = storeNo("*", NULL, 0);}
+	| '/'{$$ = storeNo("/", NULL, 0);}
 
 fator:
-	 '(' exp ')'
-	 | var
-	 | act
-	 | NUM
+	 '(' exp ')'	{}
+	 | var	{}
+	 | act	{}
+	 | NUM	{$$ = storeNo("NUM", NULL, 0);}
 
 act:
-   ID '(' args ')'
+   ID '(' args ')'	{
+   						
+
+					}
 
 args:
 	arg_lista
@@ -165,6 +183,8 @@ void yyerror(char* err){
 }
 
 int yywrap(){
+	printf("Abstract syntax tree:\n");
+	preorderWalk(ast_root, 0);
 	return 1;
 }
 

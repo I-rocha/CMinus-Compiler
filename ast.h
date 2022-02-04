@@ -12,12 +12,10 @@ struct ast{
 	int n_child;		// Child quantity
 };
 
-extern ast ast_root;
-
 ast storeNo(char* noName, ast* children, int n_child);
 int preorderWalk(ast no, int depth);
 void printNested(char* msg, int ntab);
 int freeDesc(ast no);
-
+void freeA(ast);
 
 #endif
