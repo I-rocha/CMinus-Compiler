@@ -32,6 +32,8 @@ COMMENT \/\*.*\*\/
 
 [\t ]+
 
+[\n]
+
 if {printf("KEY: if\n");
 	return IF;}
 

@@ -1,6 +1,10 @@
+# Executable
+exe
+
+# Flex&Bison
 y.tab.*
 lex.yy.c
 *.o
 
-#Symtab
+# Symbol table
 symtab/*.o
