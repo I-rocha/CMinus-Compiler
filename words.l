@@ -1,8 +1,9 @@
 %{
 #include"y.tab.h"
 #include "symtab/symtab.h"
+#include "defines.h"
 
-struct var;
+/*struct var;
 typedef struct var* var;
 
 struct var{
@@ -10,9 +11,9 @@ struct var{
 	int val;
 	var prox;
 };
-
-//var head=NULL;
-
+*/
+// Defining line count
+int lineno = 1;
 
 %}
 
@@ -72,11 +73,12 @@ while {printf("KEY: while\n");
 	yylval.val = atoi(yytext);
 	return NUM;}
 
-[\t ]+ |
-\n |
-. {/*TODO: Verificar casos de espaços*/}
+[\t ]+ {}
+
+\n {lineno++;}
+
+. {printf(ERR_LEX, yytext, lineno);/*TODO: Verificar casos de espaços*/}
 
 %%
 
 /*TODO: Adicionar erros léxicos*/
-

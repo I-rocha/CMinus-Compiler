@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "symtab/symtab.h"
+#include "defines.h"
 
 void yyerror(char* err);
 extern int yylex(void);
@@ -29,8 +30,8 @@ extern int yylex(void);
 //%type <symb>tip_esp <symb> var_decl
 %%
 
-programa:
-		decl_lista
+programa:	
+		decl_lista{printf("Program matched\n");}
 
 decl_lista:
 		  decl_lista decl
@@ -163,6 +164,7 @@ void yyerror(char* err){
 }
 
 int yywrap(){
+	printf("lineno: %d\n", lineno);
 	return 1;
 }
 
