@@ -11,6 +11,7 @@ extern int yylex(void);
 %union{
 	int val;
 	char* s;
+	char* token;
 	struct symbol* symb;
 }
 /**/
@@ -160,11 +161,10 @@ arg_lista:
 %%
 
 void yyerror(char* err){
-	printf("Parser error: %s", err);
+	printf(ERR_SYN, yylval.token, lineno);
 }
 
 int yywrap(){
-	printf("lineno: %d\n", lineno);
 	return 1;
 }
 

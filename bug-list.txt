@@ -1,0 +1,2 @@
+Syntax analysis broken:
+	int 22;

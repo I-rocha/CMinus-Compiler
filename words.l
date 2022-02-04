@@ -12,12 +12,14 @@ struct var{
 	var prox;
 };
 */
+//TODO: Change ID to accept digit after first char
+
 // Defining line count
 int lineno = 1;
 
 %}
 
-C_SYMBOL \+|\-|\*|\/|\<|\>|\=|\;|\,|\(|\)|\[|\]|\{|\}|\/\*|\*\/  
+CSYMBOL \+|\-|\*|\/|\<|\>|\=|\;|\,|\(|\)|\[|\]|\{|\}|\/\*|\*\/  
 
 CHAR [a-zA-Z]
 DIGIT [0-9]
@@ -32,46 +34,84 @@ COMMENT \/\*.*\*\/
 {COMMENT} {printf("Comment:\n%s\n", yytext);}
 
 
-if {printf("KEY: if\n");
-	return IF;}
+if {
+	printf("KEY: if\n");
+	yylval.token = strdup("KEY");
+	return IF;
+	}
 
-else {printf("KEY: else\n");
-	return ELSE;}
+else {
+	printf("KEY: else\n");
+	yylval.token = strdup("KEY");
+	return ELSE;
+	}
 
-int {printf("KEY: int\n");
-	return INT;}
+int {
+	printf("KEY: int\n");
+	yylval.token = strdup("KEY");
+	return INT;
+	}
 
-return {printf("KEY: return\n");
-	return RETURN;}
+return {
+	printf("KEY: return\n");
+	yylval.token = strdup("KEY");
+	return RETURN;
+	}
 
-void {printf("KEY: void\n");
-	return VOID;}
+void {
+	printf("KEY: void\n");
+	yylval.token = strdup("KEY");
+	return VOID;
+	}
 
-while {printf("KEY: while\n");
-	return WHILE;}
+while {
+	printf("KEY: while\n");
+	yylval.token = strdup("KEY");
+	return WHILE;
+	}
 
-\<\= {printf("SYMBOL: LE\n");
-	return LE;}
+\<\= {
+	printf("SYMBOL: LE\n");
+	yylval.token = strdup("<=");
+	return LE;
+	}
 
-\>\= {printf("SYMBOL: GE\n");
-	return GE;}
+\>\= {
+	printf("SYMBOL: GE\n");
+	yylval.token = strdup(">=");
+	return GE;
+	}
 
-\=\= {printf("SYMBOL: EQ\n");
-	return EQ;}
+\=\= {
+	printf("SYMBOL: EQ\n");
+	yylval.token = strdup("==");
+	return EQ;
+	}
 
-\!\= {printf("SYMBOL: DIFF\n");
-	return DIFF;}
+\!\= {
+	printf("SYMBOL: DIFF\n");
+	yylval.token = strdup("!=");
+	return DIFF;
+	}
 
-{C_SYMBOL} {printf("Symbol: %s\n", yytext);
-	return yytext[0];}
+{CSYMBOL} {
+	printf("SYMBOL: %s\n", yytext);
+	yylval.token = strdup(&yytext[0]);
+	return yytext[0];
+	}
 
 {ID} {printf("ID: %s\n", yytext);
+	yylval.token = strdup("ID");
 	yylval.s = strdup(yytext);
-	return ID;}
+	return ID;
+	}
 
-{NUM} {printf("NUM: %s\n", yytext);
+{NUM} {
+	printf("NUM: %s\n", yytext);
+	yylval.token = strdup("NUM");
 	yylval.val = atoi(yytext);
-	return NUM;}
+	return NUM;
+	}
 
 [\t ]+ {}
 
