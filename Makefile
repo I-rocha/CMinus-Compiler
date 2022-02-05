@@ -1,7 +1,7 @@
 SYMTAB = symtab
 EXE = exe
 
-all: lex.yy.o y.tab.o symtab.o
+all: lex.yy.o y.tab.o symtab.o ast.o
 	gcc -o $(EXE) y.tab.c lex.yy.c symtab.o
 
 lex.yy.o: lex.yy.c y.tab.h
@@ -19,6 +19,8 @@ y.tab.c y.tab.h: parser.y
 symtab.o: $(SYMTAB)/symtab.c
 	gcc -c $(SYMTAB)/symtab.c
 
+ast.o: ast.c
+	gcc -c ast.c
 
 run:
 	gcc -o $(EXE) y.tab.c lex.yy.c

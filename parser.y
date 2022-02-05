@@ -3,6 +3,7 @@
 #include <string.h>
 #include "symtab/symtab.h"
 #include "defines.h"
+#include "ast.h"
 
 void yyerror(char* err);
 extern int yylex(void);
