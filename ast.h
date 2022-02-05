@@ -8,7 +8,7 @@
 typedef struct ast* ast;
 typedef enum token ttoken;
 
-enum token{ka,kb,kc};
+enum token{kterm, kmult, ksum, kfact, ksoma_exp, krel, ksimple_exp};
 
 struct ast{
 

@@ -7,6 +7,8 @@
 
 void yyerror(char* err);
 extern int yylex(void);
+
+ast ast_root;
 %}
 
 %union{
@@ -14,6 +16,7 @@ extern int yylex(void);
 	char* s;
 	char* token;
 	struct symbol* symb;
+	struct ast* t_ast;
 }
 /**/
 // KEYWORDS
@@ -30,6 +33,10 @@ extern int yylex(void);
 // Terminal types
 //%type <val>simple_exp <val>soma_exp <val>soma <val>termo <val>mult <val>fator <val>rel
 //%type <symb>tip_esp <symb> var_decl
+
+/*TODO: Organizar types*/
+%type <t_ast> /*programa decl_lista decl var_decl tipo_esp fun_decl params param_lista param composto_decl local_decl statement_lista statement exp_decl selecao_decl in_if iteracao_decl retorno_decl exp var*/ simple_exp rel soma_exp soma termo mult fator /*act args arg_lista*/
+
 %%
 
 programa:	
@@ -113,40 +120,53 @@ var:
    | ID '[' exp ']'
 
 simple_exp:
-		  soma_exp rel soma_exp	
-		  | soma_exp
+		  soma_exp rel soma_exp	{$$ = createNo(ksimple_exp);}
+		  | soma_exp	{$$ = $1;}
 
 rel:
-   LE
-   |'<'	
-   |'>'	
-   |GE	
-   |EQ	
-   |DIFF
+   LE	{$$ = createNo(krel);}
+   |'<'	{$$ = createNo(krel);}
+   |'>'	{$$ = createNo(krel);}
+   |GE	{$$ = createNo(krel);}
+   |EQ	{$$ = createNo(krel);}
+   |DIFF	{$$ = createNo(krel);}
+
 
 soma_exp:
-		soma_exp soma termo 
-		| termo 
+		soma_exp soma termo  {
+		$$ = createNo(ksoma_exp);
+		childrenSpace($$, 3);
+		$$->children[0] = $1;
+		$$->children[1] = $2;
+		$$->children[2] = $3;
+		} 
+		| termo	{$$ = $1;} 
 
 soma:
-	'+' 
-	| '-'	
+	'+'		{$$ = createNo(ksum);}
+	| '-'	{$$ = createNo(ksum);}
 
 
 termo:
-	 termo mult fator 
-	| fator 
+	 termo mult fator {
+     $$ = createNo(kterm);
+	 childrenSpace($$, 3);
+	 $$->children[0] = $1;
+	 $$->children[1] = $2;
+	 $$->children[2] = $3;
+	} 
+	| fator {$$ = $1;} 
 
 
 mult:
-	'*'	
-	| '/'
+	'*'		{$$ = createNo(kmult);}
+	| '/'	{$$ = createNo(kmult);}
 
 fator:
-	 '(' exp ')'
-	 | var
-	 | act
-	 | NUM
+	 '(' exp ')' {}
+	 | var  {}
+	 | act	{}
+	 | NUM	{$$ = createNo(kfact);}
 
 act:
    ID '(' args ')'
@@ -166,6 +186,8 @@ void yyerror(char* err){
 }
 
 int yywrap(){
+	printTree(ast_root, 0);
+	freeTree(ast_root);
 	return 1;
 }
 
