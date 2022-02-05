@@ -25,7 +25,7 @@ int childrenSpace(ast no, int n_child){
 		return -1;
 	}
 
-	no->children = (ast)calloc(n_child, sizeof(struct ast));
+	no->children = (ast*)calloc(n_child, sizeof(struct ast*));
 
 	if(no->children == NULL){
 		printf(AST_ERR_0);
@@ -46,7 +46,21 @@ void printTree(ast no, int depth){
 	if(no->n_child == 0) return;
 
 	while(i < no->n_child)
-	printTree(&no->children[i++], depth+1);
+		printTree(no->children[i++], depth+1);
+	return;
+}
+
+void freeTree(ast no){
+	int i=0;
+	if(no == NULL)
+		return;
+	
+	if(no->n_child != 0){ 
+		while(i < no->n_child)
+			freeTree(no->children[i++]);
+	}
+	free(no);
+	return;
 }
 
 
@@ -56,7 +70,6 @@ void printSpace(int nSpace){
 	for(int i=0; i<nSpace * TAB; i++)
 		printf(" ");
 }
-
 /*
  *TODO: Remover
 int main(int argc, char** argv){

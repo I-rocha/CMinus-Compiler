@@ -11,9 +11,9 @@ typedef enum token ttoken;
 enum token{ka,kb,kc};
 
 struct ast{
-	
+
 	ttoken tok;
-	ast children;
+	ast* children;
 	int n_child;
 };
 
@@ -23,5 +23,6 @@ ast createNo(ttoken mytk);
 int childrenSpace(ast no, int n_child);
 void printTree(ast no, int depth);
 void printSpace(int nSpace);
+void freeTree(ast no);
 
 #endif
