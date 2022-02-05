@@ -128,7 +128,7 @@ soma_exp:
 		| termo 
 
 soma:
-	'+' 	
+	'+' 
 	| '-'	
 
 

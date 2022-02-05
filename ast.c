@@ -1,0 +1,78 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "ast.h"
+
+ast createNo(ttoken mytk){
+	ast myNo;
+
+	myNo = (ast)malloc(sizeof(struct ast));
+	if(myNo == NULL){
+		printf(AST_ERR_0);
+		return NULL;
+	}
+	myNo->children = NULL;
+	myNo->n_child = 0;
+	myNo->tok = mytk;
+	return myNo;
+
+}
+
+int childrenSpace(ast no, int n_child){
+	if (no == NULL){
+		printf(AST_ERR_1);
+		return -1;
+	}
+
+	no->children = (ast)calloc(n_child, sizeof(struct ast));
+
+	if(no->children == NULL){
+		printf(AST_ERR_0);
+		return -1;
+	}
+	no->n_child = n_child;
+	return 1;
+}
+
+void printTree(ast no, int depth){
+	int i=0;
+	if(no == NULL)
+		return;
+	
+	printSpace(depth);
+	printf("%d\n", no->tok);
+
+	if(no->n_child == 0) return;
+
+	while(i < no->n_child)
+	printTree(&no->children[i++], depth+1);
+}
+
+
+void printSpace(int nSpace){
+	int txtPad = 0;
+	txtPad = nSpace * TAB;
+	for(int i=0; i<nSpace * TAB; i++)
+		printf(" ");
+}
+
+/*
+ *TODO: Remover
+int main(int argc, char** argv){
+	ast no = createNo(kc);
+	
+	childrenSpace(no, 2);
+	no->children[0].tok = ka;
+	no->children[1].tok = kb;
+
+	printTree(no, 0);
+
+	if(no != NULL){
+		if(no->children != NULL)
+			free(no->children);
+		free(no);
+	}
+
+	return 1;
+}*/
