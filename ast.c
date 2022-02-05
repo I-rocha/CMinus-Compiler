@@ -41,8 +41,9 @@ void printTree(ast no, int depth){
 		return;
 	
 	printSpace(depth);
-	printf("%d\n", no->tok);
-
+	
+	print(no->tok);
+	printf("\n");
 	if(no->n_child == 0) return;
 
 	while(i < no->n_child)
@@ -70,6 +71,22 @@ void printSpace(int nSpace){
 	for(int i=0; i<nSpace * TAB; i++)
 		printf(" ");
 }
+
+void print(ttoken sym){
+	if(sym == kmult)
+		printf("mult");
+	else if(sym == ksum)
+		printf("sum");
+	else if(sym == krel)
+		printf("relacional");
+	else if(sym == kparam)
+		printf("param");
+	else if(sym == NIL)
+		printf("NIL");
+	else
+		printf("%d", sym);
+}
+
 /*
  *TODO: Remover
 int main(int argc, char** argv){
