@@ -2,7 +2,7 @@ SYMTAB = symtab
 EXE = exe
 
 all: lex.yy.o y.tab.o symtab.o ast.o
-	gcc -o $(EXE) y.tab.c lex.yy.c symtab.o
+	gcc -o $(EXE) y.tab.c lex.yy.c symtab.o ast.o
 
 lex.yy.o: lex.yy.c y.tab.h
 	gcc -c lex.yy.c
