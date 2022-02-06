@@ -89,7 +89,6 @@ void print(grammID sym){
 	else if(sym == kexp)	printf("exp");
 	else if(sym == kretorno_decl)	printf("retorno_decl");
 	else if(sym == kiteracao_decl)	printf("iteracao_decl");
-	else if(sym == kin_if)	printf("in_if");
 	else if(sym == kselecao_decl)	printf("selecao_decl");
 	else if(sym == kexp_decl)	printf("exp_decl");
 	else if(sym == kstatement_lista)	printf("statement_lista");
