@@ -35,7 +35,10 @@ ast ast_root;
 //%type <symb>tip_esp <symb> var_decl
 
 /*TODO: Organizar types*/
-%type <t_ast> programa decl_lista decl var_decl tipo_esp fun_decl params param_lista param composto_decl local_decl statement_lista statement exp_decl selecao_decl in_if iteracao_decl retorno_decl exp var simple_exp rel soma_exp soma termo mult fator act args arg_lista
+%type <t_ast> programa decl_lista decl var_decl tipo_esp fun_decl params param_lista param composto_decl local_decl statement_lista statement exp_decl selecao_decl iteracao_decl retorno_decl exp var simple_exp rel soma_exp soma termo mult fator act args arg_lista
+
+%nonassoc IFX
+%nonassoc ELSE
 
 %%
 
@@ -183,16 +186,27 @@ exp_decl:
 		}
 
 selecao_decl:
-	IF '(' exp ')' in_if	{
+	IF '(' exp ')' statement %prec IFX{
 	$$ = createNo(kselecao_decl);
 	childrenSpace($$,5);
-	 $$->children[0] = createNo(terminal);
-	 $$->children[1] = createNo(terminal);
+	$$->children[0] = createNo(terminal);
+	$$->children[1] = createNo(terminal);
 	$$->children[2] = $3; 
-	 $$->children[3] = createNo(terminal);
+	$$->children[3] = createNo(terminal);
 	$$->children[4] = $5;
 	}
-
+	| IF '(' exp ')' statement ELSE statement{
+		$$ = createNo(kselecao_decl);
+	childrenSpace($$,7);
+	$$->children[0] = createNo(terminal);
+	$$->children[1] = createNo(terminal);
+	$$->children[2] = $3; 
+	$$->children[3] = createNo(terminal);
+	$$->children[4] = $5;
+	$$->children[5] = createNo(terminal);
+	$$->children[6] = $7;
+	}
+/*
 in_if:
 	statement	{$$ = $1;}
 	| ELSE statement	{
@@ -201,7 +215,7 @@ in_if:
 	$$->children[0] = createNo(terminal);
 	$$->children[1] = $2;
 	}
-
+*/
 
 iteracao_decl:
 			 WHILE '(' exp ')' statement	{
