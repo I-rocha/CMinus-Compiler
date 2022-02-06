@@ -82,7 +82,7 @@ void print(grammID sym){
 	else if(sym == kmult) printf("mult");
 	else if(sym == ksum) printf("sum");
 	else if(sym == kfact) printf("fact");
-	else if(sym == ksoma_exp) printf("fact");
+	else if(sym == ksoma_exp) printf("soma_exp");
 	else if(sym == krel) printf("relacional");
 	else if(sym == ksimple_exp)	printf("simple_exp");
 	else if(sym == kvar)	printf("var");
