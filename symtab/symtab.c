@@ -57,7 +57,7 @@ int hashFunction(char* name){
 	return (name[0] - 'a' + 1); //INDEX linear
 }
 
-int add(char* scope, char* type, char* name, int val){
+int sadd(char* scope, char* type, char* name, int val){
 	struct symbol aux;
 
 	aux.escopo = strdup(scope);
@@ -66,7 +66,7 @@ int add(char* scope, char* type, char* name, int val){
 	aux.ival = val;
 	aux.prox = NULL;
 
-	addNo(&aux);
+	saddNo(&aux);
 	if(aux.escopo != NULL ) free(aux.escopo);
 	if(aux.type != NULL ) free(aux.type);
 	if(aux.name != NULL ) free(aux.name);
@@ -74,7 +74,7 @@ int add(char* scope, char* type, char* name, int val){
 	return 1;
 }
 
-int addNo(symbol no){
+int saddNo(symbol no){
 	int idx;
 	symbol look, aux;
 
@@ -112,13 +112,13 @@ int addNo(symbol no){
 	return 1;
 }
 
-symbol get(char* scope, char* name){
+symbol sget(char* scope, char* name){
 	symbol target;
 	struct symbol no;
 
 	no.escopo = strdup(scope);
 	no.name = strdup(name);
-	target = getNo(&no);
+	target = sgetNo(&no);
 
 	if(no.escopo != NULL)free(no.escopo);
 	if(no.name != NULL)free(no.name);
@@ -126,7 +126,7 @@ symbol get(char* scope, char* name){
 	return target;
 }
 
-symbol getNo(symbol no){
+symbol sgetNo(symbol no){
 	int idx;
 	symbol look;
 

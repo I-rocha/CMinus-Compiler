@@ -22,10 +22,10 @@ symbol head[H_MAX];
 int isEqual(symbol a, symbol b);
 int hashFunction(char* name);
 
-int add(char* scope, char* type, char* name, int val);
-int addNo(symbol no);
-symbol get(char* scope, char* name);
-symbol getNo(symbol no);
+int sadd(char* scope, char* type, char* name, int val);
+int saddNo(symbol no);
+symbol sget(char* scope, char* name);
+symbol sgetNo(symbol no);
 
 int printAll();
 int printContent(symbol el);

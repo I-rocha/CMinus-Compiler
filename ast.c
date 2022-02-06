@@ -19,13 +19,23 @@ ast createNo(grammID mytk){
 
 }
 
+struct ast addNo(grammID mytk){
+	struct ast myNo;
+
+	myNo.children = NULL;
+	myNo.n_child = 0;
+	myNo.tok = mytk;
+	return myNo;
+
+}
+
 int childrenSpace(ast no, int n_child){
 	if (no == NULL){
 		printf(AST_ERR_1);
 		return -1;
 	}
 
-	no->children = (ast*)calloc(n_child, sizeof(struct ast*));
+	no->children = (ast)calloc(n_child, sizeof(struct ast));
 
 	if(no->children == NULL){
 		printf(AST_ERR_0);
@@ -43,8 +53,9 @@ void freeTree(ast no){
 	
 	if(no->n_child != 0){ 
 		while(i < no->n_child)
-			freeTree(no->children[i++]);
+			freeTree(&no->children[i++]);
 	}
+	no->n_child = 0;
 	free(no);
 	return;
 }
@@ -61,7 +72,7 @@ void printTree(ast no, int depth){
 	if(no->n_child == 0) return;
 
 	while(i < no->n_child)
-		printTree(no->children[i++], depth+1);
+		printTree(&no->children[i++], depth+1);
 
 	return;
 }
@@ -106,6 +117,14 @@ void print(grammID sym){
 	else if(sym == terminal)	printf("terminal");
 	else printf(AST_ERR_2);
 	printf("\n");
+}
+
+void freeE(ast no){
+	if(no == NULL)
+		return
+	free(no);
+	no = NULL;
+	return;
 }
 
 /*

@@ -19,17 +19,19 @@ enum grammID{
 struct ast{
 
 	grammID tok;
-	ast* children;
+	ast children;
 	int n_child;
 };
 
 // TODO: Change tokens
 
 ast createNo(grammID mytk);
+struct ast addNo(grammID mytk);
 int childrenSpace(ast no, int n_child);
 void printTree(ast no, int depth);
 void printSpace(int nSpace);
-void freeTree(ast no);
 void print(grammID sym);
+void freeTree(ast no);
+void freeE(ast no);
 
 #endif
