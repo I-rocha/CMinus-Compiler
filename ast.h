@@ -11,9 +11,8 @@ typedef enum  grammID grammID ;
 
 enum grammID{
 	kact, karg_lista, kterm, kmult, ksum, kfact, ksoma_exp, krel, ksimple_exp, kvar,	// 0-9
-	kexp, kretorno_decl, kiteracao_decl, kselecao_decl, kexp_decl, kstatement_lista, klocal_decl, kcomposto_decl, kparam,	
-	kcomposto_decl_match, klocal_decl_match, kstatement_lista_match, kselecao_decl_match, kiteracao_decl_match,
-	kparam_lista, kparams, kfun_decl, ktipo_esp, kvar_decl, kdecl_lista,  NIL, terminal
+	kexp, kretorno_decl, kiteracao_decl, kin_if, kselecao_decl, kexp_decl, kstatement_lista, klocal_decl, kcomposto_decl, kparam,	//10-19
+	kparam_lista, kparams, kfun_decl, ktipo_esp, kvar_decl, kdecl_lista, NIL, terminal	// 20-
 };
 
 

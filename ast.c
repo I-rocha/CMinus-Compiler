@@ -89,16 +89,12 @@ void print(grammID sym){
 	else if(sym == kexp)	printf("exp");
 	else if(sym == kretorno_decl)	printf("retorno_decl");
 	else if(sym == kiteracao_decl)	printf("iteracao_decl");
-	else if(sym == kiteracao_decl_match)	printf("iteracao_decl_match");
+	else if(sym == kin_if)	printf("in_if");
 	else if(sym == kselecao_decl)	printf("selecao_decl");
-	else if(sym == kselecao_decl_match)	printf("selecao_decl_match");
 	else if(sym == kexp_decl)	printf("exp_decl");
 	else if(sym == kstatement_lista)	printf("statement_lista");
-	else if(sym == kstatement_lista_match)	printf("statement_lista_match");
 	else if(sym == klocal_decl)	printf("local_decl");
-	else if(sym == klocal_decl_match)	printf("local_decl_match");
 	else if(sym == kcomposto_decl)	printf("composto_decl");
-	else if(sym == kcomposto_decl_match)	printf("composto_decl_match");
 	else if(sym == kparam) printf("param");
 	else if(sym == kparam_lista)	printf("param_lista");
 	else if(sym == kparams)	printf("params");

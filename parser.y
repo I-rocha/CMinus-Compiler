@@ -35,8 +35,8 @@ ast ast_root;
 //%type <symb>tip_esp <symb> var_decl
 
 /*TODO: Organizar types*/
-%type <t_ast> programa decl_lista decl var_decl tipo_esp fun_decl params param_lista param composto_decl local_decl statement_lista statement exp_decl selecao_decl iteracao_decl retorno_decl exp var simple_exp rel soma_exp soma termo mult fator act args arg_lista
-%type <t_ast> composto_decl_match local_decl_match statement_lista_match statement_match selecao_decl_match iteracao_decl_match  
+%type <t_ast> programa decl_lista decl var_decl tipo_esp fun_decl params param_lista param composto_decl local_decl statement_lista statement exp_decl selecao_decl in_if iteracao_decl retorno_decl exp var simple_exp rel soma_exp soma termo mult fator act args arg_lista
+
 %%
 
 programa:			
@@ -145,17 +145,6 @@ composto_decl:
 	$$->children[3] = createNo(terminal);
 	}
 
-composto_decl_match:
-			'{' local_decl_match statement_lista_match '}'	{
-	$$ = createNo(kcomposto_decl_match);
-	childrenSpace($$,4);
-	$$->children[0] = createNo(terminal);
-	$$->children[1] = $2;
-	$$->children[2] = $3;
-	$$->children[3] = createNo(terminal);
-	}
-
-
 local_decl:
 		  local_decl var_decl	{
 	$$ = createNo(klocal_decl);
@@ -165,53 +154,20 @@ local_decl:
 	}
 		  | /*epsilon*/	{$$ = createNo(NIL);}
 
-
-local_decl_match:
-		  local_decl_match var_decl	{
-	$$ = createNo(klocal_decl_match);
-	childrenSpace($$,2);
-	$$->children[0] = $1;
-	$$->children[1] = $2;
-	}
-		  | /*epsilon*/	{$$ = createNo(NIL);}
-
-
 statement_lista:
-			   statement_lista statement	{
+			   statement_lista statement 	{
 	$$ = createNo(kstatement_lista);
 	childrenSpace($$,2);
 	$$->children[0] = $1;
 	$$->children[1] = $2;
 	}
-				| /*epsilon*/	{$$ = createNo(NIL);}
-
-
-statement_lista_match:
-			   statement_lista_match statement_match 	{
-	$$ = createNo(kstatement_lista_match);
-	childrenSpace($$,2);
-	$$->children[0] = $1;
-	$$->children[1] = $2;
-	}
-				| /*epsilon*/	{$$ = createNo(NIL);}
-
-
+			   | /*epsilon*/	{$$ = createNo(NIL);}
 statement:
 		 exp_decl	{$$ = $1;}
 		 | composto_decl	{$$ = $1;}
 		 | selecao_decl	{$$ = $1;}
-		 | selecao_decl_match	{$$ = $1;}
 		 | iteracao_decl	{$$ = $1;}
 		 | retorno_decl	{$$ = $1;}
-
-
-statement_match:
-		exp_decl	{$$ = $1;}
-		| composto_decl_match	{$$ = $1;}
-		| selecao_decl_match	{$$ = $1;}
-		| iteracao_decl_match	{$$ = $1;}
-		| retorno_decl	{$$ = $1;}
-
 
 exp_decl:
 		exp ';'	{
@@ -226,37 +182,26 @@ exp_decl:
 		$$->children[0] = createNo(terminal);
 		}
 
-
 selecao_decl:
-	IF '(' exp ')' 	statement	{
+	IF '(' exp ')' in_if	{
 	$$ = createNo(kselecao_decl);
-	childrenSpace($$, 5);
-	$$->children[0] = createNo(terminal);
-	$$->children[1] = createNo(terminal);
-	$$->children[2] = $3;
-	$$->children[3] = createNo(terminal);
-	$$->children[4] = $5;
-	}
-	| ELSE statement	{
-	$$ = createNo(kselecao_decl);
-	childrenSpace($$,2);
-	$$->children[0] = createNo(terminal);
-	$$->children[1] = $2;
-	}
-
-
-selecao_decl_match:
-	IF '(' exp ')' statement_match ELSE statement{
-	$$ = createNo(kselecao_decl_match);
-	childrenSpace($$,7);
+	childrenSpace($$,5);
 	 $$->children[0] = createNo(terminal);
 	 $$->children[1] = createNo(terminal);
 	$$->children[2] = $3; 
 	 $$->children[3] = createNo(terminal);
 	$$->children[4] = $5;
-	 $$->children[5] = createNo(terminal);
-	 $$->children[6] = $7;
 	}
+
+in_if:
+	statement	{$$ = $1;}
+	| ELSE statement	{
+	$$ = createNo(kin_if);
+	childrenSpace($$,2);
+	$$->children[0] = createNo(terminal);
+	$$->children[1] = $2;
+	}
+
 
 iteracao_decl:
 			 WHILE '(' exp ')' statement	{
@@ -268,20 +213,6 @@ iteracao_decl:
 			 $$->children[3] = createNo(terminal);
 			 $$->children[4] = $5;
 			 }
-
-
-iteracao_decl_match:
-
-			 WHILE '(' exp ')' statement_match	{
-			 $$ = createNo(kiteracao_decl_match);
-			 childrenSpace($$, 5);
-			 $$->children[0] = createNo(terminal);
-			 $$->children[1] = createNo(terminal);
-			 $$->children[2] = $3;
-			 $$->children[3] = createNo(terminal);
-			 $$->children[4] = $5;
-			 }
-
 
 retorno_decl:
 			RETURN ';'		{
@@ -462,7 +393,6 @@ int yywrap(){
 int main(){
 	yyparse();
 	printTree(ast_root, 0);
-	printf("END PROGRAM\n");
 	freeTree(ast_root);
 	return 1;
 }
