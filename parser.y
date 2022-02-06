@@ -372,7 +372,7 @@ args:
 
 arg_lista:
 		 arg_lista ',' exp{
-		 createNo(karg_lista);
+		$$ = createNo(karg_lista);
 		 childrenSpace($$, 3);
 		 $$->children[0] = $1;
 		 $$->children[1] = createNo(terminal);
