@@ -62,59 +62,87 @@ decl:
 var_decl:
 		tipo_esp ID ';'		{
 	$$ = createNo(kvar_decl);
-	childrenSpace($$,1);
+	childrenSpace($$,3);
 	$$->children[0] = $1;
+	$$->children[1] = createNo(terminal);
+	$$->children[2] = createNo(terminal);
 	}
 		| tipo_esp ID '[' NUM ']' ';'	{
 	$$ = createNo(kvar_decl);
-	childrenSpace($$,1);
+	childrenSpace($$,6);
 	$$->children[0] = $1;
+	$$->children[1] = createNo(terminal);
+	$$->children[2] = createNo(terminal);
+	$$->children[3] = createNo(terminal);
+	$$->children[4] = createNo(terminal);
+	$$->children[5] = createNo(terminal);
 	}
 
 tipo_esp:
-		INT		{$$ = createNo(ktipo_esp);}
-		| VOID		{$$ = createNo(ktipo_esp);}
+		INT		{
+		$$ = createNo(ktipo_esp);
+		childrenSpace($$, 1);
+		$$->children[0] = createNo(terminal);
+		}
+		| VOID		{
+		$$ = createNo(ktipo_esp);
+		childrenSpace($$, 1);
+		$$->children[0] = createNo(terminal);
+		}
 
 fun_decl:
 		tipo_esp ID '(' params ')' composto_decl	{
 	$$ = createNo(kfun_decl);
-	childrenSpace($$,3);
+	childrenSpace($$,6);
 	$$->children[0] = $1;
-	$$->children[1] = $4;
-	$$->children[2] = $6;
+	$$->children[1] = createNo(terminal);
+	$$->children[2] = createNo(terminal);
+	$$->children[3] = $4;
+	$$->children[4] = createNo(terminal);
+	$$->children[5] = $6;
 	}
 
 params:
 	  param_lista 	{$$ = $1;}
-	  | VOID	{$$ = createNo(kparams);}
+	  | VOID	{
+	  $$ = createNo(kparams);
+	  childrenSpace($$, 1);
+	  $$->children[0] = createNo(terminal);
+	  }
 
 param_lista:
 		   param_lista ',' param	{
 	$$ = createNo(kparam_lista);
-	childrenSpace($$,2);
+	childrenSpace($$,3);
 	$$->children[0] = $1;
-	$$->children[1] = $3;
+	$$->children[1] = createNo(terminal);
+	$$->children[2] = $3;
 	}
 		   | param	{$$ = $1;}
 		   
 param:
 	 tipo_esp ID	{
 	$$ = createNo(kparam);
-	childrenSpace($$,1);
+	childrenSpace($$,2);
 	$$->children[0] = $1;
+	$$->children[1] = createNo(terminal);
 	}
 	 | tipo_esp ID '['']'	{
 	$$ = createNo(kparam);
-	childrenSpace($$,1);
+	childrenSpace($$,3);
 	$$->children[0] = $1;
+	$$->children[1] = createNo(terminal);
+	$$->children[2] = createNo(terminal);
 	}
 
 composto_decl:
 			'{' local_decl statement_lista '}'	{
 	$$ = createNo(kcomposto_decl);
-	childrenSpace($$,2);
-	$$->children[0] = $2;
-	$$->children[1] = $3;
+	childrenSpace($$,4);
+	$$->children[0] = createNo(terminal);
+	$$->children[1] = $2;
+	$$->children[2] = $3;
+	$$->children[3] = createNo(terminal);
 	}
 
 local_decl:
@@ -142,70 +170,132 @@ statement:
 		 | retorno_decl	{$$ = $1;}
 
 exp_decl:
-		exp ';'	{$$ = $1;}
-		| ';'	{$$ = createNo(kexp_decl);}
+		exp ';'	{
+		$$ = createNo(kexp_decl);
+		childrenSpace($$, 2);
+		$$->children[0] = $1;
+		$$->children[1] = createNo(terminal);
+		}
+		| ';'	{
+		$$ = createNo(kexp_decl);
+		childrenSpace($$, 1);
+		$$->children[0] = createNo(terminal);
+		}
 
 selecao_decl:
 	IF '(' exp ')' in_if	{
 	$$ = createNo(kselecao_decl);
-	childrenSpace($$,2);
-	$$->children[0] = $3; 
-	$$->children[0] = $5;
+	childrenSpace($$,5);
+	 $$->children[0] = createNo(terminal);
+	 $$->children[1] = createNo(terminal);
+	$$->children[2] = $3; 
+	 $$->children[3] = createNo(terminal);
+	$$->children[4] = $5;
 	}
 
 in_if:
 	statement	{$$ = $1;}
 	| ELSE statement	{
 	$$ = createNo(kin_if);
-	childrenSpace($$,1);
-	$$->children[0] = $2;
+	childrenSpace($$,2);
+	$$->children[0] = createNo(terminal);
+	$$->children[1] = $2;
 	}
 
 
 iteracao_decl:
 			 WHILE '(' exp ')' statement	{
 			 $$ = createNo(kiteracao_decl);
-			 childrenSpace($$, 2);
-			 $$->children[0] = $3;
-			 $$->children[1] = $5;}
+			 childrenSpace($$, 5);
+			 $$->children[0] = createNo(terminal);
+			 $$->children[1] = createNo(terminal);
+			 $$->children[2] = $3;
+			 $$->children[3] = createNo(terminal);
+			 $$->children[4] = $5;
+			 }
 
 retorno_decl:
-			RETURN ';'		{$$ = createNo(kretorno_decl);}
+			RETURN ';'		{
+			$$ = createNo(kretorno_decl);
+			childrenSpace($$, 2);
+			$$->children[0] = createNo(terminal);
+			$$->children[1] = createNo(terminal);
+			}
 			| RETURN exp ';'	{
 			$$ = createNo(kretorno_decl);
-			childrenSpace($$, 1);
-			$$->children[0] = $2;
+			childrenSpace($$, 3);
+			$$->children[0] = createNo(terminal);
+			$$->children[1] = $2;
+			$$->children[2] = createNo(terminal);
 			}
 
 exp:
    var '=' exp	{
    $$ = createNo(kexp);
-   childrenSpace($$, 2);
+   childrenSpace($$, 3);
    $$->children[0] = $1;
-   $$->children[1] = $3;
+   $$->children[1] = createNo(terminal);
+   $$->children[2] = $3;
    }
    | simple_exp	{$$ = $1;}
 
 var:
-   ID	{$$ = createNo(kvar);} 
+   ID	{
+   $$ = createNo(kvar);
+	childrenSpace($$, 1);
+	$$->children[0] = createNo(terminal);
+	} 
    | ID '[' exp ']'	
    {
    $$ = createNo(kvar);
-   childrenSpace($$, 1);
-   $$->children[0] = $3;
+   childrenSpace($$, 4);
+   $$->children[0] = createNo(terminal);
+   $$->children[1] = createNo(terminal);
+   $$->children[2] = $3;
+   $$->children[3] = createNo(terminal);
    }
 
 simple_exp:
-		  soma_exp rel soma_exp	{$$ = createNo(ksimple_exp);}
+		  soma_exp rel soma_exp	{
+		  $$ = createNo(ksimple_exp);
+		  childrenSpace($$, 3);
+		  $$->children[0] = $1;
+		  $$->children[1] = $2;
+		  $$->children[2] = $3;
+		  }
 		  | soma_exp	{$$ = $1;}
 
 rel:
-   LE	{$$ = createNo(krel);}
-   |'<'	{$$ = createNo(krel);}
-   |'>'	{$$ = createNo(krel);}
-   |GE	{$$ = createNo(krel);}
-   |EQ	{$$ = createNo(krel);}
-   |DIFF	{$$ = createNo(krel);}
+   LE	{
+   $$ = createNo(krel);
+	childrenSpace($$, 1);
+	$$->children[0] = createNo(terminal);
+   }
+   |'<'	{
+   $$ = createNo(krel);
+	childrenSpace($$, 1);
+	$$->children[0] = createNo(terminal);
+   }
+   |'>'	{
+   $$ = createNo(krel);
+	childrenSpace($$, 1);
+	$$->children[0] = createNo(terminal);
+   }
+   |GE	{
+   $$ = createNo(krel);
+	childrenSpace($$, 1);
+	$$->children[0] = createNo(terminal);
+   }
+   |EQ	{
+   $$ = createNo(krel);
+	childrenSpace($$, 1);
+	$$->children[0] = createNo(terminal);
+   }
+   |DIFF {
+   $$ = createNo(krel);
+	childrenSpace($$, 1);
+	$$->children[0] = createNo(terminal);
+   }
 
 
 soma_exp:
@@ -219,8 +309,16 @@ soma_exp:
 		| termo	{$$ = $1;} 
 
 soma:
-	'+'		{$$ = createNo(ksum);}
-	| '-'	{$$ = createNo(ksum);}
+	'+'		{
+	$$ = createNo(ksum);
+	childrenSpace($$, 1);
+	$$->children[0] = createNo(terminal);
+	}
+	| '-'	{
+	$$ = createNo(ksum);
+	childrenSpace($$, 1);
+	$$->children[0] = createNo(terminal);
+	}
 
 
 termo:
@@ -235,20 +333,37 @@ termo:
 
 
 mult:
-	'*'		{$$ = createNo(kmult);}
-	| '/'	{$$ = createNo(kmult);}
+	'*'		{
+	$$ = createNo(kmult);
+	childrenSpace($$, 1);
+	$$->children[0] = createNo(terminal);
+	}
+	| '/'	{
+	$$ = createNo(kmult);
+	childrenSpace($$, 1);	
+	$$->children[0] = createNo(terminal);
+	}
 
 fator:
-	 '(' exp ')' {$$ = createNo(kfact);}
+	 '(' exp ')' {
+	 $$ = createNo(kfact);
+	 childrenSpace($$, 3);
+	 $$->children[0] = createNo(terminal);
+	 $$->children[1] = $2;
+	 $$->children[2] = createNo(terminal);
+	 }
 	 | var  {$$ = $1;}
 	 | act	{$$ = $1;}
-	 | NUM	{$$ = createNo(kfact);}
+	 | NUM	{$$ = createNo(terminal);}
 
 act:
    ID '(' args ')'	{
 	$$ = createNo(kact);
-	childrenSpace($$, 1);
-	$$->children[0] = $3;
+	childrenSpace($$, 4);
+	$$->children[0] = createNo(terminal);
+	$$->children[1] = createNo(terminal);
+	$$->children[2] = $3;
+	$$->children[3] = createNo(terminal);
 	}
 
 args:
@@ -258,9 +373,10 @@ args:
 arg_lista:
 		 arg_lista ',' exp{
 		 createNo(karg_lista);
-		 childrenSpace($$, 2);
+		 childrenSpace($$, 3);
 		 $$->children[0] = $1;
-		 $$->children[1] = $3;
+		 $$->children[1] = createNo(terminal);
+		 $$->children[2] = $3;
 		 }
 		 | exp	{$$ = $1;}
 

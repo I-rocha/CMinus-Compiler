@@ -3,6 +3,7 @@
 
 #define AST_ERR_0 "ERROR-0: Fail to allocate no\n"
 #define AST_ERR_1 "ERROR-1: Impossible to allocate child space\n"
+#define AST_ERR_2 "ERROR-2: Grammar ID unknow\n"
 #define TAB 3
 
 typedef struct ast* ast;

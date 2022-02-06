@@ -4,7 +4,7 @@
 
 #include "ast.h"
 
-ast createNo(ttoken mytk){
+ast createNo(grammID mytk){
 	ast myNo;
 
 	myNo = (ast)malloc(sizeof(struct ast));
@@ -35,21 +35,6 @@ int childrenSpace(ast no, int n_child){
 	return 1;
 }
 
-void printTree(ast no, int depth){
-	int i=0;
-	if(no == NULL)
-		return;
-	
-	printSpace(depth);
-	
-	print(no->tok);
-	printf("\n");
-	if(no->n_child == 0) return;
-
-	while(i < no->n_child)
-		printTree(no->children[i++], depth+1);
-	return;
-}
 
 void freeTree(ast no){
 	int i=0;
@@ -65,6 +50,23 @@ void freeTree(ast no){
 }
 
 
+void printTree(ast no, int depth){
+	int i=0;
+	if(no == NULL)
+		return;
+
+	printSpace(depth);
+	print(no->tok);
+
+	if(no->n_child == 0) return;
+
+	while(i < no->n_child)
+		printTree(no->children[i++], depth+1);
+
+	return;
+}
+
+
 void printSpace(int nSpace){
 	int txtPad = 0;
 	txtPad = nSpace * TAB;
@@ -72,19 +74,38 @@ void printSpace(int nSpace){
 		printf(" ");
 }
 
-void print(ttoken sym){
-	if(sym == kmult)
-		printf("mult");
-	else if(sym == ksum)
-		printf("sum");
-	else if(sym == krel)
-		printf("relacional");
-	else if(sym == kparam)
-		printf("param");
-	else if(sym == NIL)
-		printf("NIL");
-	else
-		printf("%d", sym);
+
+void print(grammID sym){
+	if(sym == kact) printf("act");
+	else if(sym == karg_lista) printf("arg_lista");
+	else if(sym == kterm) printf("term");
+	else if(sym == kmult) printf("mult");
+	else if(sym == ksum) printf("sum");
+	else if(sym == kfact) printf("fact");
+	else if(sym == ksoma_exp) printf("fact");
+	else if(sym == krel) printf("relacional");
+	else if(sym == ksimple_exp)	printf("simple_exp");
+	else if(sym == kvar)	printf("var");
+	else if(sym == kexp)	printf("exp");
+	else if(sym == kretorno_decl)	printf("retorno_decl");
+	else if(sym == kiteracao_decl)	printf("iteracao_decl");
+	else if(sym == kin_if)	printf("in_if");
+	else if(sym == kselecao_decl)	printf("selecao_decl");
+	else if(sym == kexp_decl)	printf("exp_decl");
+	else if(sym == kstatement_lista)	printf("statement_lista");
+	else if(sym == klocal_decl)	printf("local_decl");
+	else if(sym == kcomposto_decl)	printf("composto_decl");
+	else if(sym == kparam) printf("param");
+	else if(sym == kparam_lista)	printf("param_lista");
+	else if(sym == kparams)	printf("params");
+	else if(sym == kfun_decl)	printf("fun_decl");
+	else if(sym == ktipo_esp)	printf("tipo_esp");
+	else if(sym == kvar_decl)	printf("var_decl");
+	else if(sym == kdecl_lista)	printf("decl_lista");
+	else if(sym == NIL)	printf("NIL");
+	else if(sym == terminal)	printf("terminal");
+	else printf(AST_ERR_2);
+	printf("\n");
 }
 
 /*
