@@ -8,6 +8,7 @@
 
 typedef struct ast* ast;
 typedef enum  grammID grammID ;
+typedef enum  terminalID terminalID ;
 
 enum grammID{
 	kact, karg_lista, kterm, kmult, ksum, kfact, ksoma_exp, krel, ksimple_exp, kvar,	// 0-9
@@ -15,21 +16,32 @@ enum grammID{
 	kparam_lista, kparams, kfun_decl, ktipo_esp, kvar_decl, kdecl_lista, NIL, terminal	
 };
 
+enum terminalID{
+	kif, kelse, kint, kreturn, kvoid, kwhile, kop, kID, kNUM, NONE
+};
 
 struct ast{
-
+	terminalID termTok;
 	grammID tok;
+	terminalID term;
 	ast* children;
 	int n_child;
+	
+	// Terminais
+	union{
+		int val;
+		char* name;
+	};
 };
 
 // TODO: Change tokens
 
 ast createNo(grammID mytk);
+ast createNoTerminal(terminalID mytk);
 int childrenSpace(ast no, int n_child);
 void printTree(ast no, int depth);
 void printSpace(int nSpace);
 void freeTree(ast no);
-void print(grammID sym);
+void print(ast no);
 
 #endif

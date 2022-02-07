@@ -15,6 +15,23 @@ ast createNo(grammID mytk){
 	myNo->children = NULL;
 	myNo->n_child = 0;
 	myNo->tok = mytk;
+	myNo->termTok = NONE;
+	return myNo;
+
+}
+
+ast createNoTerminal(terminalID mytk){
+	ast myNo;
+
+	myNo = (ast)malloc(sizeof(struct ast));
+	if(myNo == NULL){
+		printf(AST_ERR_0);
+		return NULL;
+	}
+	myNo->children = NULL;
+	myNo->n_child = 0;
+	myNo->tok = terminal;
+	myNo->termTok = mytk;
 	return myNo;
 
 }
@@ -56,7 +73,7 @@ void printTree(ast no, int depth){
 		return;
 
 	printSpace(depth);
-	print(no->tok);
+	print(no);
 
 	if(no->n_child == 0) return;
 
@@ -75,7 +92,13 @@ void printSpace(int nSpace){
 }
 
 
-void print(grammID sym){
+void print(ast no){
+	grammID sym;
+	terminalID tid;
+
+	sym = no->tok;
+	tid = no->termTok;
+
 	if(sym == kact) printf("act");
 	else if(sym == karg_lista) printf("arg_lista");
 	else if(sym == kterm) printf("term");
@@ -102,7 +125,10 @@ void print(grammID sym){
 	else if(sym == kvar_decl)	printf("var_decl");
 	else if(sym == kdecl_lista)	printf("decl_lista");
 	else if(sym == NIL)	printf("NIL");
-	else if(sym == terminal)	printf("terminal");
+	else if(sym == terminal){
+		if(tid == kNUM) printf("%d", no->val);
+		else printf("%s", no->name);
+	}
 	else printf(AST_ERR_2);
 	printf("\n");
 }
