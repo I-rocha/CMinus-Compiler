@@ -206,7 +206,7 @@ selecao_decl:
 	$$->children[5] = createNo(terminal);
 	$$->children[6] = $7;
 	}
-/*
+/*	TODO: Remover
 in_if:
 	statement	{$$ = $1;}
 	| ELSE statement	{
