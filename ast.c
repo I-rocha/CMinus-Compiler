@@ -62,7 +62,12 @@ void freeTree(ast no){
 		while(i < no->n_child)
 			freeTree(no->children[i++]);
 	}
+	if(no->name != NULL){
+		free(no->name);
+		no->name = NULL;
+	}
 	free(no);
+	no = NULL;
 	return;
 }
 
