@@ -4,6 +4,7 @@
 #include "symtab/symtab.h"
 #include "defines.h"
 #include "ast.h"
+#include "semantic.h"
 
 void yyerror(char* err);
 extern int yylex(void);
@@ -142,7 +143,7 @@ param_lista:
 
 	$$->children[1]->name = strdup(",");	// AST terminal
 	}
-		   | param	{$$ = $1;}
+		   | param	{$$ = createNo(kparam_lista); childrenSpace($$, 1); $$->children[0] = $1;}
 		   
 param:
 	 tipo_esp ID	{
@@ -156,12 +157,14 @@ param:
 	$$ = createNo(kparam);
 	childrenSpace($$,3);
 	$$->children[0] = $1;
-	$$->children[1] = createNoTerminal(kop);
+	$$->children[1] = createNoTerminal(kID);
 	$$->children[2] = createNoTerminal(kop);
+	$$->children[3] = createNoTerminal(kop);
 
 	// AST terminal
-	$$->children[1]->name = strdup("[");
-	$$->children[2]->name = strdup("]");
+	$$->children[1]->name = strdup($2);
+	$$->children[2]->name = strdup("[");
+	$$->children[3]->name = strdup("]");
 	}
 
 composto_decl:
@@ -496,6 +499,7 @@ int yywrap(){
 int main(){
 	yyparse();
 	printTree(ast_root, 0);
+	table(ast_root);
 	freeTree(ast_root);
 	return 1;
 }

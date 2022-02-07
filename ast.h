@@ -23,15 +23,13 @@ enum terminalID{
 struct ast{
 	terminalID termTok;
 	grammID tok;
-	terminalID term;
 	ast* children;
 	int n_child;
 	
 	// Terminais
-	union{
-		int val;
-		char* name;
-	};
+	int val;
+	char* name;
+
 };
 
 // TODO: Change tokens
