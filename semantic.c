@@ -25,7 +25,7 @@ char* lookType(ast root, char* ctype, char* currScope){
 	struct symbol aux_sym;
 	aux_sym.prox = NULL;
 	attr currAttr;
-	char *l_child_t, *r_child_t, *tmp;
+	char *l_child_t, *r_child_t, *tmp, *isNull;
 	int i = 0, err = 0;
 
 	if (root == NULL) return ctype;
