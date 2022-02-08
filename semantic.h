@@ -5,6 +5,7 @@
 #define FMAIN "main"
 #define FINPUT "input"
 #define FOUTPUT "output"
+#define TANY "ANY"
 #define FUNC 0
 #define VAR 1
 
@@ -14,7 +15,7 @@
 
 typedef struct attr attr;
 
-void table(ast root);
+void semantic(ast root);
 
 // run AST
 char* lookType(ast root, char* ctype, char* currScope);

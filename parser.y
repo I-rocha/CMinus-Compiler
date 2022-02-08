@@ -5,6 +5,8 @@
 #include "defines.h"
 #include "ast.h"
 #include "semantic.h"
+#include "file_log.h"
+
 
 void yyerror(char* err);
 extern int yylex(void);
@@ -498,11 +500,22 @@ int yywrap(){
 }
 
 int main(){
-	yyparse();
-	printTree(ast_root, 0);
-	table(ast_root);
-	printAll();
+	scan_log = open_log(LOG_SCANNER);
+	p_log = open_log(LOG_PARSER);
+	sem_log = open_log(LOG_SEMANTIC);
+
+	yyparse();	
+	fprintTree(ast_root, 0);
+
+	semantic(ast_root);
+	fprintAll();
+
+	fclose(scan_log);
+	fclose(p_log);
+	fclose(sem_log);
+
+
 	freeTree(ast_root);
-	return 1;
+	return 0;
 }
 

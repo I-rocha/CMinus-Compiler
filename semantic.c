@@ -9,25 +9,31 @@
 #include "semantic_global.h"
 #include "symtab/symtab.h"
 
-void table(ast root){
+void semantic(ast root){
+	struct symbol sym;
 	attr aux;
+	
+	// aux
 	aux.type = NULL;
 	aux.name = NULL;
 	aux.scope = NULL;
 	aux.var_func = -1;
 	aux.line = -1;
 	
-	struct symbol sym;
+	// function input
 	sym.content.name = strdup(FINPUT);
-	sym.content.type = strdup("ANY");
+	sym.content.type = strdup(TANY);
 	sym.content.scope = strdup(GLOBAL);
 	addNo(&sym);
 
+	// function output
 	sym.content.name = strdup(FOUTPUT);
 	addNo(&sym);
 
 	getTokens(root, &aux, GLOBAL);	
 	lookType(root, NULL, GLOBAL);
+
+	// Check main existence
 	checkMain();
 }
 
@@ -71,10 +77,10 @@ char* lookType(ast root, char* ctype, char* currScope){
 		l_child_t = lookType(root->children[0], ctype, currScope);
 		r_child_t = lookType(root->children[2], ctype, currScope);
 
-		if(strcmp(l_child_t, "ANY"))	//	Input type
+		if(strcmp(l_child_t, TANY))	//	Input type
 			return r_child_t;
 		
-		else if(strcmp(r_child_t, "ANY"))	// Input type
+		else if(strcmp(r_child_t, TANY))	// Input type
 			return l_child_t;
 
 		// Compare both types
@@ -317,7 +323,7 @@ int checkType(ast no, char* t1, char* t2){
 		printf(H_ERR_6);
 		return -1;
 	}
-	else if(strcmp(t1,"ANY") == 0|| strcmp(t2, "ANY") == 0 )
+	else if(strcmp(t1,TANY) == 0|| strcmp(t2, TANY) == 0 )
 		return 1;
 
 	if(strcmp(t1,t2) != 0){

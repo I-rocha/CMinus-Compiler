@@ -2,6 +2,7 @@
 #include"y.tab.h"
 #include "symtab/symtab.h"
 #include "defines.h"
+#include "file_log.h"
 
 //TODO: Change ID to accept digit after first char
 
@@ -26,79 +27,83 @@ COMMENT \/\*.*\*\/
 
 
 if {
-	printf("KEY: if\n");
+	fprintf(scan_log, "%s", "KEY: if\n");
 	yylval.token = strdup("KEY");
 	return IF;
 	}
 
 else {
-	printf("KEY: else\n");
+	fprintf(scan_log, "%s", "KEY: else\n");
 	yylval.token = strdup("KEY");
 	return ELSE;
 	}
 
 int {
-	printf("KEY: int\n");
+	fprintf(scan_log, "%s", "KEY: int\n");
 	yylval.token = strdup("KEY");
 	return INT;
 	}
 
 return {
-	printf("KEY: return\n");
+	fprintf(scan_log, "%s", "KEY: return\n");
 	yylval.token = strdup("KEY");
 	return RETURN;
 	}
 
 void {
-	printf("KEY: void\n");
+	fprintf(scan_log, "%s", "KEY: void\n");
 	yylval.token = strdup("KEY");
 	return VOID;
 	}
 
 while {
-	printf("KEY: while\n");
+	fprintf(scan_log, "%s", "KEY: while\n");
 	yylval.token = strdup("KEY");
 	return WHILE;
 	}
 
 \<\= {
-	printf("SYMBOL: LE\n");
+	fprintf(scan_log, "%s", "SYMBOL: LE\n");
 	yylval.token = strdup("<=");
 	return LE;
 	}
 
 \>\= {
-	printf("SYMBOL: GE\n");
+	fprintf(scan_log, "%s", "SYMBOL: GE\n");
 	yylval.token = strdup(">=");
 	return GE;
 	}
 
 \=\= {
-	printf("SYMBOL: EQ\n");
+	fprintf(scan_log, "%s", "SYMBOL: EQ\n");
 	yylval.token = strdup("==");
 	return EQ;
 	}
 
 \!\= {
-	printf("SYMBOL: DIFF\n");
+	fprintf(scan_log, "%s", "SYMBOL: DIFF\n");
 	yylval.token = strdup("!=");
 	return DIFF;
 	}
 
 {CSYMBOL} {
-	printf("SYMBOL: %s\n", yytext);
+	fprintf(scan_log, "%s %s\n", "SYMBOL:",yytext);
+	//printf("SYMBOL: %s\n", yytext);
 	yylval.token = strdup(&yytext[0]);
 	return yytext[0];
 	}
 
-{ID} {printf("ID: %s\n", yytext);
+{ID} {
+	//printf("ID: %s\n", yytext);
+	fprintf(scan_log, "%s: %s\n", "ID",yytext);
 	yylval.token = strdup("ID");
 	yylval.s = strdup(yytext);
 	return ID;
 	}
 
 {NUM} {
-	printf("NUM: %s\n", yytext);
+	//printf("NUM: %s\n", yytext);
+	fprintf(scan_log, "%s: %d\n", "NUM", atoi(yytext));
 	yylval.token = strdup("NUM");
 	yylval.val = atoi(yytext);
 	return NUM;

@@ -19,7 +19,12 @@ ast createNoTerminal(terminalID mytk, int line);
 int childrenSpace(ast no, int n_child);
 void printTree(ast no, int depth);
 void printSpace(int nSpace);
-void freeTree(ast no);
 void print(ast no);
+void freeTree(ast no);
+
+/*	FILES	*/
+void fprintTree(ast no, int depth);
+void fprintSpace(int nSpace);
+void fprint(ast no);
 
 #endif

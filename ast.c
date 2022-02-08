@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "ast.h"
+#include "file_log.h"
 
 ast createNo(grammID mytk, int line){
 	ast myNo;
@@ -136,6 +137,74 @@ void print(ast no){
 	else if(sym == terminal){
 		if(tid == kNUM) printf("%d", no->val);
 		else printf("%s", no->name);
+	}
+	else printf(AST_ERR_2);
+}
+
+/*	FILES */
+
+void fprintTree(ast no, int depth){
+	int i=0;
+	if(no == NULL)
+		return;
+
+	fprintSpace(depth);
+	fprint(no);
+	fprintf(p_log, "\n");
+
+	if(no->n_child == 0) return;
+
+	while(i < no->n_child)
+		fprintTree(no->children[i++], depth+1);
+
+	return;
+}
+
+
+void fprintSpace(int nSpace){
+	int txtPad = 0;
+	txtPad = nSpace * TAB;
+	for(int i=0; i<nSpace * TAB; i++)
+		fprintf(p_log, " ");
+}
+
+
+void fprint(ast no){
+	grammID sym;
+	terminalID tid;
+
+	sym = no->tok;
+	tid = no->termTok;
+
+	if(sym == kact) fprintf(p_log, "act");
+	else if(sym == karg_lista) fprintf(p_log, "arg_lista");
+	else if(sym == kterm) fprintf(p_log, "term");
+	else if(sym == kmult) fprintf(p_log, "mult");
+	else if(sym == ksum) fprintf(p_log, "sum");
+	else if(sym == kfact) fprintf(p_log, "fact");
+	else if(sym == ksoma_exp) fprintf(p_log, "soma_exp");
+	else if(sym == krel) fprintf(p_log, "relacional");
+	else if(sym == ksimple_exp)	fprintf(p_log, "simple_exp");
+	else if(sym == kvar)	fprintf(p_log, "var");
+	else if(sym == kexp)	fprintf(p_log, "exp");
+	else if(sym == kretorno_decl)	fprintf(p_log, "retorno_decl");
+	else if(sym == kiteracao_decl)	fprintf(p_log, "iteracao_decl");
+	else if(sym == kselecao_decl)	fprintf(p_log, "selecao_decl");
+	else if(sym == kexp_decl)	fprintf(p_log, "exp_decl");
+	else if(sym == kstatement_lista)	fprintf(p_log, "statement_lista");
+	else if(sym == klocal_decl)	fprintf(p_log, "local_decl");
+	else if(sym == kcomposto_decl)	fprintf(p_log, "composto_decl");
+	else if(sym == kparam) fprintf(p_log, "param");
+	else if(sym == kparam_lista)	fprintf(p_log, "param_lista");
+	else if(sym == kparams)	fprintf(p_log, "params");
+	else if(sym == kfun_decl)	fprintf(p_log, "fun_decl");
+	else if(sym == ktipo_esp)	fprintf(p_log, "tipo_esp");
+	else if(sym == kvar_decl)	fprintf(p_log, "var_decl");
+	else if(sym == kdecl_lista)	fprintf(p_log, "decl_lista");
+	else if(sym == NIL)	fprintf(p_log, "NIL");
+	else if(sym == terminal){
+		if(tid == kNUM) fprintf(p_log, "terminal: %d", no->val);
+		else fprintf(p_log, "terminal: %s", no->name);
 	}
 	else printf(AST_ERR_2);
 }

@@ -26,7 +26,12 @@ int isScopeEqual(symbol symA, symbol symB);
 int isEqual(symbol symA, symbol symB);
 int exist(char* name, char* scope);
 char* getType(char* name, char* scope);
+
 // PRINT
 int printAll();
 int printContent(symbol el);
+
+// FILE PRINT
+int fprintAll();
+int fprintContent(symbol el);
 

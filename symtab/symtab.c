@@ -3,11 +3,7 @@
 #include <string.h>
 #include "symtab.h"
 #include "../ast.h"
-
-/*
-int main(int argc, char** argv){
-}
-*/
+#include "../file_log.h"
 
 // TODO:Change hash type
 int hashFunction(char* name){
@@ -169,11 +165,35 @@ int printAll(){
 }
 
 int printContent(symbol el){
-	printf("\n##### EL #####\n");
+	printf("\n##### SYMBOL #####\n");
 	printf("Escopo:\t %s\n", el->content.scope);
 	printf("Name:\t %s\n", el->content.name);
 	printf("Tipo:\t %s\n", el->content.type);
-	printf("##### EL #####\n");
+	printf("##### SYMBOL #####\n");
+
+	return 0;
+}
+
+
+int fprintAll(){
+	symbol rlook;
+	for(int i =0; i < H_MAX; i++){
+		rlook = hash[i];
+
+		while(rlook != NULL){
+			fprintContent(rlook);
+			rlook = rlook->prox;
+		}
+	}
+	return 1;
+}
+
+int fprintContent(symbol el){
+	fprintf(sem_log, "\n##### SYMBOL #####\n");
+	fprintf(sem_log, "Escopo:\t %s\n", el->content.scope);
+	fprintf(sem_log, "Name:\t %s\n", el->content.name);
+	fprintf(sem_log, "Tipo:\t %s\n", el->content.type);
+	fprintf(sem_log, "##### SYMBOL #####\n");
 
 	return 0;
 }
