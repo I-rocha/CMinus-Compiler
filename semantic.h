@@ -2,8 +2,12 @@
 #define SEMANTIC_H
 
 #define GLOBAL "global"
+#define FMAIN "main"
+#define FINPUT "input"
+#define FOUTPUT "output"
 #define FUNC 0
 #define VAR 1
+
 
 #define ERR_SEM_0 "AST-SEM ERR0: NULL lookin for token\n"
 

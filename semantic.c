@@ -16,6 +16,15 @@ void table(ast root){
 	aux.scope = NULL;
 	aux.var_func = -1;
 	aux.line = -1;
+	
+	struct symbol sym;
+	sym.content.name = strdup(FINPUT);
+	sym.content.type = strdup("ANY");
+	sym.content.scope = strdup(GLOBAL);
+	addNo(&sym);
+
+	sym.content.name = strdup(FOUTPUT);
+	addNo(&sym);
 
 	getTokens(root, &aux, GLOBAL);	
 	lookType(root, NULL, GLOBAL);
@@ -61,6 +70,13 @@ char* lookType(ast root, char* ctype, char* currScope){
 		// Left and right children type
 		l_child_t = lookType(root->children[0], ctype, currScope);
 		r_child_t = lookType(root->children[2], ctype, currScope);
+
+		if(strcmp(l_child_t, "ANY"))	//	Input type
+			return r_child_t;
+		
+		else if(strcmp(r_child_t, "ANY"))	// Input type
+			return l_child_t;
+
 		// Compare both types
 		return (checkType(root, l_child_t, r_child_t))? l_child_t : "empty";
 	}
@@ -270,6 +286,11 @@ int checkDeclarationVar(ast no, symbol svar){
 }
 
 int checkFunc(ast no, symbol sfunc){
+	// Default function
+	if(strcmp(sfunc->content.name, FINPUT) == 0 || strcmp(sfunc->content.name, FOUTPUT) == 0
+			|| strcmp(sfunc->content.name, FMAIN) == 0)
+		return 1;
+
 	if(!exist(sfunc->content.name, sfunc->content.scope) && !exist(sfunc->content.name, GLOBAL)){
 		printf(ERR_SEM);
 		print(no);
@@ -296,6 +317,9 @@ int checkType(ast no, char* t1, char* t2){
 		printf(H_ERR_6);
 		return -1;
 	}
+	else if(strcmp(t1,"ANY") == 0|| strcmp(t2, "ANY") == 0 )
+		return 1;
+
 	if(strcmp(t1,t2) != 0){
 		printf(ERR_SEM);
 		print(no);
@@ -307,6 +331,6 @@ int checkType(ast no, char* t1, char* t2){
 }
 
 int checkMain(){
-	if(!exist("main", GLOBAL))
+	if(!exist(FMAIN, GLOBAL))
 		printf("ERRO SEMANTICO: Funcao main não declarada\n");
 }
