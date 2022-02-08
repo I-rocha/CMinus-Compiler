@@ -16,6 +16,63 @@ void table(ast root){
 	aux.var_func = -1;
 
 	getTokens(root, &aux, GLOBAL);	
+	lookType(root, NULL, GLOBAL);
+	checkMain();
+}
+
+
+char* lookType(ast root, char* ctype, char* currScope){
+	struct symbol aux_sym;
+	aux_sym.prox = NULL;
+	attr currAttr;
+	char *l_child_t, *r_child_t, *tmp;
+	int i = 0, err = 0;
+
+	if (root == NULL) return ctype;
+
+	//	Scope
+	else if(root->tok == kfun_decl){						// tipo_esp ID (params) composto-decl 
+		m_fun_decl(root, &currAttr, &currScope);
+		
+		// Children with func scope
+		lookType(root->children[3], ctype, currScope);
+		lookType(root->children[5], ctype, currScope);	
+		
+		// Update scope
+		currScope = strdup(GLOBAL);
+	}
+
+	//	Terminals
+	else if (root->tok == terminal){
+		if(root->termTok == kID){
+			return getType(root->name, currScope);
+		}
+		else if(root->termTok == kNUM){
+			return "int";
+		}
+	}
+
+	// Case with type dependence
+	else if(root->tok == kexp || root->tok == ksimple_exp || root->tok == ksoma_exp 
+			|| root->tok == kterm){ // <left_child> <terminal> <right child>
+
+		// Left and right children type
+		l_child_t = lookType(root->children[0], ctype, currScope);
+		r_child_t = lookType(root->children[2], ctype, currScope);
+		
+		// Compare both types
+		return (checkType(l_child_t, r_child_t))? l_child_t : "empty";
+	}
+	
+	// Remaining 
+	else{
+		while(i < root->n_child){
+			isNull = lookType(root->children[i++], ctype, currScope);
+			if(isNull != NULL) tmp = isNull;
+		}
+		return tmp;
+	}
+	return "NULL";
 }
 
 

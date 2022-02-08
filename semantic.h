@@ -10,6 +10,9 @@
 typedef struct attr attr;
 
 void table(ast root);
+
+// run AST
+char* lookType(ast root, char* ctype, char* currScope);
 void getTokens(ast root, attr* currAttr, char* currScope);
 ast nextTerminal(ast no);
 

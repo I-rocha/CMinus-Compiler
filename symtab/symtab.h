@@ -4,6 +4,7 @@
 #define H_ERR_3 "H_ERR-3: NIL symbol\n"
 #define H_ERR_4 "H_ERR-4: Not var and not func symbol\n"
 #define H_ERR_5 "H_ERR-5: Scope nil"
+#define H_ERR_6 "H_ERR-6: Type nil"
 #define GLOBAL "global"
 
 #define H_MAX 27
@@ -39,12 +40,15 @@ int isNameEqual(symbol symA, symbol symB);
 int isScopeEqual(symbol symA, symbol symB);
 int isEqual(symbol symA, symbol symB);
 int exist(char* name, char* scope);
+char* getType(char* name, char* scope);
 
 // ERROR CHECK
 int checkDeclarationFunc(symbol sfunc);
 int checkDeclarationVar(symbol svar);
 int checkFunc(symbol sfunc);
 int checkVar(symbol svar);
+int checkType(char* t1, char* t2);
+int checkMain();
 
 // PRINT
 int printAll();

@@ -137,7 +137,21 @@ int exist(char* name, char* scope){
 	return 0;
 }
 
+char* getType(char* name, char* scope){
+	struct symbol aux, *no;
+	aux.content.name = strdup(name);
+	aux.content.scope = strdup(scope);
 
+	no = getNo(&aux);
+
+	if(aux.content.name != NULL)
+		free(aux.content.name);
+
+	if(aux.content.scope != NULL)
+		free(aux.content.scope);
+
+	return no->content.type;
+}
 
 int checkDeclarationFunc(symbol sfunc){
 	if(exist(sfunc->content.name, sfunc->content.scope)){
@@ -151,6 +165,10 @@ int checkDeclarationVar(symbol svar){
 	if(exist(svar->content.name, svar->content.scope)){
 		printf("ERRO SEMANTICO: Redeclaracao\n");
 		return 0;	
+	}
+	else if(strcmp(svar->content.type,"void") == 0){
+		printf("ERRO SEMANTICO: Variavel void\n");
+		return 0;
 	}
 	return 1;
 }
@@ -167,6 +185,24 @@ int checkVar(symbol svar){
 	if(!exist(svar->content.name, svar->content.scope) && !exist(svar->content.name, GLOBAL)){
 		printf("ERRO SEMANTICO: Variavel nao declarada\n");
 	}
+}
+
+int checkType(char* t1, char* t2){
+	if(t1 == NULL || t2 == NULL){
+		printf(H_ERR_6);
+		return -1;
+	}
+
+	if(strcmp(t1,t2) != 0){
+		printf("ERRO SEMANTICO: Tipos operandos diferentes\n");
+		return 0;
+	}
+	return 1;
+}
+
+int checkMain(){
+	if(!exist("main", GLOBAL))
+		printf("ERRO SEMANTICO: Funcao main não declarada\n");
 }
 
 int printAll(){
