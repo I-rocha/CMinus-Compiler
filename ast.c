@@ -81,6 +81,7 @@ void printTree(ast no, int depth){
 
 	printSpace(depth);
 	print(no);
+	printf("\n");
 
 	if(no->n_child == 0) return;
 
@@ -137,5 +138,4 @@ void print(ast no){
 		else printf("%s", no->name);
 	}
 	else printf(AST_ERR_2);
-	printf("\n");
 }

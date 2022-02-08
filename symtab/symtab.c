@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "symtab.h"
+#include "../ast.h"
 
 /*
 int main(int argc, char** argv){
@@ -153,48 +154,68 @@ char* getType(char* name, char* scope){
 	return no->content.type;
 }
 
-int checkDeclarationFunc(symbol sfunc){
+int checkDeclarationFunc(ast no, symbol sfunc){
 	if(exist(sfunc->content.name, sfunc->content.scope)){
-		printf("ERRO SEMANTICO: Redeclaracao\n");
+		printf(ERR_SEM);
+		print(no);
+		printf(" ");
+		printf("LINHA: %d\n", no->line);
 		return 0;	
 	}
 	return 1;
 }
 
-int checkDeclarationVar(symbol svar){
+int checkDeclarationVar(ast no, symbol svar){
 	if(exist(svar->content.name, svar->content.scope)){
-		printf("ERRO SEMANTICO: Redeclaracao\n");
+		printf(ERR_SEM);
+		print(no);
+		printf(" ");
+		printf("LINHA: %d\n", no->line);
 		return 0;	
 	}
 	else if(strcmp(svar->content.type,"void") == 0){
-		printf("ERRO SEMANTICO: Variavel void\n");
+		printf(ERR_SEM);
+		print(no);
+		printf(" ");
+		printf("LINHA: %d\n", no->line);
 		return 0;
 	}
 	return 1;
 }
 
-int checkFunc(symbol sfunc){
+int checkFunc(ast no, symbol sfunc){
 	if(!exist(sfunc->content.name, sfunc->content.scope) && !exist(sfunc->content.name, GLOBAL)){
-		printf("ERRO SEMANTICO: Funcao nao declarada\n");
+		printf(ERR_SEM);
+		print(no);
+		printf(" ");
+		printf("LINHA: %d\n", no->line);
 		return 0;
 	}	
 	return 1;
 }
 
-int checkVar(symbol svar){
+int checkVar(ast no, symbol svar){
 	if(!exist(svar->content.name, svar->content.scope) && !exist(svar->content.name, GLOBAL)){
-		printf("ERRO SEMANTICO: Variavel nao declarada\n");
+		printf(ERR_SEM);
+		print(no);
+		printf(" ");
+		printf("LINHA: %d\n", no->line);
+		return 0;
 	}
+	return 1;
 }
 
-int checkType(char* t1, char* t2){
+int checkType(ast no, char* t1, char* t2){
 	if(t1 == NULL || t2 == NULL){
 		printf(H_ERR_6);
 		return -1;
 	}
 
 	if(strcmp(t1,t2) != 0){
-		printf("ERRO SEMANTICO: Tipos operandos diferentes\n");
+		printf(ERR_SEM);
+		print(no);
+		printf(" ");
+		printf("LINHA: %d\n", no->line);
 		return 0;
 	}
 	return 1;
@@ -222,7 +243,8 @@ int printContent(symbol el){
 	printf("\n##### EL #####\n");
 	printf("Escopo:\t %s\n", el->content.scope);
 	printf("Name:\t %s\n", el->content.name);
-	printf("\n##### EL #####\n");
+	printf("Tipo:\t %s\n", el->content.type);
+	printf("##### EL #####\n");
 
 	return 0;
 }

@@ -14,6 +14,7 @@ void table(ast root){
 	aux.name = NULL;
 	aux.scope = NULL;
 	aux.var_func = -1;
+	aux.line = -1;
 
 	getTokens(root, &aux, GLOBAL);	
 	lookType(root, NULL, GLOBAL);
@@ -61,7 +62,7 @@ char* lookType(ast root, char* ctype, char* currScope){
 		r_child_t = lookType(root->children[2], ctype, currScope);
 		
 		// Compare both types
-		return (checkType(l_child_t, r_child_t))? l_child_t : "empty";
+		return (checkType(root, l_child_t, r_child_t))? l_child_t : "empty";
 	}
 	
 	// Remaining 
@@ -95,7 +96,7 @@ void getTokens(ast root, attr* currAttr, char* currScope){
 
 		//check error
 		aux_sym.content = *currAttr;
-		checkDeclarationFunc(&aux_sym);
+		checkDeclarationFunc(root, &aux_sym);
 		addNo(&aux_sym);
 
 		/* Inside function*/;
@@ -112,7 +113,7 @@ void getTokens(ast root, attr* currAttr, char* currScope){
 		
 		// Check error
 		aux_sym.content = *currAttr;
-		checkDeclarationVar(&aux_sym);
+		checkDeclarationVar(root, &aux_sym);
 
 		// Add symbol
 		addNo(&aux_sym);	
@@ -125,7 +126,7 @@ void getTokens(ast root, attr* currAttr, char* currScope){
 	
 		// Check error
 		aux_sym.content = *currAttr;
-		checkDeclarationVar(&aux_sym);
+		checkDeclarationVar(root, &aux_sym);
 
 		// Add symbol
 		addNo(&aux_sym);
@@ -139,7 +140,7 @@ void getTokens(ast root, attr* currAttr, char* currScope){
 
 		//check error
 		aux_sym.content = *currAttr;
-		checkFunc(&aux_sym);
+		checkFunc(root, &aux_sym);
 
 		// Next tokens
 		getTokens(root->children[2], currAttr, currScope);
@@ -152,7 +153,7 @@ void getTokens(ast root, attr* currAttr, char* currScope){
 
 		// Check error
 		aux_sym.content = *currAttr;
-		checkVar(&aux_sym);
+		checkVar(root, &aux_sym);
 
 		// Next tokens
 		if(root->n_child > 1) getTokens(root->children[2], currAttr, currScope);

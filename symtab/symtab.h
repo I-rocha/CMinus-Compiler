@@ -6,6 +6,8 @@
 #define H_ERR_5 "H_ERR-5: Scope nil"
 #define H_ERR_6 "H_ERR-6: Type nil"
 #define GLOBAL "global"
+#define ERR_SEM "ERRO SEMANTICO: "
+
 
 #define H_MAX 27
 
@@ -13,12 +15,14 @@
 struct symbol;
 typedef struct symbol* symbol;
 typedef struct attr attr;
+typedef struct ast* ast;
 
 struct attr{
 	char* type;
 	char* name;
 	char* scope;
 	int var_func;
+	int line;
 };
 
 //TODO: Add vector 
@@ -43,11 +47,11 @@ int exist(char* name, char* scope);
 char* getType(char* name, char* scope);
 
 // ERROR CHECK
-int checkDeclarationFunc(symbol sfunc);
-int checkDeclarationVar(symbol svar);
-int checkFunc(symbol sfunc);
-int checkVar(symbol svar);
-int checkType(char* t1, char* t2);
+int checkDeclarationFunc(ast no, symbol sfunc);
+int checkDeclarationVar(ast no, symbol svar);
+int checkFunc(ast no, symbol sfunc);
+int checkVar(ast no, symbol svar);
+int checkType(ast no, char* t1, char* t2);
 int checkMain();
 
 // PRINT
