@@ -8,6 +8,7 @@
 
 void yyerror(char* err);
 extern int yylex(void);
+extern int yylineno;
 
 ast ast_root;
 %}
@@ -40,7 +41,7 @@ ast ast_root;
 
 %nonassoc IFX
 %nonassoc ELSE
-
+%locations
 %%
 
 programa:			
@@ -51,7 +52,7 @@ programa:
 
 decl_lista:
 		  decl_lista decl	{
-	$$ = createNo(kdecl_lista);
+	$$ = createNo(kdecl_lista, yylineno);
 	childrenSpace($$,2);
 	$$->children[0] = $1;
 	$$->children[1] = $2;
@@ -65,25 +66,25 @@ decl:
 
 var_decl:
 		tipo_esp ID ';'		{
-	$$ = createNo(kvar_decl);
+	$$ = createNo(kvar_decl, yylineno);
 	childrenSpace($$,3);
 	$$->children[0] = $1;
-	$$->children[1] = createNoTerminal(kID);
-	$$->children[2] = createNoTerminal(kop);
+	$$->children[1] = createNoTerminal(kID, yylineno);
+	$$->children[2] = createNoTerminal(kop, yylineno);
 
 	// AST terminais
 	$$->children[1]->name = strdup($2);
 	$$->children[2]->name = strdup(";");
 	}
 		| tipo_esp ID '[' NUM ']' ';'	{
-	$$ = createNo(kvar_decl);
+	$$ = createNo(kvar_decl, yylineno);
 	childrenSpace($$,6);
 	$$->children[0] = $1;
-	$$->children[1] = createNoTerminal(kID);
-	$$->children[2] = createNoTerminal(kop);
-	$$->children[3] = createNoTerminal(kNUM);
-	$$->children[4] = createNoTerminal(kop);
-	$$->children[5] = createNoTerminal(kop);
+	$$->children[1] = createNoTerminal(kID, yylineno);
+	$$->children[2] = createNoTerminal(kop, yylineno);
+	$$->children[3] = createNoTerminal(kNUM, yylineno);
+	$$->children[4] = createNoTerminal(kop, yylineno);
+	$$->children[5] = createNoTerminal(kop, yylineno);
 
 	// AST terminais
 	$$->children[1]->name = strdup($2);
@@ -95,27 +96,27 @@ var_decl:
 
 tipo_esp:
 		INT		{
-		$$ = createNo(ktipo_esp);
+		$$ = createNo(ktipo_esp, yylineno);
 		childrenSpace($$, 1);
-		$$->children[0] = createNoTerminal(kint);
+		$$->children[0] = createNoTerminal(kint, yylineno);
 		$$->children[0]->name = strdup("int");	// AST terminal
 		}
 		| VOID		{
-		$$ = createNo(ktipo_esp);
+		$$ = createNo(ktipo_esp, yylineno);
 		childrenSpace($$, 1);
-		$$->children[0] = createNoTerminal(kvoid);
+		$$->children[0] = createNoTerminal(kvoid, yylineno);
 		$$->children[0]->name = strdup("void");	// AST terminal
 		}
 
 fun_decl:
 		tipo_esp ID '(' params ')' composto_decl	{
-	$$ = createNo(kfun_decl);
+	$$ = createNo(kfun_decl, yylineno);
 	childrenSpace($$,6);
 	$$->children[0] = $1;
-	$$->children[1] = createNoTerminal(kID);
-	$$->children[2] = createNoTerminal(kop);
+	$$->children[1] = createNoTerminal(kID, yylineno);
+	$$->children[2] = createNoTerminal(kop, yylineno);
 	$$->children[3] = $4;
-	$$->children[4] = createNoTerminal(kop);
+	$$->children[4] = createNoTerminal(kop, yylineno);
 	$$->children[5] = $6;
 
 	// AST terminais
@@ -127,39 +128,39 @@ fun_decl:
 params:
 	  param_lista 	{$$ = $1;}
 	  | VOID	{
-	  $$ = createNo(kparams);
+	  $$ = createNo(kparams, yylineno);
 	  childrenSpace($$, 1);
-	  $$->children[0] = createNoTerminal(kvoid);
+	  $$->children[0] = createNoTerminal(kvoid, yylineno);
 	  $$->children[0]->name = strdup("void");	// AST terminal
 	  }
 
 param_lista:
 		   param_lista ',' param	{
-	$$ = createNo(kparam_lista);
+	$$ = createNo(kparam_lista, yylineno);
 	childrenSpace($$,3);
 	$$->children[0] = $1;
-	$$->children[1] = createNoTerminal(kop);
+	$$->children[1] = createNoTerminal(kop, yylineno);
 	$$->children[2] = $3;
 
 	$$->children[1]->name = strdup(",");	// AST terminal
 	}
-		   | param	{$$ = createNo(kparam_lista); childrenSpace($$, 1); $$->children[0] = $1;}
+		   | param	{$$ = createNo(kparam_lista, yylineno); childrenSpace($$, 1); $$->children[0] = $1;}
 		   
 param:
 	 tipo_esp ID	{
-	$$ = createNo(kparam);
+	$$ = createNo(kparam, yylineno);
 	childrenSpace($$,2);
 	$$->children[0] = $1;
-	$$->children[1] = createNoTerminal(kID);
+	$$->children[1] = createNoTerminal(kID, yylineno);
 	$$->children[1]->name = strdup($2);	// AST terminal
 	}
 	 | tipo_esp ID '['']'	{
-	$$ = createNo(kparam);
+	$$ = createNo(kparam, yylineno);
 	childrenSpace($$,3);
 	$$->children[0] = $1;
-	$$->children[1] = createNoTerminal(kID);
-	$$->children[2] = createNoTerminal(kop);
-	$$->children[3] = createNoTerminal(kop);
+	$$->children[1] = createNoTerminal(kID, yylineno);
+	$$->children[2] = createNoTerminal(kop, yylineno);
+	$$->children[3] = createNoTerminal(kop, yylineno);
 
 	// AST terminal
 	$$->children[1]->name = strdup($2);
@@ -169,12 +170,12 @@ param:
 
 composto_decl:
 			'{' local_decl statement_lista '}'	{
-	$$ = createNo(kcomposto_decl);
+	$$ = createNo(kcomposto_decl, yylineno);
 	childrenSpace($$,4);
-	$$->children[0] = createNoTerminal(kop);
+	$$->children[0] = createNoTerminal(kop, yylineno);
 	$$->children[1] = $2;
 	$$->children[2] = $3;
-	$$->children[3] = createNoTerminal(kop);
+	$$->children[3] = createNoTerminal(kop, yylineno);
 
 	// AST terminais
 	$$->children[0]->name = strdup("{");
@@ -183,21 +184,21 @@ composto_decl:
 
 local_decl:
 		  local_decl var_decl	{
-	$$ = createNo(klocal_decl);
+	$$ = createNo(klocal_decl, yylineno);
 	childrenSpace($$,2);
 	$$->children[0] = $1;
 	$$->children[1] = $2;
 	}
-		  | /*epsilon*/	{$$ = createNo(NIL);}
+		  | /*epsilon*/	{$$ = createNo(NIL, yylineno);}
 
 statement_lista:
 			   statement_lista statement 	{
-	$$ = createNo(kstatement_lista);
+	$$ = createNo(kstatement_lista, yylineno);
 	childrenSpace($$,2);
 	$$->children[0] = $1;
 	$$->children[1] = $2;
 	}
-			   | /*epsilon*/	{$$ = createNo(NIL);}
+			   | /*epsilon*/	{$$ = createNo(NIL, yylineno);}
 statement:
 		 exp_decl	{$$ = $1;}
 		 | composto_decl	{$$ = $1;}
@@ -207,27 +208,27 @@ statement:
 
 exp_decl:
 		exp ';'	{
-		$$ = createNo(kexp_decl);
+		$$ = createNo(kexp_decl, yylineno);
 		childrenSpace($$, 2);
 		$$->children[0] = $1;
-		$$->children[1] = createNoTerminal(kop);
+		$$->children[1] = createNoTerminal(kop, yylineno);
 		$$->children[1]->name = strdup(";");	// AST terminal
 		}
 		| ';'	{
-		$$ = createNo(kexp_decl);
+		$$ = createNo(kexp_decl, yylineno);
 		childrenSpace($$, 1);
-		$$->children[0] = createNoTerminal(kop);
+		$$->children[0] = createNoTerminal(kop, yylineno);
 		$$->children[0]->name = strdup(";");	// AST terminal
 		}
 
 selecao_decl:
 	IF '(' exp ')' statement %prec IFX{
-	$$ = createNo(kselecao_decl);
+	$$ = createNo(kselecao_decl, yylineno);
 	childrenSpace($$,5);
-	$$->children[0] = createNoTerminal(kif);
-	$$->children[1] = createNoTerminal(kop);
+	$$->children[0] = createNoTerminal(kif, yylineno);
+	$$->children[1] = createNoTerminal(kop, yylineno);
 	$$->children[2] = $3; 
-	$$->children[3] = createNoTerminal(kop);
+	$$->children[3] = createNoTerminal(kop, yylineno);
 	$$->children[4] = $5;
 
 	// AST terminais
@@ -236,14 +237,14 @@ selecao_decl:
 	$$->children[3]->name = strdup(")");
 	}
 	| IF '(' exp ')' statement ELSE statement{
-		$$ = createNo(kselecao_decl);
+		$$ = createNo(kselecao_decl, yylineno);
 	childrenSpace($$,7);
-	$$->children[0] = createNoTerminal(kif);
-	$$->children[1] = createNoTerminal(kop);
+	$$->children[0] = createNoTerminal(kif, yylineno);
+	$$->children[1] = createNoTerminal(kop, yylineno);
 	$$->children[2] = $3; 
-	$$->children[3] = createNoTerminal(kop);
+	$$->children[3] = createNoTerminal(kop, yylineno);
 	$$->children[4] = $5;
-	$$->children[5] = createNoTerminal(kelse);
+	$$->children[5] = createNoTerminal(kelse, yylineno);
 	$$->children[6] = $7;
 
 	// AST terminais
@@ -265,12 +266,12 @@ in_if:
 
 iteracao_decl:
 			 WHILE '(' exp ')' statement	{
-			 $$ = createNo(kiteracao_decl);
+			 $$ = createNo(kiteracao_decl, yylineno);
 			 childrenSpace($$, 5);
-			 $$->children[0] = createNoTerminal(kwhile);
-			 $$->children[1] = createNoTerminal(kop);
+			 $$->children[0] = createNoTerminal(kwhile, yylineno);
+			 $$->children[1] = createNoTerminal(kop, yylineno);
 			 $$->children[2] = $3;
-			 $$->children[3] = createNoTerminal(kop);
+			 $$->children[3] = createNoTerminal(kop, yylineno);
 			 $$->children[4] = $5;
 
 			 // AST terminais
@@ -281,21 +282,21 @@ iteracao_decl:
 
 retorno_decl:
 			RETURN ';'		{
-			$$ = createNo(kretorno_decl);
+			$$ = createNo(kretorno_decl, yylineno);
 			childrenSpace($$, 2);
-			$$->children[0] = createNoTerminal(kreturn);
-			$$->children[1] = createNoTerminal(kop);
+			$$->children[0] = createNoTerminal(kreturn, yylineno);
+			$$->children[1] = createNoTerminal(kop, yylineno);
 			
 			// AST terminais
 			$$->children[0]->name = strdup("return");
 			$$->children[1]->name = strdup(";");
 			}
 			| RETURN exp ';'	{
-			$$ = createNo(kretorno_decl);
+			$$ = createNo(kretorno_decl, yylineno);
 			childrenSpace($$, 3);
-			$$->children[0] = createNoTerminal(kreturn);
+			$$->children[0] = createNoTerminal(kreturn, yylineno);
 			$$->children[1] = $2;
-			$$->children[2] = createNoTerminal(kop);
+			$$->children[2] = createNoTerminal(kop, yylineno);
 				
 			// AST terminais
 			$$->children[0]->name = strdup("return");
@@ -304,10 +305,10 @@ retorno_decl:
 
 exp:
    var '=' exp	{
-   $$ = createNo(kexp);
+   $$ = createNo(kexp, yylineno);
    childrenSpace($$, 3);
    $$->children[0] = $1;
-   $$->children[1] = createNoTerminal(kop);
+   $$->children[1] = createNoTerminal(kop, yylineno);
    $$->children[2] = $3;
 
    $$->children[1]->name = strdup("=");	// AST terminal
@@ -316,19 +317,19 @@ exp:
 
 var:
    ID	{
-   $$ = createNo(kvar);
+   $$ = createNo(kvar, yylineno);
 	childrenSpace($$, 1);
-	$$->children[0] = createNoTerminal(kID);
+	$$->children[0] = createNoTerminal(kID, yylineno);
 	$$->children[0]->name = strdup($1);	// AST terminal
 	} 
    | ID '[' exp ']'	
    {
-   $$ = createNo(kvar);
+   $$ = createNo(kvar, yylineno);
    childrenSpace($$, 4);
-   $$->children[0] = createNoTerminal(kID);
-   $$->children[1] = createNoTerminal(kop);
+   $$->children[0] = createNoTerminal(kID, yylineno);
+   $$->children[1] = createNoTerminal(kop, yylineno);
    $$->children[2] = $3;
-   $$->children[3] = createNoTerminal(kop);
+   $$->children[3] = createNoTerminal(kop, yylineno);
 
 	// AST terminais
    $$->children[0]->name = strdup($1);
@@ -338,7 +339,7 @@ var:
 
 simple_exp:
 		  soma_exp rel soma_exp	{
-		  $$ = createNo(ksimple_exp);
+		  $$ = createNo(ksimple_exp, yylineno);
 		  childrenSpace($$, 3);
 		  $$->children[0] = $1;
 		  $$->children[1] = $2;
@@ -348,46 +349,46 @@ simple_exp:
 
 rel:
    LE	{
-   $$ = createNo(krel);
+   $$ = createNo(krel, yylineno);
 	childrenSpace($$, 1);
-	$$->children[0] = createNoTerminal(kop);
+	$$->children[0] = createNoTerminal(kop, yylineno);
 	$$->children[0]->name = strdup("<=");	// AST terminal
    }
    |'<'	{
-   $$ = createNo(krel);
+   $$ = createNo(krel, yylineno);
 	childrenSpace($$, 1);
-	$$->children[0] = createNoTerminal(kop);
+	$$->children[0] = createNoTerminal(kop, yylineno);
 	$$->children[0]->name = strdup("<");	// AST terminal
    }
    |'>'	{
-   $$ = createNo(krel);
+   $$ = createNo(krel, yylineno);
 	childrenSpace($$, 1);
-	$$->children[0] = createNoTerminal(kop);
+	$$->children[0] = createNoTerminal(kop, yylineno);
 	$$->children[0]->name = strdup(">");	// AST terminal
    }
    |GE	{
-   $$ = createNo(krel);
+   $$ = createNo(krel, yylineno);
 	childrenSpace($$, 1);
-	$$->children[0] = createNoTerminal(kop);
+	$$->children[0] = createNoTerminal(kop, yylineno);
 	$$->children[0]->name = strdup(">=");	//AST terminal
    }
    |EQ	{
-   $$ = createNo(krel);
+   $$ = createNo(krel, yylineno);
 	childrenSpace($$, 1);
-	$$->children[0] = createNoTerminal(kop);
+	$$->children[0] = createNoTerminal(kop, yylineno);
 	$$->children[0]->name = strdup("==");	//AST terminal
    }
    |DIFF {
-   $$ = createNo(krel);
+   $$ = createNo(krel, yylineno);
 	childrenSpace($$, 1);
-	$$->children[0] = createNoTerminal(kop);
+	$$->children[0] = createNoTerminal(kop, yylineno);
 	$$->children[0]->name = strdup("!=");	//AST terminal
    }
 
 
 soma_exp:
 		soma_exp soma termo  {
-		$$ = createNo(ksoma_exp);
+		$$ = createNo(ksoma_exp, yylineno);
 		childrenSpace($$, 3);
 		$$->children[0] = $1;
 		$$->children[1] = $2;
@@ -397,22 +398,22 @@ soma_exp:
 
 soma:
 	'+'		{
-	$$ = createNo(ksum);
+	$$ = createNo(ksum, yylineno);
 	childrenSpace($$, 1);
-	$$->children[0] = createNoTerminal(kop);
+	$$->children[0] = createNoTerminal(kop, yylineno);
 	$$->children[0]->name = strdup("+");	//AST terminal
 	}
 	| '-'	{
-	$$ = createNo(ksum);
+	$$ = createNo(ksum, yylineno);
 	childrenSpace($$, 1);
-	$$->children[0] = createNoTerminal(kop);
+	$$->children[0] = createNoTerminal(kop, yylineno);
 	$$->children[0]->name = strdup("-");	// AST terminal
 	}
 
 
 termo:
 	 termo mult fator {
-     $$ = createNo(kterm);
+     $$ = createNo(kterm, yylineno);
 	 childrenSpace($$, 3);
 	 $$->children[0] = $1;
 	 $$->children[1] = $2;
@@ -423,25 +424,25 @@ termo:
 
 mult:
 	'*'		{
-	$$ = createNo(kmult);
+	$$ = createNo(kmult, yylineno);
 	childrenSpace($$, 1);
-	$$->children[0] = createNoTerminal(kop);
+	$$->children[0] = createNoTerminal(kop, yylineno);
 	$$->children[0]->name = strdup("*");
 	}
 	| '/'	{
-	$$ = createNo(kmult);
+	$$ = createNo(kmult, yylineno);
 	childrenSpace($$, 1);	
-	$$->children[0] = createNoTerminal(kop);
+	$$->children[0] = createNoTerminal(kop, yylineno);
 	$$->children[0]->name = strdup("/");//AST Terminal
 	}
 
 fator:
 	 '(' exp ')' {
-	 $$ = createNo(kfact);
+	 $$ = createNo(kfact, yylineno);
 	 childrenSpace($$, 3);
-	 $$->children[0] = createNoTerminal(kop);
+	 $$->children[0] = createNoTerminal(kop, yylineno);
 	 $$->children[1] = $2;
-	 $$->children[2] = createNoTerminal(kop);
+	 $$->children[2] = createNoTerminal(kop, yylineno);
 
 	//AST terminais
 	 $$->children[0]->name = strdup("(") ;
@@ -450,18 +451,18 @@ fator:
 	 | var  {$$ = $1;}
 	 | act	{$$ = $1;}
 	 | NUM	{
-	 $$ = createNoTerminal(kNUM);
+	 $$ = createNoTerminal(kNUM, yylineno);
 	 $$->val = $1;	//AST terminal
 	 }
 
 act:
    ID '(' args ')'	{
-	$$ = createNo(kact);
+	$$ = createNo(kact, yylineno);
 	childrenSpace($$, 4);
-	$$->children[0] = createNoTerminal(kID);
-	$$->children[1] = createNoTerminal(kop);
+	$$->children[0] = createNoTerminal(kID, yylineno);
+	$$->children[1] = createNoTerminal(kop, yylineno);
 	$$->children[2] = $3;
-	$$->children[3] = createNoTerminal(kop);
+	$$->children[3] = createNoTerminal(kop, yylineno);
 
 	//AST terminais
 	$$->children[0]->name = strdup($1);
@@ -471,14 +472,14 @@ act:
 
 args:
 	arg_lista	{$$ = $1;}
-	| /*epsilon*/	{$$ = createNo(NIL);}
+	| /*epsilon*/	{$$ = createNo(NIL, yylineno);}
 
 arg_lista:
 		 arg_lista ',' exp{
-		$$ = createNo(karg_lista);
+		$$ = createNo(karg_lista, yylineno);
 		 childrenSpace($$, 3);
 		 $$->children[0] = $1;
-		 $$->children[1] = createNoTerminal(kop);
+		 $$->children[1] = createNoTerminal(kop, yylineno);
 		 $$->children[2] = $3;
 		 
 		 // AST terminais
@@ -489,7 +490,7 @@ arg_lista:
 %%
 
 void yyerror(char* err){
-	printf(ERR_SYN, yylval.token, lineno);
+	printf(ERR_SYN, yylval.token, yylineno);
 }
 
 int yywrap(){

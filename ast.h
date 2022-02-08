@@ -25,6 +25,7 @@ struct ast{
 	grammID tok;
 	ast* children;
 	int n_child;
+	int line;
 	
 	// Terminais
 	int val;
@@ -34,8 +35,8 @@ struct ast{
 
 // TODO: Change tokens
 
-ast createNo(grammID mytk);
-ast createNoTerminal(terminalID mytk);
+ast createNo(grammID mytk, int line);
+ast createNoTerminal(terminalID mytk, int line);
 int childrenSpace(ast no, int n_child);
 void printTree(ast no, int depth);
 void printSpace(int nSpace);

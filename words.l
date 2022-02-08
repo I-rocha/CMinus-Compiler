@@ -3,19 +3,9 @@
 #include "symtab/symtab.h"
 #include "defines.h"
 
-/*struct var;
-typedef struct var* var;
-
-struct var{
-	char* name;
-	int val;
-	var prox;
-};
-*/
 //TODO: Change ID to accept digit after first char
 
 // Defining line count
-int lineno = 1;
 
 %}
 
@@ -29,6 +19,7 @@ NUM {DIGIT}+
 
 COMMENT \/\*.*\*\/
 
+%option yylineno
 %%
 
 {COMMENT} {printf("Comment:\n%s\n", yytext);}
@@ -115,9 +106,9 @@ while {
 
 [\t ]+ {}
 
-\n {lineno++;}
+\n {}
 
-. {printf(ERR_LEX, yytext, lineno);/*TODO: Verificar casos de espaços*/}
+. {printf(ERR_LEX, yytext, yylineno);/*TODO: Verificar casos de espaços*/}
 
 %%
 

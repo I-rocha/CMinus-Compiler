@@ -4,7 +4,7 @@
 
 #include "ast.h"
 
-ast createNo(grammID mytk){
+ast createNo(grammID mytk, int line){
 	ast myNo;
 
 	myNo = (ast)malloc(sizeof(struct ast));
@@ -16,11 +16,12 @@ ast createNo(grammID mytk){
 	myNo->n_child = 0;
 	myNo->tok = mytk;
 	myNo->termTok = NONE;
+	myNo->line = line;
 	return myNo;
 
 }
 
-ast createNoTerminal(terminalID mytk){
+ast createNoTerminal(terminalID mytk, int line){
 	ast myNo;
 
 	myNo = (ast)malloc(sizeof(struct ast));
@@ -32,6 +33,7 @@ ast createNoTerminal(terminalID mytk){
 	myNo->n_child = 0;
 	myNo->tok = terminal;
 	myNo->termTok = mytk;
+	myNo->line = line;
 	return myNo;
 
 }
@@ -137,23 +139,3 @@ void print(ast no){
 	else printf(AST_ERR_2);
 	printf("\n");
 }
-
-/*
- *TODO: Remover
-int main(int argc, char** argv){
-	ast no = createNo(kc);
-	
-	childrenSpace(no, 2);
-	no->children[0].tok = ka;
-	no->children[1].tok = kb;
-
-	printTree(no, 0);
-
-	if(no != NULL){
-		if(no->children != NULL)
-			free(no->children);
-		free(no);
-	}
-
-	return 1;
-}*/
