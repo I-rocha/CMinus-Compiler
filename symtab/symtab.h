@@ -7,32 +7,13 @@
 #define H_ERR_6 "H_ERR-6: Type nil"
 #define GLOBAL "global"
 #define ERR_SEM "ERRO SEMANTICO: "
-
+#include "../semantic_global.h"
 
 #define H_MAX 27
-
-
-struct symbol;
 typedef struct symbol* symbol;
 typedef struct attr attr;
 typedef struct ast* ast;
 
-struct attr{
-	char* type;
-	char* name;
-	char* scope;
-	int var_func;
-	int line;
-};
-
-//TODO: Add vector 
-struct symbol{
-	attr content;
-	symbol prox;
-};
-
-
-int hashFunction(char* name);
 
 /*	TAB */
 symbol hash[H_MAX];
@@ -45,15 +26,6 @@ int isScopeEqual(symbol symA, symbol symB);
 int isEqual(symbol symA, symbol symB);
 int exist(char* name, char* scope);
 char* getType(char* name, char* scope);
-
-// ERROR CHECK
-int checkDeclarationFunc(ast no, symbol sfunc);
-int checkDeclarationVar(ast no, symbol svar);
-int checkFunc(ast no, symbol sfunc);
-int checkVar(ast no, symbol svar);
-int checkType(ast no, char* t1, char* t2);
-int checkMain();
-
 // PRINT
 int printAll();
 int printContent(symbol el);

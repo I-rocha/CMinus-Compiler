@@ -5,35 +5,14 @@
 #define AST_ERR_1 "ERROR-1: Impossible to allocate child space\n"
 #define AST_ERR_2 "ERROR-2: Grammar ID unknow\n"
 #define TAB 3
+#include "semantic_global.h"
 
+typedef struct symbol* symbol;
+typedef struct attr attr;
 typedef struct ast* ast;
 typedef enum  grammID grammID ;
 typedef enum  terminalID terminalID ;
 
-enum grammID{
-	kact, karg_lista, kterm, kmult, ksum, kfact, ksoma_exp, krel, ksimple_exp, kvar,	// 0-9
-	kexp, kretorno_decl, kiteracao_decl, kselecao_decl, kexp_decl, kstatement_lista, klocal_decl, kcomposto_decl, kparam,	
-	kparam_lista, kparams, kfun_decl, ktipo_esp, kvar_decl, kdecl_lista, NIL, terminal	
-};
-
-enum terminalID{
-	kif, kelse, kint, kreturn, kvoid, kwhile, kop, kID, kNUM, NONE
-};
-
-struct ast{
-	terminalID termTok;
-	grammID tok;
-	ast* children;
-	int n_child;
-	int line;
-	
-	// Terminais
-	int val;
-	char* name;
-
-};
-
-// TODO: Change tokens
 
 ast createNo(grammID mytk, int line);
 ast createNoTerminal(terminalID mytk, int line);

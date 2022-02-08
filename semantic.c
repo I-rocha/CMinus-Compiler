@@ -6,6 +6,7 @@
 //	My	//
 #include "ast.h"
 #include "semantic.h"
+#include "semantic_global.h"
 #include "symtab/symtab.h"
 
 void table(ast root){
@@ -60,7 +61,6 @@ char* lookType(ast root, char* ctype, char* currScope){
 		// Left and right children type
 		l_child_t = lookType(root->children[0], ctype, currScope);
 		r_child_t = lookType(root->children[2], ctype, currScope);
-		
 		// Compare both types
 		return (checkType(root, l_child_t, r_child_t))? l_child_t : "empty";
 	}
@@ -73,7 +73,7 @@ char* lookType(ast root, char* ctype, char* currScope){
 		}
 		return tmp;
 	}
-	return "NULL";
+	return NULL;
 }
 
 
@@ -239,3 +239,74 @@ ast nextTerminal(ast no){
 	return NULL;
 }
 
+
+int checkDeclarationFunc(ast no, symbol sfunc){
+	if(exist(sfunc->content.name, sfunc->content.scope)){
+		printf(ERR_SEM);
+		print(no);
+		printf(" ");
+		printf("LINHA: %d\n", no->line);
+		return 0;	
+	}
+	return 1;
+}
+
+int checkDeclarationVar(ast no, symbol svar){
+	if(exist(svar->content.name, svar->content.scope)){
+		printf(ERR_SEM);
+		print(no);
+		printf(" ");
+		printf("LINHA: %d\n", no->line);
+		return 0;	
+	}
+	else if(strcmp(svar->content.type,"void") == 0){
+		printf(ERR_SEM);
+		print(no);
+		printf(" ");
+		printf("LINHA: %d\n", no->line);
+		return 0;
+	}
+	return 1;
+}
+
+int checkFunc(ast no, symbol sfunc){
+	if(!exist(sfunc->content.name, sfunc->content.scope) && !exist(sfunc->content.name, GLOBAL)){
+		printf(ERR_SEM);
+		print(no);
+		printf(" ");
+		printf("LINHA: %d\n", no->line);
+		return 0;
+	}	
+	return 1;
+}
+
+int checkVar(ast no, symbol svar){
+	if(!exist(svar->content.name, svar->content.scope) && !exist(svar->content.name, GLOBAL)){
+		printf(ERR_SEM);
+		print(no);
+		printf(" ");
+		printf("LINHA: %d\n", no->line);
+		return 0;
+	}
+	return 1;
+}
+
+int checkType(ast no, char* t1, char* t2){
+	if(t1 == NULL || t2 == NULL){
+		printf(H_ERR_6);
+		return -1;
+	}
+	if(strcmp(t1,t2) != 0){
+		printf(ERR_SEM);
+		print(no);
+		printf(" ");
+		printf("LINHA: %d\n", no->line);
+		return 0;
+	}
+	return 1;
+}
+
+int checkMain(){
+	if(!exist("main", GLOBAL))
+		printf("ERRO SEMANTICO: Funcao main não declarada\n");
+}
