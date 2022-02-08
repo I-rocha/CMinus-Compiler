@@ -500,6 +500,7 @@ int main(){
 	yyparse();
 	printTree(ast_root, 0);
 	table(ast_root);
+	printAll();
 	freeTree(ast_root);
 	return 1;
 }

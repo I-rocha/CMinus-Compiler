@@ -23,7 +23,7 @@ ast.o: ast.c
 	gcc -c ast.c
 
 semantic.o: semantic.c
-	gcc -c semantic.c
+	gcc -c semantic.c 
 
 run:
 	gcc -o $(EXE) y.tab.c lex.yy.c
