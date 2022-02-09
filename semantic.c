@@ -275,6 +275,13 @@ int checkDeclarationFunc(ast no, symbol sfunc){
 }
 
 int checkDeclarationVar(ast no, symbol svar){
+	struct symbol look;
+	symbol aux;
+
+	look.content.name = strdup(svar->content.name);
+	look.content.scope  = strdup(GLOBAL);
+
+	aux = getNo(&look);
 	if(exist(svar->content.name, svar->content.scope)){
 		printf(ERR_SEM);
 		print(no);
@@ -284,6 +291,14 @@ int checkDeclarationVar(ast no, symbol svar){
 		return 0;	
 	}
 	else if(strcmp(svar->content.type,"void") == 0){
+		printf(ERR_SEM);
+		print(no);
+		printf(" ");
+		printf("LINHA: %d\n", no->line);
+		exit(0);
+		return 0;
+	}
+	else if(exist(svar->content.name, GLOBAL) && aux->content.var_func == FUNC){
 		printf(ERR_SEM);
 		print(no);
 		printf(" ");
@@ -336,7 +351,6 @@ int checkType(ast no, char* t1, char* t2){
 		print(no);
 		printf(" ");
 		printf("LINHA: %d\n", no->line);
-		exit(0);
 		return 0;
 	}
 	return 1;

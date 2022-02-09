@@ -103,7 +103,7 @@ int isScopeEqual(symbol symA, symbol symB){
 }
 
 int isEqual(symbol symA, symbol symB){
-	if(isNameEqual(symA, symB) && isNameEqual(symA,symB));
+	if(isNameEqual(symA, symB) && isScopeEqual(symA,symB));
 		return 1;
 
 	return 0;
