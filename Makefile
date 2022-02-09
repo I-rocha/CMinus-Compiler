@@ -1,8 +1,10 @@
 SYMTAB = symtab
 EXE = exe
+INPUT = input
+EXAMPLE = example
 
-all: lex.yy.o y.tab.o symtab.o ast.o
-	gcc -o $(EXE) y.tab.c lex.yy.c symtab.o ast.o
+all: lex.yy.o y.tab.o symtab.o ast.o semantic.o file_log.o
+	gcc -o $(EXE) y.tab.c lex.yy.c symtab.o ast.o semantic.o file_log.o
 
 lex.yy.o: lex.yy.c y.tab.h
 	gcc -c lex.yy.c
@@ -22,12 +24,24 @@ symtab.o: $(SYMTAB)/symtab.c
 ast.o: ast.c
 	gcc -c ast.c
 
-run:
-	gcc -o $(EXE) y.tab.c lex.yy.c
-	./$(EXE)
+semantic.o: semantic.c
+	gcc -c semantic.c 
+
+file.o: file_log.c
+	gcc -c file_log.c
+
+run1:	$(INPUT)/$(EXAMPLE)1.c
+	./$(EXE) < $(INPUT)/$(EXAMPLE)1.c
+
+run2:	$(INPUT)/$(EXAMPLE)2.c
+	./$(EXE) < $(INPUT)/$(EXAMPLE)2.c
 	
+run3:	$(INPUT)/$(EXAMPLE)3.c
+	./$(EXE) < $(INPUT)/$(EXAMPLE)3.c
 
 clean:
 	rm y.tab.* lex.yy.c 
 	rm *.o 
 	rm $(EXE)
+
+

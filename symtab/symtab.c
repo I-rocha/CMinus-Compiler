@@ -2,144 +2,73 @@
 #include <stdlib.h>
 #include <string.h>
 #include "symtab.h"
+#include "../ast.h"
+#include "../file_log.h"
 
-// TODO: Adjust code to struct with type
-
-/*
-int main(int argc, char** argv){
-	//for(int i = 0; i < H_MAX; i++){
-	//	head[i] = NULL;
-	//}
-	struct symbol a, b, c, *result;
-
-	a.ival = 20;
-	a.escopo = strdup("main");
-	a.name = strdup("a");
-	a.prox = NULL;
-
-	b.ival = 33;
-	b.escopo = strdup("ain");
-	b.name = strdup("a");
-	b.prox = NULL;
-
-	c.ival = 85;
-	c.escopo = strdup("get");
-	c.name = strdup("z84");
-	c.prox = NULL;
-
-
-	add(&a);
-	add(&b);
-	add(&c);
-
-	printAll();
-
-	return 1;
-}
-*/
-int isEqual(symbol a, symbol b){
-
-	if(a == NULL || b==NULL || a->name == NULL || b->name == NULL || a->escopo == NULL || b->escopo == NULL){
-		printf(H_ERR_0);
-		return -1;
-	}
-
-	else if((strcmp(a->name,b->name) == 0) && (strcmp(a->escopo, b->escopo) == 0))
-		return 1;
-	else
-		return 0;
-	return 0;
-}
-
-
+// TODO:Change hash type
 int hashFunction(char* name){
-	if(name == NULL)printf("Name null\n");
+	if(name == NULL){
+		printf(H_ERR_2);
+		return 0;
+	}
 	return (name[0] - 'a' + 1); //INDEX linear
 }
 
-int add(char* scope, char* type, char* name, int val){
-	struct symbol aux;
-
-	aux.escopo = strdup(scope);
-	aux.type = strdup(type);	
-	aux.name = strdup(name);
-	aux.ival = val;
-	aux.prox = NULL;
-
-	addNo(&aux);
-	if(aux.escopo != NULL ) free(aux.escopo);
-	if(aux.type != NULL ) free(aux.type);
-	if(aux.name != NULL ) free(aux.name);
-
-	return 1;
-}
-
-int addNo(symbol no){
+int addNo(symbol sym){
 	int idx;
 	symbol look, aux;
 
-	if(no == NULL){
+	if(sym == NULL){
 		printf(H_ERR_1);
 		return -1;
 	}
 
-	idx = hashFunction(no->name);
-	look = head[idx];
+	idx = hashFunction(sym->content.name);
+	look = hash[idx];
 
-	aux = (symbol)malloc(sizeof(symbol*));
 
-	aux->type = strdup(no->type);
-	aux->name = strdup(no->name);
-	aux->escopo = strdup(no->escopo);
-	aux->ival = no->ival;
+	aux = (symbol)malloc(sizeof(struct symbol));
+	aux->content.type = NULL;
+	aux->content.name = NULL;
+	aux->content.scope = NULL;
 	aux->prox = NULL;
 
+	aux->content.name = strdup(sym->content.name);
+	if(sym->content.type != NULL)
+		aux->content.type = strdup(sym->content.type);
+	if(sym->content.scope != NULL)
+		aux->content.scope = strdup(sym->content.scope);
+	aux->content.var_func = sym->content.var_func;
+
 	if(look == NULL){
-		head[idx] = aux;
+		hash[idx] = aux;
 		return 1;
 	}
-
+	
 	/*LISTA linear*/
 	/*TODO Alterar modo de lista para otimizar*/
+
 	while(look->prox != NULL){
-		if(isEqual(look,no)){
-			return 0;
-		}
 		look = look->prox;
 	}
-
 	look->prox = aux;
 	return 1;
 }
 
-symbol get(char* scope, char* name){
-	symbol target;
-	struct symbol no;
-
-	no.escopo = strdup(scope);
-	no.name = strdup(name);
-	target = getNo(&no);
-
-	if(no.escopo != NULL)free(no.escopo);
-	if(no.name != NULL)free(no.name);
-
-	return target;
-}
-
-symbol getNo(symbol no){
+symbol getNo(symbol sym){
 	int idx;
 	symbol look;
 
-	if(no == NULL){
+	if(sym == NULL){
 		printf(H_ERR_1);
 		return NULL;
 	}
 
-	idx = hashFunction(no->name);
-	look = head[idx];
+	idx = hashFunction(sym->content.name);
+	look = hash[idx];
 
 	while(look != NULL){
-		if(isEqual(look, no) == 1)
+		if(isEqual(look, sym))
 			return look;
 		look = look->prox;
 	}
@@ -147,10 +76,85 @@ symbol getNo(symbol no){
 	return NULL;
 }
 
+int isNameEqual(symbol symA, symbol symB){
+	if(symA == NULL || symB == NULL){
+		printf(H_ERR_0);
+		return -1;
+	}
+	else if(symA->content.name == NULL || symB->content.name == NULL){
+		printf(H_ERR_2);
+		return 0;
+	}
+
+	return (strcmp(symA->content.name, symB->content.name) == 0)? 1:0;
+}
+
+int isScopeEqual(symbol symA, symbol symB){
+	if(symA == NULL || symB == NULL){
+		printf(H_ERR_0);
+		return -1;
+	}
+	else if(symA->content.scope == NULL || symB->content.scope == NULL){
+		printf(H_ERR_2);
+		return 0;
+	}
+
+	return (strcmp(symA->content.scope, symB->content.scope) == 0)? 1:0;
+}
+
+int isEqual(symbol symA, symbol symB){
+	if(isNameEqual(symA, symB) && isNameEqual(symA,symB));
+		return 1;
+
+	return 0;
+}
+
+
+
+int exist(char* name, char* scope){
+	int idx;
+	symbol look;
+	struct symbol aux;
+
+	if(name == NULL) return -1;
+	else if(scope == NULL) return -1;
+
+	aux.content.name = strdup(name);
+	aux.content.scope = strdup(scope);
+	
+	idx = hashFunction(name);
+	look = hash[idx];
+
+	while(look != NULL){
+		if(isScopeEqual(look, &aux) && isNameEqual(look, &aux))
+			return 1;
+		look = look->prox;
+	}
+
+	return 0;
+}
+
+char* getType(char* name, char* scope){
+	struct symbol aux, *no;
+	aux.content.name = strdup(name);
+	aux.content.scope = strdup(scope);
+
+	no = getNo(&aux);
+
+	if(aux.content.name != NULL)
+		free(aux.content.name);
+
+	if(aux.content.scope != NULL)
+		free(aux.content.scope);
+
+	return no->content.type;
+}
+
+
 int printAll(){
 	symbol rlook;
 	for(int i =0; i < H_MAX; i++){
-		rlook = head[i];
+		rlook = hash[i];
 
 		while(rlook != NULL){
 			printContent(rlook);
@@ -161,11 +165,35 @@ int printAll(){
 }
 
 int printContent(symbol el){
-	printf("\n##### VAR #####\n");
-	printf("Escopo:\t %s\n", el->escopo);
-	printf("Name:\t %s\n", el->name);
-	printf("Ival:\t %d\n", el->ival);
-	printf("\n##### VAR #####\n");
+	printf("\n##### SYMBOL #####\n");
+	printf("Escopo:\t %s\n", el->content.scope);
+	printf("Name:\t %s\n", el->content.name);
+	printf("Tipo:\t %s\n", el->content.type);
+	printf("##### SYMBOL #####\n");
+
+	return 0;
+}
+
+
+int fprintAll(){
+	symbol rlook;
+	for(int i =0; i < H_MAX; i++){
+		rlook = hash[i];
+
+		while(rlook != NULL){
+			fprintContent(rlook);
+			rlook = rlook->prox;
+		}
+	}
+	return 1;
+}
+
+int fprintContent(symbol el){
+	fprintf(sem_log, "\n##### SYMBOL #####\n");
+	fprintf(sem_log, "Escopo:\t %s\n", el->content.scope);
+	fprintf(sem_log, "Name:\t %s\n", el->content.name);
+	fprintf(sem_log, "Tipo:\t %s\n", el->content.type);
+	fprintf(sem_log, "##### SYMBOL #####\n");
 
 	return 0;
 }
