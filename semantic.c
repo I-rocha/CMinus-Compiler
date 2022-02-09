@@ -268,6 +268,7 @@ int checkDeclarationFunc(ast no, symbol sfunc){
 		print(no);
 		printf(" ");
 		printf("LINHA: %d\n", no->line);
+		exit(0);
 		return 0;	
 	}
 	return 1;
@@ -279,6 +280,7 @@ int checkDeclarationVar(ast no, symbol svar){
 		print(no);
 		printf(" ");
 		printf("LINHA: %d\n", no->line);
+		exit(0);
 		return 0;	
 	}
 	else if(strcmp(svar->content.type,"void") == 0){
@@ -286,6 +288,7 @@ int checkDeclarationVar(ast no, symbol svar){
 		print(no);
 		printf(" ");
 		printf("LINHA: %d\n", no->line);
+		exit(0);
 		return 0;
 	}
 	return 1;
@@ -302,6 +305,7 @@ int checkFunc(ast no, symbol sfunc){
 		print(no);
 		printf(" ");
 		printf("LINHA: %d\n", no->line);
+		exit(0);
 		return 0;
 	}	
 	return 1;
@@ -313,6 +317,7 @@ int checkVar(ast no, symbol svar){
 		print(no);
 		printf(" ");
 		printf("LINHA: %d\n", no->line);
+		exit(0);
 		return 0;
 	}
 	return 1;
@@ -331,12 +336,15 @@ int checkType(ast no, char* t1, char* t2){
 		print(no);
 		printf(" ");
 		printf("LINHA: %d\n", no->line);
+		exit(0);
 		return 0;
 	}
 	return 1;
 }
 
 int checkMain(){
-	if(!exist(FMAIN, GLOBAL))
+	if(!exist(FMAIN, GLOBAL)){
 		printf("ERRO SEMANTICO: Funcao main não declarada\n");
+		exit(0);
+	}
 }

@@ -10,7 +10,7 @@
 
 %}
 
-CSYMBOL \+|\-|\*|\/|\<|\>|\=|\;|\,|\(|\)|\[|\]|\{|\}|\/\*|\*\/  
+CSYMBOL \+|\-|\*|\/|\<|\>|\=|\;|\,|\(|\)|\[|\]|\{|\}  
 
 CHAR [a-zA-Z]
 DIGIT [0-9]
@@ -18,9 +18,10 @@ DIGIT [0-9]
 ID {CHAR}+
 NUM {DIGIT}+
 
-COMMENT \/\*.*\*\/
+COMMENT \/\*(.|\n|\t)*\*\/
 
 %option yylineno
+%option noyywrap
 %%
 
 {COMMENT} {printf("Comment:\n%s\n", yytext);}

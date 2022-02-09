@@ -7,7 +7,6 @@
 #include "semantic.h"
 #include "file_log.h"
 
-
 void yyerror(char* err);
 extern int yylex(void);
 extern int yylineno;
@@ -24,7 +23,7 @@ ast ast_root;
 }
 /**/
 // KEYWORDS
-%token IF ELSE INT RETURN VOID WHILE LE GE EQ DIFF
+%token IF ELSE INT RETURN VOID WHILE LE GE EQ DIFF 
 
 // OP -> Default declaration
 
@@ -495,10 +494,6 @@ void yyerror(char* err){
 	printf(ERR_SYN, yylval.token, yylineno);
 }
 
-int yywrap(){
-	return 1;
-}
-
 int main(){
 	scan_log = open_log(LOG_SCANNER);
 	p_log = open_log(LOG_PARSER);
@@ -514,8 +509,7 @@ int main(){
 	fclose(p_log);
 	fclose(sem_log);
 
-
-	freeTree(ast_root);
+//	freeTree(ast_root);
 	return 0;
 }
 
