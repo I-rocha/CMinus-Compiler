@@ -1,0 +1,12 @@
+int gcd(int u, int v)
+{
+	int a;
+	while(u < 3){
+		a = a + 1;	
+	}
+
+}
+
+void main(void)
+{
+}
