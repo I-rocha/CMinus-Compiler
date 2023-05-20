@@ -2,7 +2,8 @@
 exe
 
 # Flex&Bison
-y.tab.*
+*.tab.*
+
 lex.yy.c
 *.o
 
