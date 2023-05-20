@@ -1,28 +1,16 @@
 ----------------------[0 - DEEP]--------------------------------
 [TOKEN] [ATTRIBUTE] [DECLARATION] [TYPE]
-[ID]	 [i]		 [Variable]		 [INT]
-[ID]	 [x]		 [Variable]		 [INT]
-[ID]	 [k]		 [Variable]		 [INT]
-[ID]	 [low]		 [Variable]		 [INT]
-[ID]	 [high]		 [Variable]		 [INT]
-[ID]	 [sort]		 [Function]		 [VOID]
+[ID]	 [u]		 [Variable]		 [INT]
+[ID]	 [v]		 [Variable]		 [INT]
+[ID]	 [a]		 [Variable]		 [INT]
+[ID]	 [gcd]		 [Function]		 [INT]
 [ID]	 [main]		 [Function]		 [VOID]
 [ID]	 [input]		 [Function]		 [INT]
 [ID]	 [output]		 [Function]		 [INT]
-[ID]	 [minloc]		 [Function]		 [INT]
 ------------------------------------------------------
 ----------------------[1 - DEEP]--------------------------------
     [TOKEN] [ATTRIBUTE] [DECLARATION] [TYPE]
-    [ID]	 [i]		 [Variable]		 [INT]
-    [ID]	 [k]		 [Variable]		 [INT]
-    [ID]	 [t]		 [Variable]		 [INT]
-    [ID]	 [low]		 [Variable]		 [INT]
-    [ID]	 [high]		 [Variable]		 [INT]
 ------------------------------------------------------
 ----------------------[2 - DEEP]--------------------------------
         [TOKEN] [ATTRIBUTE] [DECLARATION] [TYPE]
-        [ID]	 [i]		 [Variable]		 [INT]
-------------------------------------------------------
-----------------------[3 - DEEP]--------------------------------
-            [TOKEN] [ATTRIBUTE] [DECLARATION] [TYPE]
 ------------------------------------------------------
