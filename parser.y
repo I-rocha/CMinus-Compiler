@@ -63,24 +63,25 @@ var_decl:
 	tipo_esp ID ';'{
 
 	// AST
-	astNo* aux[] = {astCreateNo($2, "ALLOC", NULL, 0)};
+	astNo* aux[] = {astCreateNo(ALLOC_K, NULL, 0)};
 	astPutChild($1, aux, 1);
 	$$ = $1;
 
 	// Symbol Table
+	/*
 	if(symTPut(env, "ID", "Variable", $2, NULL, $1->label) == 0)
 		printf("Erro semantico - Variavel ja declarada : Linha %d\n", yylineno);
 	
 	if(strcmp($1->label, "VOID") == 0)
 		printf("Erro semantico - Variavel tipo VOID : Linha %d\n", yylineno);
-	
+	*/
 	// Free
 	free($2);
 	}
 	| tipo_esp ID '[' NUM ']' ';'	{
 	// TODO - add array to symbol table
-	astNo* aux[] = {astCreateNo($2, "ALLOC_ARRAY", NULL, 0)};
-	astNo* aux2[] = {astCreateNo($4, "ARRAY_SIZE", NULL, 0)};
+	astNo* aux[] = {astCreateNo(ALLOC_ARRAY_K, NULL, 0)};
+	astNo* aux2[] = {astCreateNo(ARRAY_SIZE_K, NULL, 0)};
 	astPutChild($1, aux, 1);
 	astPutChild($1->child[0], aux2, 1);
 	$$ = $1;
@@ -89,11 +90,11 @@ var_decl:
 
 tipo_esp:
 	INT{
-	$$ = astCreateNo("INT", "TYPE", NULL, 0);
+	$$ = astCreateNo(TYPE_K, NULL, 0);
 	}
 	|
 	VOID{
-	$$ = astCreateNo("VOID", "TYPE", NULL, 0);
+	$$ = astCreateNo(TYPE_K, NULL, 0);
 	}
 	
 	;
@@ -101,7 +102,7 @@ tipo_esp:
 fun_decl:
 	tipo_esp ID '(' params ')' composto_decl	{
 	// ID is child of tipo_esp
-	astNo* aux[] = {astCreateNo($2, "FUN", NULL, 0)};
+	astNo* aux[] = {astCreateNo(FUN_K, NULL, 0)};
 	astPutChild($1, aux, 1);
 	$$ = $1;
 
@@ -110,10 +111,10 @@ fun_decl:
 	astPutChild($1->child[0], aux2, 2);
 
 	// Symbol Table
-	symTPut(headEnv, "ID", "Function", $2, NULL, $1->label);
+	//symTPut(headEnv, "ID", "Function", $2, NULL, $1->label);
 	//	printf("Erro semantico - Função já declarada : Linha : %d\n", yylineno);		
 
-	env = symTNewEnv(env);
+	//env = symTNewEnv(env);
 
 	// Free
 	free($2);
@@ -136,19 +137,19 @@ param_lista:
 		   
 param:
 	tipo_esp ID	{
-	astNo* aux[] = {astCreateNo($2, "ARG", NULL, 0)};
+	astNo* aux[] = {astCreateNo(ARG_K, NULL, 0)};
 	astPutChild($1, aux, 1);
 	$$ = $1;
 
 	// Symbol Table
-	symTPut(env, "ID", "Variable",  $2, NULL, $1->label);
+	//symTPut(env, "ID", "Variable",  $2, NULL, $1->label);
 
 	// Free
 	free($2);
 	}
 	| tipo_esp ID '['']'	{
 	// TODO - add to symbol table
-	astNo* aux[] = {astCreateNo($2, "ARG_ARRAY", NULL, 0)};
+	astNo* aux[] = {astCreateNo(ARG_ARRAY_K, NULL, 0)};
 	astPutChild($1, aux, 1);
 	$$ = $1;
 	}
@@ -214,12 +215,12 @@ exp_decl:
 selecao_decl:
 	IF '(' exp ')' statement %prec IFX	{
 	astNo* aux[] = {$3, $5};
-	$$ = astCreateNo("IF", "IF", NULL, 0);
+	$$ = astCreateNo(IF_K, NULL, 0);
 	astPutChild($$, aux, 2);
 	} 
 	| IF '(' exp ')' statement ELSE statement{
 	astNo* aux[] = {$3, $5, $7};
-	$$ = astCreateNo("IF", "IF", NULL, 0);
+	$$ = astCreateNo(IF_K, NULL, 0);
 	astPutChild($$, aux, 3);
 	}
 	;
@@ -227,23 +228,23 @@ selecao_decl:
 iteracao_decl:
 	WHILE '(' exp ')' statement	{
 	astNo* aux[] = {$3, $5};
-	$$ = astCreateNo("WHILE","WHILE", NULL, 0);
+	$$ = astCreateNo(WHILE_K, NULL, 0);
 	astPutChild($$, aux, 2);
 	}
 	;
 
 retorno_decl:
-	RETURN ';'	{$$ = astCreateNo("RETURN","RETURN", NULL, 0);}
+	RETURN ';'	{$$ = astCreateNo(RETURN_K, NULL, 0);}
 	| RETURN exp ';'	{
 	astNo* aux[] = {$2};
-	$$ = astCreateNo("RETURN","RETURN",NULL, 0);
+	$$ = astCreateNo(RETURN_K, NULL, 0);
 	astPutChild($$, aux, 1);
 	}
 	;
 exp:	
 	var '=' exp	{
 	astNo* aux[] = {$1, $3};
-	$$ = astCreateNo("=", "ASSIGN", NULL, 0);
+	$$ = astCreateNo(ASSIGN_K, NULL, 0);
 	astPutChild($$, aux, 2);
 	}
 	| simple_exp	{$$ = $1;}
@@ -252,12 +253,12 @@ exp:
 var:
 	ID	{
 	// AST
-	$$ = astCreateNo($1,"VAR",NULL,0);
+	$$ = astCreateNo(VAR_K, NULL,0);
 
 	// Symbol Table
-	if(!symTLook(env, "ID", "Variable", $1, NULL))	
+/*	if(!symTLook(env, "ID", "Variable", $1, NULL))	
 		printf("Erro Semantico - Variável %s não definida : Linha %d\n", $1, yylineno);
-
+*/
 	// Free
 	free($1);
 	
@@ -265,7 +266,7 @@ var:
 	| ID '[' exp ']'	{
 	//TODO: Add array to symbol table
 	astNo* aux[] = {$3};
-	$$ = astCreateNo($1, "VAR_ARRAY", NULL, 0);
+	$$ = astCreateNo(VAR_ARRAY_K, NULL, 0);
 	astPutChild($$, aux, 1);
 	}
 	;
@@ -280,12 +281,12 @@ simple_exp:
 	;
 
 rel:
- 	LE	{$$ = astCreateNo("LE","REL", NULL, 0);}
-	|'<'	{$$ = astCreateNo("<","REL", NULL, 0);}
-	|'>'	{$$ = astCreateNo(">","REL", NULL, 0);}
-	|GE	{$$ = astCreateNo("GE","REL", NULL, 0);}
-	|EQ	{$$ = astCreateNo("EQ","REL", NULL, 0);}
-	|DIFF	{$$ = astCreateNo("DIFF","REL", NULL, 0);}
+ 	LE	{$$ = astCreateNo(LEQ_K, NULL, 0);}
+	|'<'	{$$ = astCreateNo(LESS_K, NULL, 0);}
+	|'>'	{$$ = astCreateNo(GRAND_K, NULL, 0);}
+	|GE	{$$ = astCreateNo(GEQ_K, NULL, 0);}
+	|EQ	{$$ = astCreateNo(EQ_K, NULL, 0);}
+	|DIFF	{$$ = astCreateNo(DIFF_K, NULL, 0);}
 	;
 
 soma_exp:
@@ -297,8 +298,8 @@ soma_exp:
 	| termo	{$$ = $1;} ;
 
 soma:
-	'+'	{$$ = astCreateNo("+","OP", NULL, 0);}
-	| '-'	{$$ = astCreateNo("-", "OP", NULL, 0);};
+	'+'	{$$ = astCreateNo(PLUS_K, NULL, 0);}
+	| '-'	{$$ = astCreateNo(MINUS_K, NULL, 0);};
 
 termo:
 	termo mult fator {
@@ -310,15 +311,15 @@ termo:
 
 
 mult:
-	'*'	{$$ = astCreateNo("*", "OP", NULL, 0);}
-	| '/'	{$$ = astCreateNo("/","OP", NULL, 0);}
+	'*'	{$$ = astCreateNo(MULT_K, NULL, 0);}
+	| '/'	{$$ = astCreateNo(DIV_K, NULL, 0);}
 	;
 fator:
 	 '(' exp ')'  {$$ = $2;}
 	| var  {$$ = $1;}
 	| act	{$$ = $1;}
 	| NUM	{
-	$$ = astCreateNo($1, "NUM", NULL, 0);
+	$$ = astCreateNo(NUM_K, NULL, 0);
 	free($1);
 	}
 	;
@@ -326,7 +327,7 @@ act:
    ID '(' args ')' {
 	// AST
 	astNo* aux[] = {$3};
-	$$ = astCreateNo($1, "CALL", NULL, 0);
+	$$ = astCreateNo(CALL_K, NULL, 0);
 	astPutChild($$, aux, 1);
 
 	// Free
