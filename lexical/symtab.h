@@ -3,18 +3,18 @@
 
 #define NSYMHASH 1000
 
-
+// TOKEN
+#include "../ast/ast.h"
 typedef struct symEntry{
-	char* tok;
-	char* declaration;
-	char* attrID;
-	char* attrINT;
+	Token tok;
+	char* lexeme;
 	char* type;
 	int null;
 	struct symEntry* prox;
 } symEntry;
 
 typedef struct symTable{
+	char* scope;
 	int len;	// Len of children
 	struct symEntry* table;
 	struct symTable *child, *parent;
@@ -45,10 +45,10 @@ int symTKey(symEntry* item);
  * Creates struct of the item
  * This function allocates data inside the struct but not the struct itself
  * (copy): copy of the struct*/
-symEntry symTNewNo(char* tok, char* declaration, char* attrID, char* attrINT, char* type);
+symEntry symTNewNo(Token tok, char* lexeme, char* type);
 
 /*
- * Checks if 2 items are equal
+ * Checks if 2 items has same name
  * 1: equal
  * -1: different
  * */
@@ -60,19 +60,19 @@ int symTIsEqual(symEntry* it1, symEntry* it2);
  * 1: Inserted sucessfully
  * 0: Item already exists
  * -1: Error */
-int symTPut(symTable* hash, char* tok, char* declaration, char* attrID, char* attrINT, char* type);
+int symTPut(symTable* hash, Token tok, char* lexeme, char* type);
 
 /*
  * Look if definition already exists and returns addres
  * address: Found item
  * NULL: Not found
  * */
-symEntry* symTLook(symTable* hash, char* tok, char* declaration, char* attrID, char* attrINT);
+symEntry* symTLook(symTable* hash, Token tok, char* lexeme, char* type);
 
 /*
  * (addr): New environment allocated
  * NULL: Not possible to allocate*/
-symTable* symTNewEnv(symTable* hash);
+symTable* symTNewEnv(symTable* hash, char* scope);
 
 /**/
 void symTPrint(symTable* hash, int deep);
