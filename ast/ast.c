@@ -8,9 +8,6 @@ static void save(astNo* no, int deep, FILE* fd);
 static void print(astNo* no, int deep);
 static void printInfo(astNo* no, int deep);
 
-// TEMP
-char* tokenStr(Token tok);
-
 astNo* astInit(){
 	astNo* no;
 	no = (astNo*)malloc(sizeof(astNo));

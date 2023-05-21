@@ -118,4 +118,7 @@ void astPrint(astNo* no);
  * Save at file given by path*/
 int astSave(astNo* tree, char* path);
 
+// TEMP
+char* tokenStr(Token tok);
+
 #endif
