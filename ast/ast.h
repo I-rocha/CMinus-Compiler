@@ -1,9 +1,42 @@
 #ifndef AST_H
 #define AST_H
 
+typedef enum token Token;
+
+enum token{
+	BLANK = 0,
+	ALLOC_ARRAY_K,
+	ARRAY_SIZE_K,
+	TYPE_K,
+	FUN_K,
+	ARG_K,
+	ARG_ARRAY_K,
+	IF_K,
+	WHILE_K,
+	RETURN_K,
+	ASSIGN_K,
+	VAR_K,
+	NUM_K,
+	CALL_K,
+
+	// REL
+	LEQ_K,
+	LESS_K,
+	GEQ_K,
+	GRAND_K,
+	EQ_K,
+	DIFF_K,
+	
+	// OP
+	PLUS_K,
+	MINUS_K,
+	MULT_K,
+	DIV_K
+};
+
+
 typedef struct astNo{
-	char* label;
-	char* type;
+	Token label;
 	struct astNo* sibling;
 	struct astNo** child;
 	
@@ -55,13 +88,13 @@ int astPutSibling(astNo* no, astNo** target, int len);
  * Assign data to no without allocate it. The data inside is allocated (except child)
  * (astNo): copy of no created
  * */
-astNo astNewNo(char* label, char* type, astNo** child, int len_child);
+astNo astNewNo(Token label,astNo** child, int len_child);
 
 /*
  * Assign data allocating it. The data inside is also allocated (except child)
  * (astNo*): addr of no created and allocated
  * */
-astNo* astCreateNo(char* label, char* type, astNo** child, int len_child);
+astNo* astCreateNo(Token label, astNo** child, int len_child);
 
 /*
  * Free entire tree*/

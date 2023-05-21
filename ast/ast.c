@@ -8,12 +8,13 @@ static void save(astNo* no, int deep, FILE* fd);
 static void print(astNo* no, int deep);
 static void printInfo(astNo* no, int deep);
 
+// TEMP
+char* tokenStr(Token tok);
 
 astNo* astInit(){
 	astNo* no;
 	no = (astNo*)malloc(sizeof(astNo));
-	no->label = NULL;
-	no->type = NULL;
+	no->label = BLANK;
 	no->sibling = NULL;
 	no->child = NULL;
 	no->len_child = 0;
@@ -107,11 +108,10 @@ int astPutSibling(astNo* no, astNo** target, int len){
 	return 1;
 }
 
-astNo astNewNo(char* label, char* type, astNo** child, int len_child){
+astNo astNewNo(Token label, astNo** child, int len_child){
 	astNo no;
 
-	no.label = strdup(label);
-	no.type = strdup(type);
+	no.label = label;
 	no.child = child;
 	no.len_child = len_child;
 	no.sibling = NULL;
@@ -119,12 +119,11 @@ astNo astNewNo(char* label, char* type, astNo** child, int len_child){
 	return no;
 }
 
-astNo* astCreateNo(char* label, char* type, astNo** child, int len_child){
+astNo* astCreateNo(Token label, astNo** child, int len_child){
 	astNo* no;
 	no = (astNo*)malloc(sizeof(astNo));
 
-	no->label = strdup(label);
-	no->type = strdup(type);
+	no->label = label;
 	no->child = child;
 	no->len_child = len_child;
 	no->sibling = NULL;
@@ -156,8 +155,6 @@ int astDeepFree(astNo* no){
 
 	free(no->child);
 	free(no->sibling);
-	free(no->label);
-	free(no->type);
 
 	return 1;
 }
@@ -216,7 +213,7 @@ void printInfo(astNo* no, int deep){
 	for(int i = 0; i < deep; i++)
 		printf("   ");
 
-	printf("[Label, type, sibling, child]: [%s, %s, %p, %p]\n", no->label, no->type, no->sibling, no->child);
+	printf("[Label, sibling, child]: [%s, %p, %p]\n", tokenStr(no->label), no->sibling, no->child);
 
 	// Print deep inside
 	for(int i = 0; i < no->len_child; i++)
@@ -232,7 +229,7 @@ void print(astNo* no, int deep){
 	for(int i = 0; i < deep; i++)
 		printf("   ");
 
-	printf("[%s, %s]\n", no->label, no->type);
+	printf("[%s]\n", tokenStr(no->label));
 
 	// Print deep inside
 	for(int i = 0; i < no->len_child; i++)
@@ -248,7 +245,7 @@ void save(astNo* no, int deep, FILE* fd){
 	for(int i = 0; i < deep; i++)
 		fprintf(fd, "   ");
 
-	fprintf(fd, "[%s, %s]\n", no->label, no->type);
+	fprintf(fd, "[%s]\n", tokenStr(no->label));
 
 	// Print deep inside
 	for(int i = 0; i < no->len_child; i++)
@@ -256,3 +253,117 @@ void save(astNo* no, int deep, FILE* fd){
 
 	save(no->sibling, deep, fd);
 }
+
+char* tokenStr(Token tok){
+	switch(tok){
+		case BLANK:
+			return "BLANK";
+			break;
+
+		case ALLOC_ARRAY_K:
+			return "ALLOC_ARRAY";
+			break;
+
+		case ARRAY_SIZE_K:
+			return "ARRAY_SIZE";
+			break;
+
+		case TYPE_K:
+			return "TYPE";
+			break;
+
+		case FUN_K:
+			return "FUN";
+			break;
+
+		case ARG_K:
+			return "ARG_K";
+			break;
+
+		case ARG_ARRAY_K:
+			return "ARG_ARRAY";
+			break;
+
+		case IF_K:
+			return "IF";
+			break;
+
+		case WHILE_K:
+			return "WHILE";
+			break;
+
+		case RETURN_K:
+			return "RETURN";
+			break;
+
+		case ASSIGN_K:
+			return "ASSIGN";
+			break;
+
+		case VAR_K:
+			return "VAR";
+			break;
+
+		case NUM_K:
+			return "NUM";
+			break;
+
+		case CALL_K:
+			return "CALL";
+			break;
+
+		case LEQ_K:
+			return "LEQ";
+			break;
+
+		case LESS_K:
+			return "LESS";
+			break;
+
+		case GEQ_K:
+			return "GEQ";
+			break;
+
+		case GRAND_K:
+			return "GRAND";
+			break;
+
+		case EQ_K:
+			return "EQ";
+			break;
+
+		case DIFF_K:
+			return "DIFF";
+			break;
+
+		case PLUS_K:
+			return "PLUS";
+			break;
+
+		case MINUS_K:
+			return "MINUS";
+			break;
+
+		case MULT_K:
+			return "MULT";
+			break;
+
+		case DIV_K:
+			return "DIV";
+			break;
+
+		default:
+			return "UNKOWN";
+	}
+	return "";
+}
+
+/*
+int main(int argc, char** argv){
+	astNo* no;
+	no = astCreateNo(NUM_K, NULL, 0);
+	astNo* aux[] = {astCreateNo(MINUS_K, NULL, 0), astCreateNo(MULT_K, NULL, 0)};
+	astPutChild(no, aux, 2);	
+	astPrint(no);
+	return 1;
+}*/
