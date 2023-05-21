@@ -16,6 +16,7 @@ enum token{
 	RETURN_K,
 	ASSIGN_K,
 	VAR_K,
+	VAR_ARRAY_K,
 	NUM_K,
 	CALL_K,
 

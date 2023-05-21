@@ -303,6 +303,10 @@ char* tokenStr(Token tok){
 		case VAR_K:
 			return "VAR";
 			break;
+		
+		case VAR_ARRAY_K:
+			return "VAR_ARRAY";
+			break;
 
 		case NUM_K:
 			return "NUM";
