@@ -259,6 +259,10 @@ char* tokenStr(Token tok){
 		case BLANK:
 			return "BLANK";
 			break;
+		
+		case ALLOC_K:
+			return "ALLOC";
+			break;
 
 		case ALLOC_ARRAY_K:
 			return "ALLOC_ARRAY";

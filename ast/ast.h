@@ -5,6 +5,7 @@ typedef enum token Token;
 
 enum token{
 	BLANK = 0,
+	ALLOC_K,
 	ALLOC_ARRAY_K,
 	ARRAY_SIZE_K,
 	TYPE_K,
