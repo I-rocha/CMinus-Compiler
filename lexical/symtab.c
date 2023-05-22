@@ -205,7 +205,7 @@ symTable* symTNewEnv(symTable* hash, char* scope){
 	no[pos].child = NULL;
 	no[pos].parent = hash;
 	no[pos].len = 0;
-	no[pos].scope = scope;
+	no[pos].scope = strdup(scope);
 
 	for(int i = 0; i < NSYMHASH;i++){
 		no[pos].table[i].tok = BLANK;
@@ -315,6 +315,13 @@ void symTDeepSave(symTable* hash, int deep, FILE *fd){
 		symTDeepSave(&hash->child[i], deep+1, fd);
 
 	return;
+}
+
+symTable* symTExit(symTable* hash){
+	if(!hash)
+		return NULL;
+
+	return hash->parent;
 }
 
 /*

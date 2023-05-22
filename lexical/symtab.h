@@ -83,4 +83,5 @@ int symTSave(symTable* hash, char* path);
 /**/
 void symTDeepSave(symTable* hash, int deep, FILE* fd);
 
+symTable* symTExit(symTable* hash);
 #endif
