@@ -1,5 +1,6 @@
 %{
 	#include<stdio.h>
+	#include<stdlib.h>
 	#include "ast/ast.h"
 	#include "parser.tab.h"
 	
@@ -86,7 +87,7 @@ while {
 
 {NUM} {
 	fprintf(fl, "NUM: %s\n", yytext);
-	yylval.s = strdup(yytext);
+	yylval.val = atoi(yytext);
 	return NUM;
 	}
 

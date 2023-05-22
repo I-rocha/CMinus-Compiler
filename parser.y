@@ -22,7 +22,7 @@ extern symTable* headEnv;
 
 /**/
 // KEYWORDS
-%token <int>IF <int>ELSE INT RETURN VOID WHILE LE GE EQ DIFF <s>ID <s>NUM 
+%token <int>IF <int>ELSE INT RETURN VOID WHILE LE GE EQ DIFF <s>ID <val>NUM 
 
 %type <ast_no> programa decl_lista decl var_decl fun_decl tipo_esp params composto_decl param_lista param local_decl statement_lista statement exp_decl selecao_decl iteracao_decl retorno_decl exp var simple_exp soma_exp rel soma termo mult fator act args arg_lista else_stmt
 
@@ -68,7 +68,7 @@ var_decl:
 	$$ = $1;
 
 	// Symbol Table
-	symTPut(env, VAR_K, $2, $1->label, yylineno);
+	symTPut(env, VAR_K, $2, $1->label, 0, yylineno);
 
 	// Free
 	free($2);
@@ -81,9 +81,10 @@ var_decl:
 	astPutChild($1->child[0], aux2, 1);
 	
 	// Symbol Table
-	symTPut(env, VAR_ARRAY_K, $2, $1->label, yylineno);
+	symTPut(env, VAR_ARRAY_K, $2, $1->label, $4, yylineno);
 
 	$$ = $1;
+	free($2);
 	}
 	;
 
@@ -101,7 +102,7 @@ tipo_esp:
 fun_decl:
 	tipo_esp ID 
 	{
-		symTPut(headEnv, FUN_K, $2, $1->label, yylineno);	// Add to env
+		symTPut(headEnv, FUN_K, $2, $1->label, 0, yylineno);	// Add to env
 		env = symTNewEnv(env, $2);		// New env
 	}
 	
@@ -144,14 +145,14 @@ param:
 	$$ = $1;
 
 	// Symbol Table
-	symTPut(env, VAR_K, $2, $1->label, yylineno);
+	symTPut(env, VAR_K, $2, $1->label, 0, yylineno);
 
 	// Free
 	free($2);
 	}
 	| tipo_esp ID '['']'	{
 	// Add to symbol table
-	symTPut(env, VAR_K, $2, $1->label, yylineno);
+	symTPut(env, VAR_K, $2, $1->label, 0, yylineno);
 
 	astNo* aux[] = {astCreateNo(ARG_ARRAY_K, NULL, 0)};
 	astPutChild($1, aux, 1);
@@ -342,7 +343,6 @@ fator:
 	| act	{$$ = $1;}
 	| NUM	{
 	$$ = astCreateNo(NUM_K, NULL, 0);
-	free($1);
 	}
 	;
 act:

@@ -422,7 +422,6 @@ void symTAddRef(symTable* hash, char* lexeme, int line){
 int* addRef(int* nref, int* ref, int line){
 	ref = (int*)realloc(ref, (*nref+1) * sizeof(int));
 	ref[(*nref)++] = line;
-	printf("nref: %d\n", *nref);
 	return ref;
 }
 
