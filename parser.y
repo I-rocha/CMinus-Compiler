@@ -68,7 +68,7 @@ var_decl:
 	$$ = $1;
 
 	// Symbol Table
-	symTPut(env, VAR_K, $2, $1->label);
+	symTPut(env, VAR_K, $2, $1->label, yylineno);
 
 	// Free
 	free($2);
@@ -81,7 +81,7 @@ var_decl:
 	astPutChild($1->child[0], aux2, 1);
 	
 	// Symbol Table
-	symTPut(env, VAR_ARRAY_K, $2, $1->label);
+	symTPut(env, VAR_ARRAY_K, $2, $1->label, yylineno);
 
 	$$ = $1;
 	}
@@ -101,7 +101,7 @@ tipo_esp:
 fun_decl:
 	tipo_esp ID 
 	{
-		symTPut(headEnv, FUN_K, $2, $1->label);	// Add to env
+		symTPut(headEnv, FUN_K, $2, $1->label, yylineno);	// Add to env
 		env = symTNewEnv(env, $2);		// New env
 	}
 	
@@ -144,14 +144,14 @@ param:
 	$$ = $1;
 
 	// Symbol Table
-	symTPut(env, VAR_K, $2, $1->label);
+	symTPut(env, VAR_K, $2, $1->label, yylineno);
 
 	// Free
 	free($2);
 	}
 	| tipo_esp ID '['']'	{
 	// Add to symbol table
-	symTPut(env, VAR_K, $2, $1->label);
+	symTPut(env, VAR_K, $2, $1->label, yylineno);
 
 	astNo* aux[] = {astCreateNo(ARG_ARRAY_K, NULL, 0)};
 	astPutChild($1, aux, 1);
@@ -276,6 +276,9 @@ var:
 	// AST
 	$$ = astCreateNo(VAR_K, NULL,0);
 
+	// Symtab
+	symTAddRef(env, $1, yylineno);
+
 	// Free
 	free($1);
 	
@@ -284,6 +287,9 @@ var:
 	astNo* aux[] = {$3};
 	$$ = astCreateNo(VAR_ARRAY_K, NULL, 0);
 	astPutChild($$, aux, 1);
+	
+	// Symtab
+	symTAddRef(env, $1, yylineno);
 	}
 	;
 
@@ -345,6 +351,9 @@ act:
 	astNo* aux[] = {$3};
 	$$ = astCreateNo(CALL_K, NULL, 0);
 	astPutChild($$, aux, 1);
+
+	// Symtab
+	symTAddRef(env, $1, yylineno);
 
 	// Free
 	free($1);

@@ -68,7 +68,7 @@ int symTIsEqual(symEntry* it1, symEntry* it2);
  * 1: Inserted sucessfully
  * 0: Item already exists
  * -1: Error */
-int symTPut(symTable* hash, Token tok, char* lexeme, Token type);
+int symTPut(symTable* hash, Token tok, char* lexeme, Token type, int line);
 
 /*
  * Look if definition already exists and returns addres
@@ -92,4 +92,6 @@ int symTSave(symTable* hash, char* path);
 void symTDeepSave(symTable* hash, int deep, FILE* fd);
 
 symTable* symTExit(symTable* hash);
+
+void symTAddRef(symTable* hash, char* lexeme, int line);
 #endif

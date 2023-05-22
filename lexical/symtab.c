@@ -7,6 +7,9 @@
 // TOKEN
 #include "../ast/ast.h"
 
+/*Add new ref and return pointer */
+int* addRef(int* nref, int* ref, int line);
+
 symTable* symTInit(){
 	symTable* env;
 
@@ -121,7 +124,7 @@ int symTIsEqual(symEntry *it1, symEntry *it2){
 	return 1;
 }
 
-int symTPut(symTable* hash, Token tok, char* lexeme, Token type){
+int symTPut(symTable* hash, Token tok, char* lexeme, Token type, int line){
 	symEntry toPut, *aux;
 	int key = -1;
 
@@ -135,6 +138,7 @@ int symTPut(symTable* hash, Token tok, char* lexeme, Token type){
 
 	if(aux->null == 1){
 		*aux = toPut;
+		aux->ref = addRef(&aux->nref, aux->ref, line);
 		return 1;
 	}
 
@@ -143,6 +147,7 @@ int symTPut(symTable* hash, Token tok, char* lexeme, Token type){
 		/* Already Exists */
 		if(symTIsEqual(aux, &toPut) == 1){
 			aux->duplicata++;
+			aux->ref = addRef(&aux->nref, aux->ref, line);
 			return 0;	
 		}
 
@@ -153,11 +158,13 @@ int symTPut(symTable* hash, Token tok, char* lexeme, Token type){
 	/* Already Exists */
 	if(symTIsEqual(aux, &toPut) == 1){
 		aux->duplicata++;	
+		aux->ref = addRef(&aux->nref, aux->ref, line);
 		return 0;
 	}
 
 	aux->prox = (symEntry*)malloc(sizeof(symEntry));
 	*(aux->prox) = toPut;
+	aux->ref = addRef(&aux->nref, aux->ref, line);
 	return 1;
 }
 
@@ -360,6 +367,58 @@ symTable* symTExit(symTable* hash){
 		return NULL;
 
 	return hash->parent;
+}
+
+void symTAddRef(symTable* hash, char* lexeme, int line){
+	symTable* auxTable;
+
+	symEntry toLook, *aux;
+	int key;
+	toLook = symTNewNo(BLANK, lexeme, BLANK);
+	if(!hash || !hash->table)
+		return ;
+
+	key = symTKey(&toLook);
+
+	auxTable = hash;
+	aux = &auxTable->table[key];
+
+	// Check constant over parent table 
+	while(auxTable->parent != auxTable){
+		while(aux){
+			if(symTIsEqual(aux, &toLook) == 1){
+				/* add ref*/
+				aux->ref = addRef(&aux->nref, aux->ref, line);
+				return;
+			}
+
+			aux = aux->prox;
+		}
+		
+		auxTable = auxTable->parent;
+		aux = &auxTable->table[key];
+
+	}
+
+	// Check last table
+	while(aux){
+		if(symTIsEqual(aux, &toLook) == 1){
+			/*add ref*/
+			aux->ref = addRef(&aux->nref, aux->ref, line);
+			return;
+		}
+
+		aux = aux->prox;	
+	}
+	return;
+}
+
+/*	PRIVATE		*/
+int* addRef(int* nref, int* ref, int line){
+	ref = (int*)realloc(ref, (*nref+1) * sizeof(int));
+	ref[(*nref)++] = line;
+	printf("nref: %d\n", *nref);
+	return ref;
 }
 
 /*
