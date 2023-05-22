@@ -269,8 +269,12 @@ char* tokenStr(Token tok){
 			return "ARRAY_SIZE";
 			break;
 
-		case TYPE_K:
-			return "TYPE";
+		case INT_K:
+			return "INT";
+			break;
+		
+		case VOID_K:
+			return "VOID";
 			break;
 
 		case FUN_K:
