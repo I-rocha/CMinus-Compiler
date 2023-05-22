@@ -9,6 +9,7 @@ typedef struct symEntry{
 	Token tok;	// Symbol (VAR_K - FUN_K)
 	char* lexeme;	// Instance
 	Token type;	// Type (INT_K - VOID_K)
+	int attr;	// Extra attributes
 
 	// 
 	int nref;	// Number of time called
@@ -53,7 +54,7 @@ int symTKey(symEntry* item);
  * Creates struct of the item
  * This function allocates data inside the struct but not the struct itself
  * (copy): copy of the struct*/
-symEntry symTNewNo(Token tok, char* lexeme, Token type);
+symEntry symTNewNo(Token tok, char* lexeme, Token type, int attr);
 
 /*
  * Checks if 2 items has same name
@@ -68,7 +69,7 @@ int symTIsEqual(symEntry* it1, symEntry* it2);
  * 1: Inserted sucessfully
  * 0: Item already exists
  * -1: Error */
-int symTPut(symTable* hash, Token tok, char* lexeme, Token type, int line);
+int symTPut(symTable* hash, Token tok, char* lexeme, Token type, int attr, int line);
 
 /*
  * Look if definition already exists and returns addres
