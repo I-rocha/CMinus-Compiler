@@ -40,6 +40,7 @@ enum token{
 
 typedef struct astNo{
 	Token label;
+	char* instance;
 	struct astNo* sibling;
 	struct astNo** child;
 	
@@ -91,13 +92,13 @@ int astPutSibling(astNo* no, astNo** target, int len);
  * Assign data to no without allocate it. The data inside is allocated (except child)
  * (astNo): copy of no created
  * */
-astNo astNewNo(Token label,astNo** child, int len_child);
+astNo astNewNo(Token label, char* instance, astNo** child, int len_child);
 
 /*
  * Assign data allocating it. The data inside is also allocated (except child)
  * (astNo*): addr of no created and allocated
  * */
-astNo* astCreateNo(Token label, astNo** child, int len_child);
+astNo* astCreateNo(Token label, char* instance, astNo** child, int len_child);
 
 /*
  * Free entire tree*/
