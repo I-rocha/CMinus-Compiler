@@ -63,7 +63,7 @@ var_decl:
 	tipo_esp ID ';'{
 
 	// AST
-	astNo* aux[] = {astCreateNo(ALLOC_K, NULL, 0)};
+	astNo* aux[] = {astCreateNo(ALLOC_K, $2, NULL, 0)};
 	astPutChild($1, aux, 1);
 	$$ = $1;
 
@@ -75,8 +75,8 @@ var_decl:
 	}
 	| tipo_esp ID '[' NUM ']' ';'	{
 	// Adding array to symbol table
-	astNo* aux[] = {astCreateNo(ALLOC_ARRAY_K, NULL, 0)};
-	astNo* aux2[] = {astCreateNo(ARRAY_SIZE_K, NULL, 0)};
+	astNo* aux[] = {astCreateNo(ALLOC_ARRAY_K, $2, NULL, 0)};
+	astNo* aux2[] = {astCreateNo(ARRAY_SIZE_K, NULL, NULL, 0)};
 	astPutChild($1, aux, 1);
 	astPutChild($1->child[0], aux2, 1);
 	
@@ -90,11 +90,11 @@ var_decl:
 
 tipo_esp:
 	INT{
-	$$ = astCreateNo(INT_K, NULL, 0);
+	$$ = astCreateNo(INT_K, NULL, NULL, 0);
 	}
 	|
 	VOID{
-	$$ = astCreateNo(VOID_K, NULL, 0);
+	$$ = astCreateNo(VOID_K, NULL, NULL,  0);
 	}
 	
 	;
@@ -109,7 +109,7 @@ fun_decl:
 	'(' params ')' composto_decl	{
 
 	// ID is child of tipo_esp
-	astNo* aux[] = {astCreateNo(FUN_K, NULL, 0)};
+	astNo* aux[] = {astCreateNo(FUN_K, $2, NULL, 0)};
 	astPutChild($1, aux, 1);
 	$$ = $1;
 
@@ -140,7 +140,7 @@ param_lista:
 		   
 param:
 	tipo_esp ID	{
-	astNo* aux[] = {astCreateNo(ARG_K, NULL, 0)};
+	astNo* aux[] = {astCreateNo(ARG_K, $2, NULL, 0)};
 	astPutChild($1, aux, 1);
 	$$ = $1;
 
@@ -154,7 +154,7 @@ param:
 	// Add to symbol table
 	symTPut(env, VAR_K, $2, $1->label, 0, yylineno);
 
-	astNo* aux[] = {astCreateNo(ARG_ARRAY_K, NULL, 0)};
+	astNo* aux[] = {astCreateNo(ARG_ARRAY_K, $2, NULL, 0)};
 	astPutChild($1, aux, 1);
 	$$ = $1;
 	}
@@ -219,7 +219,7 @@ exp_decl:
 
 selecao_decl:
 	    IF '(' exp ')' { env = symTNewEnv(env, "IF");} statement {env = symTExit(env);} else_stmt{
-		$$ = astCreateNo(IF_K, NULL, 0);
+		$$ = astCreateNo(IF_K, NULL, NULL, 0);
 		if($8){
 			astNo* aux[] = {$3, $6, $8};
 			astPutChild($$, aux, 3);
@@ -248,7 +248,7 @@ iteracao_decl:
 	}
 	'(' exp ')' statement	{
 	astNo* aux[] = {$4, $6};
-	$$ = astCreateNo(WHILE_K, NULL, 0);
+	$$ = astCreateNo(WHILE_K, NULL, NULL, 0);
 	astPutChild($$, aux, 2);
 
 	env = symTExit(env); // Exit env
@@ -256,17 +256,17 @@ iteracao_decl:
 	;
 
 retorno_decl:
-	RETURN ';'	{$$ = astCreateNo(RETURN_K, NULL, 0);}
+	RETURN ';'	{$$ = astCreateNo(RETURN_K, NULL, NULL, 0);}
 	| RETURN exp ';'	{
 	astNo* aux[] = {$2};
-	$$ = astCreateNo(RETURN_K, NULL, 0);
+	$$ = astCreateNo(RETURN_K, NULL, NULL, 0);
 	astPutChild($$, aux, 1);
 	}
 	;
 exp:	
 	var '=' exp	{
 	astNo* aux[] = {$1, $3};
-	$$ = astCreateNo(ASSIGN_K, NULL, 0);
+	$$ = astCreateNo(ASSIGN_K, NULL, NULL, 0);
 	astPutChild($$, aux, 2);
 	}
 	| simple_exp	{$$ = $1;}
@@ -275,7 +275,7 @@ exp:
 var:
 	ID	{
 	// AST
-	$$ = astCreateNo(VAR_K, NULL,0);
+	$$ = astCreateNo(VAR_K, $1, NULL,0);
 
 	// Symtab
 	symTAddRef(env, $1, yylineno);
@@ -286,7 +286,7 @@ var:
 	}	
 	| ID '[' exp ']'	{
 	astNo* aux[] = {$3};
-	$$ = astCreateNo(VAR_ARRAY_K, NULL, 0);
+	$$ = astCreateNo(VAR_ARRAY_K, $1, NULL, 0);
 	astPutChild($$, aux, 1);
 	
 	// Symtab
@@ -304,12 +304,12 @@ simple_exp:
 	;
 
 rel:
- 	LE	{$$ = astCreateNo(LEQ_K, NULL, 0);}
-	|'<'	{$$ = astCreateNo(LESS_K, NULL, 0);}
-	|'>'	{$$ = astCreateNo(GRAND_K, NULL, 0);}
-	|GE	{$$ = astCreateNo(GEQ_K, NULL, 0);}
-	|EQ	{$$ = astCreateNo(EQ_K, NULL, 0);}
-	|DIFF	{$$ = astCreateNo(DIFF_K, NULL, 0);}
+ 	LE	{$$ = astCreateNo(LEQ_K, NULL, NULL, 0);}
+	|'<'	{$$ = astCreateNo(LESS_K, NULL, NULL, 0);}
+	|'>'	{$$ = astCreateNo(GRAND_K, NULL, NULL, 0);}
+	|GE	{$$ = astCreateNo(GEQ_K, NULL, NULL, 0);}
+	|EQ	{$$ = astCreateNo(EQ_K, NULL, NULL, 0);}
+	|DIFF	{$$ = astCreateNo(DIFF_K, NULL, NULL, 0);}
 	;
 
 soma_exp:
@@ -321,8 +321,8 @@ soma_exp:
 	| termo	{$$ = $1;} ;
 
 soma:
-	'+'	{$$ = astCreateNo(PLUS_K, NULL, 0);}
-	| '-'	{$$ = astCreateNo(MINUS_K, NULL, 0);};
+	'+'	{$$ = astCreateNo(PLUS_K, NULL, NULL, 0);}
+	| '-'	{$$ = astCreateNo(MINUS_K, NULL, NULL, 0);};
 
 termo:
 	termo mult fator {
@@ -334,22 +334,22 @@ termo:
 
 
 mult:
-	'*'	{$$ = astCreateNo(MULT_K, NULL, 0);}
-	| '/'	{$$ = astCreateNo(DIV_K, NULL, 0);}
+	'*'	{$$ = astCreateNo(MULT_K, NULL, NULL, 0);}
+	| '/'	{$$ = astCreateNo(DIV_K, NULL, NULL, 0);}
 	;
 fator:
 	 '(' exp ')'  {$$ = $2;}
 	| var  {$$ = $1;}
 	| act	{$$ = $1;}
 	| NUM	{
-	$$ = astCreateNo(NUM_K, NULL, 0);
+	$$ = astCreateNo(NUM_K, NULL, NULL, 0);
 	}
 	;
 act:
    ID '(' args ')' {
 	// AST
 	astNo* aux[] = {$3};
-	$$ = astCreateNo(CALL_K, NULL, 0);
+	$$ = astCreateNo(CALL_K, $1, NULL, 0);
 	astPutChild($$, aux, 1);
 
 	// Symtab

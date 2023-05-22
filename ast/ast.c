@@ -229,7 +229,10 @@ void print(astNo* no, int deep){
 	for(int i = 0; i < deep; i++)
 		printf("   ");
 
-	printf("[%s]\n", tokenStr(no->label));
+	if(no->instance)
+		printf("[%s - %s]\n", tokenStr(no->label), no->instance);
+	else
+		printf("[%s]\n", tokenStr(no->label));
 
 	// Print deep inside
 	for(int i = 0; i < no->len_child; i++)
@@ -245,7 +248,10 @@ void save(astNo* no, int deep, FILE* fd){
 	for(int i = 0; i < deep; i++)
 		fprintf(fd, "   ");
 
-	fprintf(fd, "[%s]\n", tokenStr(no->label));
+	if(no->instance)
+		fprintf(fd, "[%s - %s]\n", tokenStr(no->label), no->instance);
+	else
+		fprintf(fd, "[%s]\n", tokenStr(no->label));
 
 	// Print deep inside
 	for(int i = 0; i < no->len_child; i++)
