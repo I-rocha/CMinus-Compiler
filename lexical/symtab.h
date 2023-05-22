@@ -9,7 +9,15 @@ typedef struct symEntry{
 	Token tok;	// Symbol (VAR_K - FUN_K)
 	char* lexeme;	// Instance
 	Token type;	// Type (INT_K - VOID_K)
-	int null;
+
+	// 
+	int nref;	// Number of time called
+	int* ref;	// Line no for each call
+	unsigned short duplicata;	// If has duplicata
+
+	// Control
+	int null;	
+
 	struct symEntry* prox;
 } symEntry;
 

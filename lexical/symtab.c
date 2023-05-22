@@ -22,6 +22,10 @@ symTable* symTInit(){
 		env->table[i].type = BLANK;
 		env->table[i].null = 1;
 		env->table[i].prox = NULL;
+
+		env->table[i].duplicata = 0;
+		env->table[i].nref = 0;
+		env->table[i].ref = NULL;
 	}
 
 	env->len = 0;
@@ -98,6 +102,9 @@ symEntry symTNewNo(Token tok, char* lexeme, Token type){
 	no.type = type;
 	no.null = 0;
 	no.prox = NULL;
+	no.nref = 0;
+	no.ref = NULL;
+	no.duplicata = 0;
 
 	return no;
 }
@@ -134,16 +141,20 @@ int symTPut(symTable* hash, Token tok, char* lexeme, Token type){
 	while(aux->prox){
 
 		/* Already Exists */
-		if(symTIsEqual(aux, &toPut) == 1)
+		if(symTIsEqual(aux, &toPut) == 1){
+			aux->duplicata++;
 			return 0;	
+		}
 
 		/* Keep looking */
 		aux = aux->prox;
 	}
 
 	/* Already Exists */
-	if(symTIsEqual(aux, &toPut) == 1)
+	if(symTIsEqual(aux, &toPut) == 1){
+		aux->duplicata++;	
 		return 0;
+	}
 
 	aux->prox = (symEntry*)malloc(sizeof(symEntry));
 	*(aux->prox) = toPut;
@@ -211,6 +222,11 @@ symTable* symTNewEnv(symTable* hash, char* scope){
 		no[pos].table[i].type = BLANK;
 		no[pos].table[i].null = 1;
 		no[pos].table[i].prox = NULL;
+
+		no[pos].table[i].nref = 0;
+		no[pos].table[i].ref = NULL;
+		no[pos].table[i].duplicata = 0;
+
 	}
 	return &no[pos];
 }
@@ -243,7 +259,22 @@ void symTPrint(symTable* hash, int deep){
 				printf(" ");
 
 			// Print item
-			printf("[Token, lexeme, type, null, prox, ptr] - [%s, %s, %s, %d, %p, %p]\n", tokenStr(aux->tok), aux->lexeme, tokenStr(aux->type), aux->null, aux->prox, aux);
+			printf(
+			"[Token, lexeme, type, null, prox, ptr, duplicata, nref, [ref]]"
+		       	"- [%s, %s, %s, %d, %p, %p, %d, %d,[",
+					tokenStr(aux->tok),
+				      	aux->lexeme,
+				      	tokenStr(aux->type),
+				      	aux->null,
+				      	aux->prox,
+					aux,
+					aux->duplicata,
+					aux->nref
+			);
+			for(int i = 0; i < aux->nref; i++){
+				printf("%d, ", aux->ref[i]);
+			}
+		       	printf("]\n");
 			aux = aux->prox;
 		}
 	}
@@ -285,7 +316,7 @@ void symTDeepSave(symTable* hash, int deep, FILE *fd){
 	for(int i = 0; i < 4*deep; i++)
 		fprintf(fd, " ");
 
-	fprintf(fd, "[TOKEN] [LEXEME] [TYPE]\n");
+	fprintf(fd, "[TOKEN] [LEXEME] [TYPE] [nref] [ref]\n");
 	
 	// Runs over entry table and print
 	for(int i = 0; i < NSYMHASH; i++){
@@ -301,7 +332,16 @@ void symTDeepSave(symTable* hash, int deep, FILE *fd){
 			for(int i = 0; i < 4*deep; i++)
 				fprintf(fd, " ");
 
-			fprintf(fd, "[%s]\t [%s]\t\t [%s]\n", tokenStr(aux->tok), aux->lexeme, tokenStr(aux->type));
+			fprintf(fd, "[%s]\t [%s]\t\t [%s]\t [%d]\t[",
+					tokenStr(aux->tok),
+					aux->lexeme,
+					tokenStr(aux->type),
+					aux->nref
+			);
+			for(int i = 0; i < aux->nref; i++){
+				fprintf(fd, "%d, ", aux->ref[i]);
+			} 
+			fprintf(fd, "]\n");
 
 			aux = aux->prox;
 		}
