@@ -12,6 +12,7 @@ astNo* astInit(){
 	astNo* no;
 	no = (astNo*)malloc(sizeof(astNo));
 	no->label = BLANK;
+	no->instance = NULL;
 	no->sibling = NULL;
 	no->child = NULL;
 	no->len_child = 0;
@@ -105,10 +106,11 @@ int astPutSibling(astNo* no, astNo** target, int len){
 	return 1;
 }
 
-astNo astNewNo(Token label, astNo** child, int len_child){
+astNo astNewNo(Token label, char* instance, astNo** child, int len_child){
 	astNo no;
 
 	no.label = label;
+	no.instance = (instance == NULL)? NULL : strdup(instance);
 	no.child = child;
 	no.len_child = len_child;
 	no.sibling = NULL;
@@ -116,11 +118,12 @@ astNo astNewNo(Token label, astNo** child, int len_child){
 	return no;
 }
 
-astNo* astCreateNo(Token label, astNo** child, int len_child){
+astNo* astCreateNo(Token label, char* instance, astNo** child, int len_child){
 	astNo* no;
 	no = (astNo*)malloc(sizeof(astNo));
 
 	no->label = label;
+	no->instance = (instance == NULL)? NULL : strdup(instance);
 	no->child = child;
 	no->len_child = len_child;
 	no->sibling = NULL;
@@ -149,7 +152,7 @@ int astDeepFree(astNo* no){
 			free(no->child[i]);
 		}
 	}
-
+	free(no->instance);
 	free(no->child);
 	free(no->sibling);
 
