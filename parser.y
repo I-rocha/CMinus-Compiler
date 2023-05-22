@@ -24,7 +24,7 @@ extern symTable* headEnv;
 // KEYWORDS
 %token <int>IF <int>ELSE INT RETURN VOID WHILE LE GE EQ DIFF <s>ID <s>NUM 
 
-%type <ast_no> programa decl_lista decl var_decl fun_decl tipo_esp params composto_decl param_lista param local_decl statement_lista statement exp_decl selecao_decl iteracao_decl retorno_decl exp var simple_exp soma_exp rel soma termo mult fator act args arg_lista
+%type <ast_no> programa decl_lista decl var_decl fun_decl tipo_esp params composto_decl param_lista param local_decl statement_lista statement exp_decl selecao_decl iteracao_decl retorno_decl exp var simple_exp soma_exp rel soma termo mult fator act args arg_lista else_stmt
 
 %nonassoc IFX
 %nonassoc ELSE
@@ -68,53 +68,55 @@ var_decl:
 	$$ = $1;
 
 	// Symbol Table
-	/*
-	if(symTPut(env, "ID", "Variable", $2, NULL, $1->label) == 0)
-		printf("Erro semantico - Variavel ja declarada : Linha %d\n", yylineno);
-	
-	if(strcmp($1->label, "VOID") == 0)
-		printf("Erro semantico - Variavel tipo VOID : Linha %d\n", yylineno);
-	*/
+	symTPut(env, VAR_K, $2, $1->label);
+
 	// Free
 	free($2);
 	}
 	| tipo_esp ID '[' NUM ']' ';'	{
-	// TODO - add array to symbol table
+	// Adding array to symbol table
 	astNo* aux[] = {astCreateNo(ALLOC_ARRAY_K, NULL, 0)};
 	astNo* aux2[] = {astCreateNo(ARRAY_SIZE_K, NULL, 0)};
 	astPutChild($1, aux, 1);
 	astPutChild($1->child[0], aux2, 1);
+	
+	// Symbol Table
+	symTPut(env, VAR_ARRAY_K, $2, $1->label);
+
 	$$ = $1;
 	}
 	;
 
 tipo_esp:
 	INT{
-	$$ = astCreateNo(TYPE_K, NULL, 0);
+	$$ = astCreateNo(INT_K, NULL, 0);
 	}
 	|
 	VOID{
-	$$ = astCreateNo(TYPE_K, NULL, 0);
+	$$ = astCreateNo(VOID_K, NULL, 0);
 	}
 	
 	;
 		
 fun_decl:
-	tipo_esp ID '(' params ')' composto_decl	{
+	tipo_esp ID 
+	{
+		symTPut(headEnv, FUN_K, $2, $1->label);	// Add to env
+		env = symTNewEnv(env, $2);		// New env
+	}
+	
+	'(' params ')' composto_decl	{
+
 	// ID is child of tipo_esp
 	astNo* aux[] = {astCreateNo(FUN_K, NULL, 0)};
 	astPutChild($1, aux, 1);
 	$$ = $1;
 
 	// Params and composto_decl are children of ID
-	astNo* aux2[] = {$4, $6};
+	astNo* aux2[] = {$5, $7};
 	astPutChild($1->child[0], aux2, 2);
 
-	// Symbol Table
-	//symTPut(headEnv, "ID", "Function", $2, NULL, $1->label);
-	//	printf("Erro semantico - Função já declarada : Linha : %d\n", yylineno);		
-
-	//env = symTNewEnv(env);
+	env = symTExit(env);
 
 	// Free
 	free($2);
@@ -142,13 +144,15 @@ param:
 	$$ = $1;
 
 	// Symbol Table
-	//symTPut(env, "ID", "Variable",  $2, NULL, $1->label);
+	symTPut(env, VAR_K, $2, $1->label);
 
 	// Free
 	free($2);
 	}
 	| tipo_esp ID '['']'	{
-	// TODO - add to symbol table
+	// Add to symbol table
+	symTPut(env, VAR_K, $2, $1->label);
+
 	astNo* aux[] = {astCreateNo(ARG_ARRAY_K, NULL, 0)};
 	astPutChild($1, aux, 1);
 	$$ = $1;
@@ -213,23 +217,40 @@ exp_decl:
 	;
 
 selecao_decl:
-	IF '(' exp ')' statement %prec IFX	{
-	astNo* aux[] = {$3, $5};
-	$$ = astCreateNo(IF_K, NULL, 0);
-	astPutChild($$, aux, 2);
-	} 
-	| IF '(' exp ')' statement ELSE statement{
-	astNo* aux[] = {$3, $5, $7};
-	$$ = astCreateNo(IF_K, NULL, 0);
-	astPutChild($$, aux, 3);
+	    IF '(' exp ')' { env = symTNewEnv(env, "IF");} statement {env = symTExit(env);} else_stmt{
+		$$ = astCreateNo(IF_K, NULL, 0);
+		if($8){
+			astNo* aux[] = {$3, $6, $8};
+			astPutChild($$, aux, 3);
+		}
+		else{
+			astNo* aux[] = {$3, $6};
+			astPutChild($$, aux, 2);
+		}
+	}
+	;
+
+else_stmt:
+	%prec IFX {
+	$$ = NULL;
+	}
+	| ELSE {env = symTNewEnv(env, "ELSE");} statement{
+	$$ = $3;
+	env = symTExit(env);	// Exit env
 	}
 	;
 
 iteracao_decl:
-	WHILE '(' exp ')' statement	{
-	astNo* aux[] = {$3, $5};
+	WHILE 
+	{
+		env = symTNewEnv(env, "WHILE");
+	}
+	'(' exp ')' statement	{
+	astNo* aux[] = {$4, $6};
 	$$ = astCreateNo(WHILE_K, NULL, 0);
 	astPutChild($$, aux, 2);
+
+	env = symTExit(env); // Exit env
 	}
 	;
 
@@ -255,16 +276,11 @@ var:
 	// AST
 	$$ = astCreateNo(VAR_K, NULL,0);
 
-	// Symbol Table
-/*	if(!symTLook(env, "ID", "Variable", $1, NULL))	
-		printf("Erro Semantico - Variável %s não definida : Linha %d\n", $1, yylineno);
-*/
 	// Free
 	free($1);
 	
 	}	
 	| ID '[' exp ']'	{
-	//TODO: Add array to symbol table
 	astNo* aux[] = {$3};
 	$$ = astCreateNo(VAR_ARRAY_K, NULL, 0);
 	astPutChild($$, aux, 1);
