@@ -265,7 +265,7 @@ void semantic(astNo* root){
 	semanticStart();
 	addIO();
 	handleTable(root);
-	// Check main
+	checkMain();
 }
 
 /*
