@@ -17,12 +17,14 @@ symTable *headEnv, *env;
 // Private Func
 void semanticStart();
 void handleItem(astNo* root);
-void handleTable(astNo* root);
+Token handleTable(astNo* root);
+Token handleOp(astNo* no);
 int checkMain();
 void addIO();
 
 symEntry* declared(astNo* no, symTable* target_env);
 void param(astNo* no, symEntry* target);
+Token lrtype(Token t1, Token t2);
 
 
 /*	Definition	*/
@@ -204,9 +206,11 @@ void handleItem(astNo* root){
 }
 
 
-void handleTable(astNo* root){
+Token handleTable(astNo* root){
+	Token ret;
+
 	if(!root)
-		return;
+		return BLANK;
 
 	handleItem(root); 
 
@@ -217,7 +221,7 @@ void handleTable(astNo* root){
 
 			// Call for child
 			for(int i = 0; i < root->len_child; i++)
-				handleTable(root->child[i]);
+				ret = handleTable(root->child[i]);
 
 			env = symTExit(env);
 			break;
@@ -227,7 +231,7 @@ void handleTable(astNo* root){
 
 			// Call for child
 			for(int i = 0; i < root->len_child; i++)
-				handleTable(root->child[i]);
+				ret = handleTable(root->child[i]);
 
 			env = symTExit(env);
 			break;
@@ -237,8 +241,8 @@ void handleTable(astNo* root){
 			env = symTNewEnv(env, strdup("IF"));	// TODO: Remove strdup
 
 			// Call for child
-			handleTable(root->child[0]);
-			handleTable(root->child[1]);
+			ret = handleTable(root->child[0]);
+			ret = handleTable(root->child[1]);
 
 			env = symTExit(env);
 
@@ -247,18 +251,58 @@ void handleTable(astNo* root){
 				env = symTNewEnv(env, strdup("ELSE"));	// TODO: Remove strdup
 
 				// Call for child
-				handleTable(root->child[2]);
+				ret = handleTable(root->child[2]);
 				env = symTExit(env);
 			}
 
 			break;
 		default:
+			// Operations
+			if(
+			root->label == LEQ_K ||
+			root->label == LESS_K ||
+			root->label == GRAND_K ||
+			root->label == GEQ_K ||
+			root->label == EQ_K ||
+			root->label == DIFF_K ||
+			root->label == PLUS_K ||
+			root->label == MINUS_K ||
+			root->label == MULT_K ||
+			root->label == DIV_K ||
+			root->label == ASSIGN_K 
+			){
+				Token lval, rval;
+				lval = handleOp(root->child[0]);
+				rval = handleOp(root->child[1]);
+
+				// Check types
+				ret = lrtype(lval, rval);
+
+			}else{
 			for(int i = 0; i < root->len_child; i++)
-				handleTable(root->child[i]);
+				ret = handleTable(root->child[i]);
+			}
 	}
 	
 	handleTable(root->sibling);
-	return;
+	return ret;
+}
+
+Token handleOp(astNo* no){
+	symEntry* ret;
+	Token lval, rval;
+
+	if(no->label == CALL_K || no->label == VAR_K){
+		ret = symTLook(env, no->instance);
+		return ret->type;
+	}
+	else if(no->label == NUM_K){
+		return INT_K;
+	}
+	lval = handleTable(no->child[0]);
+	rval = handleTable(no->child[1]);
+
+	return lrtype(lval, rval);
 }
 
 void semantic(astNo* root){
@@ -266,6 +310,14 @@ void semantic(astNo* root){
 	addIO();
 	handleTable(root);
 	checkMain();
+}
+
+Token lrtype(Token t1, Token t2){
+	if(t1 != t2){
+		printf("ERROR: Tentando realizar operacao com tipos diferentes de dados\n");
+		return INT_K;
+	}
+	return t1;
 }
 
 /*
