@@ -3,7 +3,6 @@
 #include <string.h>
 
 #include "ast.h"
-
 static void save(astNo* no, int deep, FILE* fd);
 static void print(astNo* no, int deep);
 static void printInfo(astNo* no, int deep);
@@ -16,6 +15,7 @@ astNo* astInit(){
 	no->sibling = NULL;
 	no->child = NULL;
 	no->len_child = 0;
+	no->line = 0;
 
 	return no;
 }
@@ -112,6 +112,7 @@ astNo astNewNo(Token label, char* instance, astNo** child, int len_child){
 	no.label = label;
 	no.instance = (instance == NULL)? NULL : strdup(instance);
 	no.child = child;
+	no.line = 0;
 	no.len_child = len_child;
 	no.sibling = NULL;
 
@@ -125,10 +126,16 @@ astNo* astCreateNo(Token label, char* instance, astNo** child, int len_child){
 	no->label = label;
 	no->instance = (instance == NULL)? NULL : strdup(instance);
 	no->child = child;
+	no->line = 0;
 	no->len_child = len_child;
 	no->sibling = NULL;
 
 	return no;
+}
+
+void astUpdateLine(astNo* no, int line){
+	no->line = line;
+	return;
 }
 
 

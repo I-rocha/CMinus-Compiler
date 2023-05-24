@@ -1,13 +1,9 @@
 #ifndef SEMANTIC_H
 #define SEMANTIC_H
 
-#include <stdlib.h>
+#include "../ast/ast.h"
 
-
-
-
-int checkMain();
-void addIO();
+void semantic(astNo* root);
 
 
 #endif

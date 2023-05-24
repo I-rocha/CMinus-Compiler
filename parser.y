@@ -10,8 +10,6 @@ int yyerror(char* s);
 extern int yylex();
 extern int yylineno;
 extern astNo* astTree;
-extern symTable* env;
-extern symTable* headEnv;
 %}
 
 %union{
@@ -67,22 +65,18 @@ var_decl:
 	astPutChild($1, aux, 1);
 	$$ = $1;
 
-	// Symbol Table
-	symTPut(env, VAR_K, $2, $1->label, 0, yylineno);
-
 	// Free
 	free($2);
 	}
 	| tipo_esp ID '[' NUM ']' ';'	{
-	// Adding array to symbol table
+	char str[2];
+	sprintf(str, "%d", $4);
+
 	astNo* aux[] = {astCreateNo(ALLOC_ARRAY_K, $2, NULL, 0)};
-	astNo* aux2[] = {astCreateNo(ARRAY_SIZE_K, NULL, NULL, 0)};
+	astNo* aux2[] = {astCreateNo(ARRAY_SIZE_K, str, NULL, 0)};
 	astPutChild($1, aux, 1);
 	astPutChild($1->child[0], aux2, 1);
 	
-	// Symbol Table
-	symTPut(env, VAR_ARRAY_K, $2, $1->label, $4, yylineno);
-
 	$$ = $1;
 	free($2);
 	}
@@ -100,13 +94,7 @@ tipo_esp:
 	;
 		
 fun_decl:
-	tipo_esp ID 
-	{
-		symTPut(headEnv, FUN_K, $2, $1->label, 0, yylineno);	// Add to env
-		env = symTNewEnv(env, $2);		// New env
-	}
-	
-	'(' params ')' composto_decl	{
+	tipo_esp ID '(' params ')' composto_decl	{
 
 	// ID is child of tipo_esp
 	astNo* aux[] = {astCreateNo(FUN_K, $2, NULL, 0)};
@@ -114,10 +102,8 @@ fun_decl:
 	$$ = $1;
 
 	// Params and composto_decl are children of ID
-	astNo* aux2[] = {$5, $7};
+	astNo* aux2[] = {$4, $6};
 	astPutChild($1->child[0], aux2, 2);
-
-	env = symTExit(env);
 
 	// Free
 	free($2);
@@ -144,15 +130,10 @@ param:
 	astPutChild($1, aux, 1);
 	$$ = $1;
 
-	// Symbol Table
-	symTPut(env, VAR_K, $2, $1->label, 0, yylineno);
-
 	// Free
 	free($2);
 	}
 	| tipo_esp ID '['']'	{
-	// Add to symbol table
-	symTPut(env, VAR_K, $2, $1->label, 0, yylineno);
 
 	astNo* aux[] = {astCreateNo(ARG_ARRAY_K, $2, NULL, 0)};
 	astPutChild($1, aux, 1);
@@ -218,14 +199,14 @@ exp_decl:
 	;
 
 selecao_decl:
-	    IF '(' exp ')' { env = symTNewEnv(env, "IF");} statement {env = symTExit(env);} else_stmt{
+	    IF '(' exp ')' statement else_stmt{
 		$$ = astCreateNo(IF_K, NULL, NULL, 0);
-		if($8){
-			astNo* aux[] = {$3, $6, $8};
+		if($6){
+			astNo* aux[] = {$3, $5, $6};
 			astPutChild($$, aux, 3);
 		}
 		else{
-			astNo* aux[] = {$3, $6};
+			astNo* aux[] = {$3, $5};
 			astPutChild($$, aux, 2);
 		}
 	}
@@ -235,23 +216,15 @@ else_stmt:
 	%prec IFX {
 	$$ = NULL;
 	}
-	| ELSE {env = symTNewEnv(env, "ELSE");} statement{
-	$$ = $3;
-	env = symTExit(env);	// Exit env
-	}
+	| ELSE statement{$$ = $2;}
 	;
 
 iteracao_decl:
-	WHILE 
-	{
-		env = symTNewEnv(env, "WHILE");
-	}
-	'(' exp ')' statement	{
-	astNo* aux[] = {$4, $6};
+	WHILE '(' exp ')' statement	{
+	astNo* aux[] = {$3, $5};
 	$$ = astCreateNo(WHILE_K, NULL, NULL, 0);
 	astPutChild($$, aux, 2);
 
-	env = symTExit(env); // Exit env
 	}
 	;
 
@@ -277,9 +250,6 @@ var:
 	// AST
 	$$ = astCreateNo(VAR_K, $1, NULL,0);
 
-	// Symtab
-	symTAddRef(env, $1, yylineno);
-
 	// Free
 	free($1);
 	
@@ -289,8 +259,6 @@ var:
 	$$ = astCreateNo(VAR_ARRAY_K, $1, NULL, 0);
 	astPutChild($$, aux, 1);
 	
-	// Symtab
-	symTAddRef(env, $1, yylineno);
 	}
 	;
 
@@ -351,9 +319,6 @@ act:
 	astNo* aux[] = {$3};
 	$$ = astCreateNo(CALL_K, $1, NULL, 0);
 	astPutChild($$, aux, 1);
-
-	// Symtab
-	symTAddRef(env, $1, yylineno);
 
 	// Free
 	free($1);

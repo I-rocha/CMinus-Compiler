@@ -44,6 +44,7 @@ typedef struct astNo{
 	struct astNo* sibling;
 	struct astNo** child;
 	
+	unsigned short line;
 	// Children len
 	int len_child;
 }astNo;
@@ -119,6 +120,8 @@ void astPrint(astNo* no);
 /* 
  * Save at file given by path*/
 int astSave(astNo* tree, char* path);
+
+void astUpdateLine(astNo* no, int line);
 
 // TEMP
 char* tokenStr(Token tok);

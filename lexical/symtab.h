@@ -3,8 +3,8 @@
 
 #define NSYMHASH 1000
 
-#define V_DEFINITION 0
-#define V_CALL 1
+#define _DECLARATION 0
+#define _CALL 1
 
 #include <stdarg.h>
 // TOKEN
@@ -22,7 +22,12 @@ typedef struct symEntry{
 	 /* Semantic control */
          unsigned short* call;
          unsigned short* def;		// Line of def
-         unsigned short sd_idx, sc_idx;	// Semantic definition index & semantic call index
+
+	 // Sizes
+	 unsigned short ndef;
+	 unsigned short ncall;
+	 unsigned short nparam;
+
          struct symTable* env;
   
          // Internal control 
@@ -37,31 +42,18 @@ typedef struct symEntry{
          struct symTable *child, *parent; 
  } symTable;
 
-
-
-
 /*
- * Symbol Table Free Linked List */
-int symTFLL(symEntry* no);
-
-/*
+ * Init basic struct
+ * Init table with first values
+ * (table*) - Entire table allocated
  * */
-int symTDeepFree(symTable* hash);
+symTable* symTInit();
 
-/*
- * */
-int symTFree(symTable* hash);
-
-/*
+/* 
+ * Calculate Key of symbol table 
+ * (key) - position of item in table
  * */
 int symTKey(symEntry* item);
-
-/*
- *
- * Creates struct of the item
- * This function allocates data inside the struct but not the struct itself
- * (copy): copy of the struct*/
-//symEntry symTNewNo(Token tok, char* lexeme, Token type, int attr);
 
 /*
  * Checks if names are equal
@@ -71,49 +63,72 @@ int symTKey(symEntry* item);
 int symTNameEquals(char* n1, char* n2);
 
 /*
- * Checks if 2 items has same name
- * 1: equal
- * -1: different
+ * Put symbol in table on local environment. If symbol already exists, nothing happened
+ * (addr) - address to entry on table
  * */
-//int symTIsEqual(symEntry* it1, symEntry* it2);
+symEntry* putLocal(symTable* hash, Token tok, char* lexeme, Token type, int attr, unsigned short line);
 
 /*
- * Insert new item if not exist on currently environment.
- * This functions allocates only the struct of no
- * 1: Inserted sucessfully
- * 0: Item already exists
- * -1: Error */
-//int symTPut(symTable* hash, Token tok, char* lexeme, Token type, int attr, int line);
-
-/*
+ * Put symbol in table on global environment. If symbol already exists, nothing happened
+ * (addr) - address to entry on table
  * */
-void symTPut(symTable* hash, Token tok, char* lexeme, Token type, int attr, int line, int VAR_CATEGORY){
+symEntry* putGlobal(symTable* hash, Token tok, char* lexeme, Token type, int attr, unsigned short line);
 
 /*
- * Look if definition already exists and returns addres
- * address: Found item
- * NULL: Not found
+ * Calls putGlobal or putLocal based on ID_CATEGORY. Also updates field call or def based on ID_CATEGORY 
+ * (entry*) - address of entry target stored in table
  * */
-//symEntry* symTLook(symTable* hash, Token tok, char* lexeme, Token type);
+symEntry* symTPut(symTable* hash, Token tok, char* lexeme, Token type, int attr, unsigned short line, int ID_CATEGORY);
 
 /*
- * (addr): New environment allocated
- * NULL: Not possible to allocate*/
-symTable* symTNewEnv(symTable* hash, char* scope);
+ * Look in table for entry with name lookup
+ * (symEntry*) - ptr to entry
+ * NULL - Not found
+ * */
+symEntry* symTLook(symTable* hash, char* lookup);
+
+/* Add new reference-line of def*/
+void updateDef(symEntry* entry, unsigned short line);
+
+/* Add new reference-line of call*/
+void updateCall(symEntry* entry, unsigned short line);
+
+/* Get quantity of line-references call */
 unsigned short symTGetNCall(symEntry* entry);
+
+/* Get quantity of line-references defines */
 unsigned short symTGetNDef(symEntry* entry);
+
+/* Create new env child */
+symTable* symTNewEnv(symTable* hash, char* scope);
+
+/* Update field param */
 void symTSetParam(symEntry* entry, int n, ...);
 
-/**/
+/* Add single param */
+void symTAddParam(symEntry* entry, Token param);
+
+/* Get number of params*/
+int symTGetNParam(symEntry* entry);
+
+/* Print detailed info of entry */
+void printSingleDetail(symEntry* entry);
+
+/* Print detailed info of entire hash */
 void symTPrint(symTable* hash, int deep);
 
-/**/
+/* Save table in new file named by path */
 int symTSave(symTable* hash, char* path);
 
-/**/
-void symTDeepSave(symTable* hash, int deep, FILE* fd);
+/* Save single info in oppened file*/
+void saveSingleInfo(symEntry* entry, FILE* fd);
 
+/* Save info in oppened file*/
+void saveInfo(symTable* hash, int deep, FILE *fd);
+
+/* 
+ * Exit last environment
+ * (env) - return parent env */
 symTable* symTExit(symTable* hash);
 
-void symTAddRef(symTable* hash, char* lexeme, int line);
 #endif

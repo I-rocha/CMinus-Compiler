@@ -10,9 +10,9 @@
 // TOKEN
 #include "../ast/ast.h"
 
-/*Add new ref and return pointer */
-int* addRef(int* nref, int* ref, int line);
+/*	PRIVATE HEADER	*/
 
+/* Assign all field to entry */
 void assignState(
 		symEntry* entry, 
 		Token id, 
@@ -22,19 +22,19 @@ void assignState(
 		Token* param, 
 		unsigned short* call, 
 		unsigned short* def, 
+		unsigned short ndef,
+		unsigned short l,
+		unsigned short nparam,
 		symTable* env, 
 		int null, 
-		unsigned short sd_idx, 
-		unsigned short sc_idx, 
 		symEntry* prox
 		);
 
-symTable* symTInit();
+/* Assign main data to entry */
+void assignEntry(symEntry* entry, Token id, char* lexeme, Token type, unsigned short attr, symTable* env);
 
-void assignEntry(symEntry* entry, Token id, char* lexeme, Token type, unsigned short attr);
-
+/* Assign default struct to entry */
 void assignDefault(symEntry* entry);
-symEntry* put(symTable* hash, Token tok, char* lexeme, Token type, int attr, int line);
 
 symTable* symTInit(){
 	symTable* env;
@@ -55,7 +55,6 @@ symTable* symTInit(){
 	return env;
 }
 
-
 void assignState(
 		symEntry* entry, 
 		Token id, 
@@ -65,42 +64,45 @@ void assignState(
 		Token* param, 
 		unsigned short* call, 
 		unsigned short* def, 
+		unsigned short ndef,
+		unsigned short ncall,
+		unsigned short nparam,
 		symTable* env, 
 		int null, 
-		unsigned short sd_idx, 
-		unsigned short sc_idx, 
 		symEntry* prox
 		){
-         entry->id = id;
-         entry->lexeme = (lexeme) ? strdup(lexeme) : NULL; 
-         entry->type = type;
-	 entry->attr = attr;
-	 entry->param = param;
-         entry->call = call;
-         entry->def = def;
-         entry->env = env;
-         entry->null = null; 
-         entry->sd_idx = sd_idx;
-         entry->sc_idx = sc_idx;
-         entry->prox = prox; 
+        entry->id = id;
+        entry->lexeme = (lexeme) ? strdup(lexeme) : NULL; 
+        entry->type = type;
+	entry->attr = attr;
+	entry->param = param;
+        entry->call = call;
+        entry->def = def;
+	entry->ndef = ndef,
+	entry->ncall = ncall,
+	entry->nparam = nparam,
+        entry->env = env;
+        entry->null = null; 
+        entry->prox = prox; 
 	return;
 }
 
-void assignEntry(symEntry* entry, Token id, char* lexeme, Token type, unsigned short attr){
+void assignEntry(symEntry* entry, Token id, char* lexeme, Token type, unsigned short attr, symTable* env){
          entry->id = id;
          entry->lexeme = (lexeme) ? strdup(lexeme) : NULL; 
          entry->type = type;
          entry->attr = attr;
+	 entry->env = env;
 	 entry->null = 0;
 	 return;
 }
 
 void assignDefault(symEntry* entry){
-	assignState(entry, BLANK, NULL, BLANK, 0, NULL, NULL, NULL, NULL, 1, 0, 0,NULL);
+	assignState(entry, BLANK, NULL, BLANK, 0, NULL, NULL, NULL, 0, 0, 0, NULL, 1, NULL);
 	return;
 }
 
-
+/*
 int symTFLL(symEntry* no){
 	symEntry *aux, *auxprev;
 
@@ -142,7 +144,7 @@ int symTFree(symTable* hash){
 	if(hash)
 		free(hash);
 	return 1;
-}
+}*/
 
 int symTKey(symEntry* item){
 	int key = 0;
@@ -161,23 +163,7 @@ int symTKey(symEntry* item){
 	key = key % NSYMHASH;
 	return key;
 }
-/*
-symEntry symTNewNo(Token tok, char* lexeme, Token type, int attr){
-	symEntry no;
 
-	no.tok = tok;
-	no.lexeme = strdup(lexeme);
-	no.type = type;
-	no.attr = attr;
-	no.null = 0;
-	no.prox = NULL;
-	no.nref = 0;
-	no.ref = NULL;
-	no.duplicata = 0;
-
-	return no;
-}
-*/
 int symTNameEquals(char* n1, char* n2){
 	if((n1 && !n2) || (!n1 && n2))
 		return -1;
@@ -189,28 +175,16 @@ int symTNameEquals(char* n1, char* n2){
 	return 1;
 
 }
-/*
-int symTIsEqual(symEntry *it1, symEntry *it2){
 
-	if((it1->lexeme && !it2->lexeme) || (!it1->lexeme && it2->lexeme))
-		return -1;
-
-	if(it1->lexeme && it2->lexeme)
-		if(strcmp(it1->lexeme, it2->lexeme) != 0)
-			return -1;
-		
-	return 1;
-}*/
-
-symEntry* putLocal(symTable* hash, Token tok, char* lexeme, Token type, int attr, int line){
+symEntry* putLocal(symTable* hash, Token tok, char* lexeme, Token type, int attr, unsigned short line){
 	symEntry toPut, *aux;
 	int key = -1;
 
 	if(!hash || !hash->table)
 		return NULL;
 
-	assignDefault(&toPut);				// Default state
-	assignEntry(&toPut, tok, lexeme, type, attr);	// Add main info
+	assignDefault(&toPut);					// Default state
+	assignEntry(&toPut, tok, lexeme, type, attr, hash);	// Add main info
 	key = symTKey(&toPut);
 
 	aux = &hash->table[key];
@@ -241,122 +215,128 @@ symEntry* putLocal(symTable* hash, Token tok, char* lexeme, Token type, int attr
 	return aux;
 }
 
-symEntry* putGlobal(symTable* hash, Token tok, char* lexeme, Token type, int attr, int line){
+symEntry* putGlobal(symTable* hash, Token tok, char* lexeme, Token type, int attr, unsigned short line){
+	symTable* last_h;
 	symEntry* entry;
+
+	last_h = hash;
+
 	if(!hash)
-		return;
+		return NULL;
 	
-	while(hash->table != hash->parent){
-		entry = putLocal(hash->table, tok, lexeme, type, attr, line);
+	while(hash != last_h){
+		entry = putLocal(hash, tok, lexeme, type, attr, line);
 
 		if(entry)
 			return entry;
 
+		last_h = hash;
+		hash = hash->parent;
+
 	}
+
 	return NULL;
 }
 
-void symTPut(symTable* hash, Token tok, char* lexeme, Token type, int attr, int line, int VAR_CATEGORY){
+symEntry* symTPut(symTable* hash, Token tok, char* lexeme, Token type, int attr, unsigned short line, int ID_CATEGORY){
 	symEntry* entry;
 
-	entry = put(
-			symTable* hash,
-			Token tok,
-			char* lexeme,
-			Token type,
-			int attr,
-			int line,
-			int VAR_CATEGORY
-			);
-	if(!entry) return;
-
-	switch(VAR_CATEGORY){
-		case V_DEFINITION:
+	switch(ID_CATEGORY){
+		case _DECLARATION:
 			entry = putLocal(
 					hash,
 					tok,
 					lexeme,
 					type,
 					attr,
-					line,
-					VAR_CATEGORY
+					line
 					);
 			updateDef(entry, line);
 			break;
-		case V_CALL:
+		case _CALL:
 			entry = putGlobal(
 					hash,
 					tok,
 					lexeme,
 					type,
 					attr,
-					line,
-					VAR_CATEGORY
+					line
 					);
 			updateCall(entry, line);
 			break;
 		default:
-			continue;
+			return NULL;
 	}
-	return;
+	return entry;
 }
-void updateDef(symEntry* entry, int line){
+
+symEntry* symTLook(symTable* hash, char* lookup){
+	symTable* last_table = NULL;
+	symEntry toPut, *aux;
+	int key = -1;
+
+	if(!hash || !hash->table)
+		return NULL;
+
+	assignDefault(&toPut);					// Default state
+	assignEntry(&toPut, BLANK, lookup, BLANK, 0, NULL);	// Add main info
+	key = symTKey(&toPut);
+
+	// Look over parent
+	while(last_table != hash){
+		aux = &hash->table[key];	
+
+		if(aux->null == 1){
+			last_table = hash;
+			hash = hash->parent;
+			continue;
+		}
+
+		while(aux->prox){
+
+			/* Already Exists */
+			if(symTNameEquals(aux->lexeme, lookup) == 1){
+				return aux;
+			}
+
+			/* Keep looking */
+			aux = aux->prox;
+		}
+
+		/* Already Exists */
+		if(symTNameEquals(aux->lexeme, lookup) == 1){
+			return aux;
+		}
+		last_table = hash;
+		hash = hash->parent;
+	}
+
+	return NULL;
+}
+
+void updateDef(symEntry* entry, unsigned short line){
 	int len = symTGetNDef(entry);
 	entry->def = (unsigned short*)realloc(entry->def, (len+1) * sizeof(unsigned short));
 	entry->def[len] = line;
+	entry->ndef = len+1;
 	return;
 }
-void updateCall(symEntry* entry, int line){
+
+void updateCall(symEntry* entry, unsigned short line){
 	int len = symTGetNCall(entry);
-	entry->def = (unsigned short*)realloc(entry->def, symTGetNCall(entry) * sizeof(unsigned short));
+	entry->def = (unsigned short*)realloc(entry->def, (len+1) * sizeof(unsigned short));
 	entry->call[len] = line;
+	entry->ncall = len+1;
 	return;
 }
 
 unsigned short symTGetNCall(symEntry* entry){
-	return sizeof(entry->call)/sizeof(unsigned short);
+	return entry->ncall; 
 }
 unsigned short symTGetNDef(symEntry* entry){
-	return sizeof(entry->def)/sizeof(unsigned short);
+	return entry->ndef;
 }
-/*
-symEntry* symTLook(symTable* hash, Token tok, char* lexeme, Token type){
-	symTable* auxTable;
-	symEntry toLook, *aux;
-	int key;
-	toLook = symTNewNo(tok, lexeme, type, 0);
-	if(!hash || !hash->table)
-		return NULL;
 
-	key = symTKey(&toLook);
-
-	auxTable = hash;
-	aux = &auxTable->table[key];
-
-	// Check constant over parent table 
-	while(auxTable->parent != auxTable){
-		while(aux){
-			if(symTIsEqual(aux, &toLook) == 1)
-				return aux;
-
-			aux = aux->prox;
-		}
-		
-		auxTable = auxTable->parent;
-		aux = &auxTable->table[key];
-
-	}
-
-	// Check last table
-	while(aux){
-		if(symTIsEqual(aux, &toLook) == 1)
-			return aux;
-
-		aux = aux->prox;	
-	}
-	return NULL;
-}
-*/
 symTable* symTNewEnv(symTable* hash, char* scope){
 	symTable *no;
 	int pos;
@@ -393,11 +373,57 @@ void symTSetParam(symEntry* entry, int n, ...){
 		entry->param[i] = va_arg(ptr, Token);
 	
 	va_end(ptr);
-
+	
+	entry->nparam = n;
 	return;
 }
 
+void symTAddParam(symEntry* entry, Token param){
+	int n;
+	n = symTGetNParam(entry);
+	// Alloc	
+	entry->param = (Token*)realloc(entry->param, (n+1) * sizeof(Token));
+	
+	entry->param[n] = param;
+	entry->nparam++;
+}
 
+int symTGetNParam(symEntry* entry){
+	return entry->nparam; 
+}
+
+void printSingleDetail(symEntry* entry){
+	if(!entry)
+		return;
+
+	 char* lexeme = (entry->lexeme)? entry->lexeme : "###";
+	
+	 // Id - lexeme - type - attr
+	 printf("[%s][%s][%s][%d]", tokenStr(entry->id), lexeme, tokenStr(entry->type), entry->attr);
+
+	 // Params
+	 printf("[");
+	 for(int i = 0; i < symTGetNParam(entry); i++)
+		 printf("%s, ", tokenStr(entry->param[i]));
+	 printf("]");
+
+	 // Call
+	 printf("[");
+	 for(int i = 0; i < symTGetNCall(entry); i++)
+		 printf("%d, ", entry->call[i]);
+	 printf("]");
+	 
+	 // Def
+	 printf("[");
+	 for(int i = 0; i < symTGetNDef(entry); i++)
+		 printf("%d, ", entry->def[i]);
+	 printf("]");
+
+	 // ptr_env - null - ptr_prox
+	 printf("[%p][%d][%p]", entry->env, entry->null, entry->prox);
+	 printf("\n");
+
+}
 
 
 
@@ -414,6 +440,7 @@ void symTPrint(symTable* hash, int deep){
 	aux = hash->table;
 
 	printf("SCOPE - %s\n", hash->scope);
+	printf("[ID][Lexeme][Type][Attr][Params][Call][Def][ptr_env][null][ptr_prox]\n");
 
 	// Runs over entry table and print
 	for(int i = 0; i < NSYMHASH; i++){
@@ -430,23 +457,7 @@ void symTPrint(symTable* hash, int deep){
 				printf(" ");
 
 			// Print item
-			printf(
-			"[Token, lexeme, type, attr, null, prox, ptr, duplicata, nref, [ref]]"
-		       	"- [%s, %s, %s, %d, %d, %p, %p, %d, %d,[",
-					tokenStr(aux->tok),
-				      	aux->lexeme,
-				      	tokenStr(aux->type),
-					aux->attr,
-				      	aux->null,
-				      	aux->prox,
-					aux,
-					aux->duplicata,
-					aux->nref
-			);
-			for(int i = 0; i < aux->nref; i++){
-				printf("%d, ", aux->ref[i]);
-			}
-		       	printf("]\n");
+			printSingleDetail(aux);
 			aux = aux->prox;
 		}
 	}
@@ -469,14 +480,44 @@ int symTSave(symTable* hash, char* path){
 	if(!(fd = fopen(path, "w")))
 		return -1;
 
-	symTDeepSave(hash, 0, fd);
+	saveInfo(hash, 0, fd);
 
 
 	fclose(fd);
 	return 1;
 }
 
-void symTDeepSave(symTable* hash, int deep, FILE *fd){
+void saveSingleInfo(symEntry* entry, FILE* fd){
+	if(!entry || !fd)
+		return;
+
+	 char* lexeme = (entry->lexeme)? entry->lexeme : "###";
+	
+	 // Id - lexeme - type - attr
+	 fprintf(fd, "[%s] [%s] [%s] [%d]", tokenStr(entry->id), lexeme, tokenStr(entry->type), entry->attr);
+
+	 // Params
+	fprintf(fd, "[");
+	for(int i = 0; i < symTGetNParam(entry); i++)
+		fprintf(fd, "%s, ", tokenStr(entry->param[i]));
+	fprintf(fd, "]");
+
+	 // Call
+	fprintf(fd, "[");
+	for(int i = 0; i < symTGetNCall(entry); i++)
+		fprintf(fd, "%d, ", entry->call[i]);
+	fprintf(fd, "]");
+	 
+	 // Def
+	fprintf(fd, "[");
+	for(int i = 0; i < symTGetNDef(entry); i++)
+		fprintf(fd, "%d, ", entry->def[i]);
+	fprintf(fd, "]");
+	fprintf(fd, "\n");
+
+}
+
+void saveInfo(symTable* hash, int deep, FILE *fd){
 	symEntry* aux;
 	
 	if(!hash || !hash->table)
@@ -488,7 +529,7 @@ void symTDeepSave(symTable* hash, int deep, FILE *fd){
 	for(int i = 0; i < 4*deep; i++)
 		fprintf(fd, " ");
 
-	fprintf(fd, "[TOKEN] [LEXEME] [TYPE] [ATTR] [nref] [ref]\n");
+	fprintf(fd, "[TOKEN] [LEXEME] [TYPE] [ATTR] [PARAMS] [call] [def]\n");
 	
 	// Runs over entry table and print
 	for(int i = 0; i < NSYMHASH; i++){
@@ -504,17 +545,7 @@ void symTDeepSave(symTable* hash, int deep, FILE *fd){
 			for(int i = 0; i < 4*deep; i++)
 				fprintf(fd, " ");
 
-			fprintf(fd, "[%s]\t [%s]\t\t [%s]\t [%d]\t [%d]\t[",
-					tokenStr(aux->tok),
-					aux->lexeme,
-					tokenStr(aux->type),
-					aux->attr,
-					aux->nref
-			);
-			for(int i = 0; i < aux->nref; i++){
-				fprintf(fd, "%d, ", aux->ref[i]);
-			} 
-			fprintf(fd, "]\n");
+			saveSingleInfo(aux, fd);
 
 			aux = aux->prox;
 		}
@@ -523,7 +554,7 @@ void symTDeepSave(symTable* hash, int deep, FILE *fd){
 
 	// Calls deep env
 	for(int i = 0; i < hash->len; i++)
-		symTDeepSave(&hash->child[i], deep+1, fd);
+		saveInfo(&hash->child[i], deep+1, fd);
 
 	return;
 }
@@ -536,23 +567,36 @@ symTable* symTExit(symTable* hash){
 }
 
 
-/*	PRIVATE		*/
-int* addRef(int* nref, int* ref, int line){
-	ref = (int*)realloc(ref, (*nref+1) * sizeof(int));
-	ref[(*nref)++] = line;
-	return ref;
-}
-
 /*
 int main(){
-	symTable* table, *track;
+	symEntry* entry;
+	symTable* table, *env;
 	table = symTInit();
-	symTPut(table, VAR_K, "minhavar", "INT");
-	symTPut(table, VAR_K, "minhavar", "VOID");
-	track = symTNewEnv(table, "fun1");
-	symTPut(track, VAR_K, "outravar", "INT");
+	env = table;
+	entry = symTPut(
+			table,
+			FUN_K,
+			strdup("main"),
+			INT_K,
+			0,
+		       	0,
+			_DECLARATION
+			);
+
+	env = symTNewEnv(table, strdup("main"));
+	entry = symTPut(
+			env,
+			VAR_K,
+			strdup("a"),
+			INT_K,
+			0,
+		       	0,
+			_DECLARATION
+			);
+	env = symTExit(env);
 	symTPrint(table, 0);
-	symTFree(table);
+
+
 	printf("EOF\n");
 }
 */
