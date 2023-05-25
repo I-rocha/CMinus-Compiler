@@ -22,11 +22,16 @@ static Token handleOp(astNo* no);
 static int checkMain();
 static void addIO();
 
-symEntry* declared(astNo* no, symTable* target_env);
-void param(astNo* no, symEntry* target);
-Token lrtype(Token t1, Token t2);
+static symEntry* declared(astNo* no, symTable* target_env);
+static void param(astNo* no, symEntry* target);
+static Token lrtype(Token t1, Token t2);
 
-void printErr(symEntry* entry, int line);
+// ERROR FUNCTIONS	
+void multiple_declaration_err(int line, char* err, unsigned short def_line);
+void op_type_err(int line);
+void main_err(int line);
+void param_err(int line, char* err, int n_expected, int n_giving);
+void declaration_err(int line, char* call);
 
 /*	Definition	*/
 
@@ -34,7 +39,7 @@ int checkMain(){
 	if(symTLook(headEnv, MAINF))
 		return 1;
 
-	printf("Erro Semantico - Funcao main não definida\n");
+	main_err(0);
 	return 0;
 }
 
@@ -74,8 +79,7 @@ symEntry* declared(astNo* no, symTable* target_env){
 	entry = symTLook(target_env, no->instance);
 
 	if(!entry){
-		// error();
-		printf("ERROR: Not declared\n");
+		declaration_err(no->line, no->instance);
 	}
 
 	return entry;
@@ -86,7 +90,7 @@ void multiple_declaration(symEntry* entry){
 		return;
 
 	if(symTGetNDef(entry) > 1){
-		printErr(entry, entry->def[entry->ndef-1]);
+		multiple_declaration_err(entry->def[0], entry->lexeme, entry->def[0]);
 	}
 	return;
 }
@@ -95,6 +99,8 @@ void param(astNo* no, symEntry* target){
 	astNo* aux;
 	int n_no = 0;	// Number params of function call in no
 
+	if(!target)
+		return;
 	// Aux receives child[0]
 	aux = (no->len_child > 0)? no->child[0] : NULL;
 
@@ -111,7 +117,7 @@ void param(astNo* no, symEntry* target){
 	// Compare No params
 	if(symTGetNParam(target) != n_no){
 		//	ERROR	
-		printf("Semantic error: Different number of params\n");
+		param_err(target->def[0], target->lexeme, target->nparam, n_no);
 	}
 
 
@@ -324,15 +330,50 @@ void semantic(astNo* root){
 
 Token lrtype(Token t1, Token t2){
 	if(t1 != t2){
-		printf("ERROR: Tentando realizar operacao com tipos diferentes de dados\n");
+		op_type_err(0);
 		return INT_K;
 	}
 	return t1;
 }
+void COLOR_RED(){
+	printf("\033[0;31m");
+}
+void COLOR_RESET(){
+	printf("\033[0m");
+}
 
-
-void printErr(symEntry* entry, int line){
-	printf("Erro semantico\n %d| %s : Multiple declaration of %s. First defined on line %d\n",line, entry->lexeme, entry->lexeme, entry->def[0]);
-
+void multiple_declaration_err(int line, char* err, unsigned short def_line){
+	COLOR_RED();
+	printf("Erro semantico\n");
+	COLOR_RESET();
+	printf("%d| %s : Multiple declaration of %s. First defined on line %d\n",line, err, err, def_line);
+	printf("\n");
+}
+void op_type_err(int line){
+	COLOR_RED();
+	printf("%d|  : Different types of operands. Trying to make  op \n",line);
+	COLOR_RESET();
+	printf("Erro semantico\n");
+	printf("\n");
+}
+void main_err(int line){
+	COLOR_RED();
+	printf("Erro semantico\n");
+	COLOR_RESET();
+	printf("%d| %s: Main function not defined\n", line, MAINF);
+	printf("\n");
+}
+void param_err(int line, char* err, int n_expected, int n_giving){
+	COLOR_RED();
+	printf("Erro semantico\n");
+	COLOR_RESET();
+	printf("%d| %s: Giving wrong number of arguments. Expected [%d], giving [%d]\n", line, err, n_expected, n_giving);
+	printf("\n");
+}
+void declaration_err(int line, char* call){
+	COLOR_RED();
+	printf("Erro semantico\n");
+	COLOR_RESET();
+	printf("%d| %s: Calling name %s which is not declared", line, call, call);
 	printf("\n");
 }
