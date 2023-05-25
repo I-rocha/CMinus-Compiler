@@ -26,6 +26,7 @@ symEntry* declared(astNo* no, symTable* target_env);
 void param(astNo* no, symEntry* target);
 Token lrtype(Token t1, Token t2);
 
+void printErr(symEntry* entry, int line);
 
 /*	Definition	*/
 
@@ -85,7 +86,7 @@ void multiple_declaration(symEntry* entry){
 		return;
 
 	if(symTGetNDef(entry) > 1){
-		printf("ERROR: Multiple declaration\n");
+		printErr(entry, entry->def[entry->ndef-1]);
 	}
 	return;
 }
@@ -329,7 +330,9 @@ Token lrtype(Token t1, Token t2){
 	return t1;
 }
 
-/*
-void printErr(char* msg, int line){
-	printf("Erro semantico : %s : linha %d", msg, line);
-}*/
+
+void printErr(symEntry* entry, int line){
+	printf("Erro semantico\n %d| %s : Multiple declaration of %s. First defined on line %d\n",line, entry->lexeme, entry->lexeme, entry->def[0]);
+
+	printf("\n");
+}
