@@ -132,6 +132,20 @@ astNo* astCreateNo(Token label, char* instance, astNo** child, int len_child){
 
 	return no;
 }
+astNo* astCreateTerminal(Token label, char* instance, astNo** child, int len_child, int line_log){
+	astNo* no;
+	no = (astNo*)malloc(sizeof(astNo));
+
+	no->label = label;
+	no->instance = (instance == NULL)? NULL : strdup(instance);
+	no->child = child;
+	no->line = line_log;
+	no->len_child = len_child;
+	no->sibling = NULL;
+
+	return no;
+
+}
 
 void astUpdateLine(astNo* no, int line){
 	no->line = line;
@@ -255,6 +269,7 @@ void save(astNo* no, int deep, FILE* fd){
 	for(int i = 0; i < deep; i++)
 		fprintf(fd, "   ");
 
+	fprintf(fd, "[%d] - ", no->line);
 	if(no->instance)
 		fprintf(fd, "[%s - %s]\n", tokenStr(no->label), no->instance);
 	else

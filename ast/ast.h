@@ -102,6 +102,12 @@ astNo astNewNo(Token label, char* instance, astNo** child, int len_child);
 astNo* astCreateNo(Token label, char* instance, astNo** child, int len_child);
 
 /*
+ * Assign data allocating it. The data inside is also allocated (except child). Also stores line of occurence
+ * (astNo*): addr of no created and allocated
+ * */
+astNo* astCreateTerminal(Token label, char* instance, astNo** child, int len_child, int line_log);
+
+/*
  * Free entire tree*/
 int astFree(astNo* tree);
 

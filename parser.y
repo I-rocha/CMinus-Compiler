@@ -8,7 +8,8 @@
 
 int yyerror(char* s);
 extern int yylex();
-extern int yylineno;
+extern int line_log;
+extern char* yytext;
 extern astNo* astTree;
 %}
 
@@ -22,7 +23,7 @@ extern astNo* astTree;
 // KEYWORDS
 %token <int>IF <int>ELSE INT RETURN VOID WHILE LE GE EQ DIFF <s>ID <val>NUM 
 
-%type <ast_no> programa decl_lista decl var_decl fun_decl tipo_esp params composto_decl param_lista param local_decl statement_lista statement exp_decl selecao_decl iteracao_decl retorno_decl exp var simple_exp soma_exp rel soma termo mult fator act args arg_lista else_stmt
+%type <ast_no> programa decl_lista decl var_decl fun_decl tipo_esp params composto_decl param_lista param local_decl statement_lista statement exp_decl selecao_decl iteracao_decl retorno_decl exp var simple_exp soma_exp rel soma termo mult fator act args arg_lista else_stmt <val>EPSLON_LINE
 
 %nonassoc IFX
 %nonassoc ELSE
@@ -58,21 +59,21 @@ decl:
 
 
 var_decl:
-	tipo_esp ID ';'{
+	tipo_esp ID EPSLON_LINE ';'{
 
 	// AST
-	astNo* aux[] = {astCreateNo(ALLOC_K, $2, NULL, 0)};
+	astNo* aux[] = {astCreateTerminal(ALLOC_K, $2, NULL, 0, $3)};
 	astPutChild($1, aux, 1);
 	$$ = $1;
 
 	// Free
 	free($2);
 	}
-	| tipo_esp ID '[' NUM ']' ';'	{
+	| tipo_esp ID EPSLON_LINE '[' NUM ']' ';'{
 	char str[2];
-	sprintf(str, "%d", $4);
+	sprintf(str, "%d", $5);
 
-	astNo* aux[] = {astCreateNo(ALLOC_ARRAY_K, $2, NULL, 0)};
+	astNo* aux[] = {astCreateTerminal(ALLOC_ARRAY_K, $2, NULL, 0, $3)};
 	astNo* aux2[] = {astCreateNo(ARRAY_SIZE_K, str, NULL, 0)};
 	astPutChild($1, aux, 1);
 	astPutChild($1->child[0], aux2, 1);
@@ -81,6 +82,8 @@ var_decl:
 	free($2);
 	}
 	;
+
+EPSLON_LINE:{$$ = line_log;}
 
 tipo_esp:
 	INT{
@@ -94,15 +97,15 @@ tipo_esp:
 	;
 		
 fun_decl:
-	tipo_esp ID '(' params ')' composto_decl	{
-
+	tipo_esp ID {$<val>$ = line_log;}'(' params ')' composto_decl	{
+	
 	// ID is child of tipo_esp
-	astNo* aux[] = {astCreateNo(FUN_K, $2, NULL, 0)};
+	astNo* aux[] = {astCreateTerminal(FUN_K, $2, NULL, 0, $<val>3)};
 	astPutChild($1, aux, 1);
 	$$ = $1;
 
 	// Params and composto_decl are children of ID
-	astNo* aux2[] = {$4, $6};
+	astNo* aux2[] = {$5, $7};
 	astPutChild($1->child[0], aux2, 2);
 
 	// Free
@@ -125,17 +128,17 @@ param_lista:
 	;
 		   
 param:
-	tipo_esp ID	{
-	astNo* aux[] = {astCreateNo(ARG_K, $2, NULL, 0)};
+	tipo_esp ID EPSLON_LINE	{
+	astNo* aux[] = {astCreateTerminal(ARG_K, $2, NULL, 0, $3)};
 	astPutChild($1, aux, 1);
 	$$ = $1;
 
 	// Free
 	free($2);
 	}
-	| tipo_esp ID '['']'	{
+	| tipo_esp ID EPSLON_LINE '['']'	{
 
-	astNo* aux[] = {astCreateNo(ARG_ARRAY_K, $2, NULL, 0)};
+	astNo* aux[] = {astCreateTerminal(ARG_ARRAY_K, $2, NULL, 0, $3)};
 	astPutChild($1, aux, 1);
 	$$ = $1;
 	}
@@ -246,17 +249,17 @@ exp:
 	;
 	
 var:
-	ID	{
+	ID	EPSLON_LINE{
 	// AST
-	$$ = astCreateNo(VAR_K, $1, NULL,0);
+	$$ = astCreateTerminal(VAR_K, $1, NULL,0, $2);
 
 	// Free
 	free($1);
 	
 	}	
-	| ID '[' exp ']'	{
-	astNo* aux[] = {$3};
-	$$ = astCreateNo(VAR_ARRAY_K, $1, NULL, 0);
+	| ID EPSLON_LINE '[' exp ']'	{
+	astNo* aux[] = {$4};
+	$$ = astCreateTerminal(VAR_ARRAY_K, $1, NULL, 0, $2);
 	astPutChild($$, aux, 1);
 	
 	}
@@ -309,15 +312,15 @@ fator:
 	 '(' exp ')'  {$$ = $2;}
 	| var  {$$ = $1;}
 	| act	{$$ = $1;}
-	| NUM	{
-	$$ = astCreateNo(NUM_K, NULL, NULL, 0);
+	| NUM	EPSLON_LINE{
+	$$ = astCreateTerminal(NUM_K, NULL, NULL, 0, $2);
 	}
 	;
 act:
-   ID '(' args ')' {
+   ID EPSLON_LINE '(' args ')' {
 	// AST
-	astNo* aux[] = {$3};
-	$$ = astCreateNo(CALL_K, $1, NULL, 0);
+	astNo* aux[] = {$4};
+	$$ = astCreateTerminal(CALL_K, $1, NULL, 0, $2);
 	astPutChild($$, aux, 1);
 
 	// Free
@@ -365,7 +368,8 @@ int main(int argc, char** argv){
 */
 
 int yyerror(char* s){
-	printf("Erro sintático : linha %d\n", yylineno);
+
+	printf("Erro sintático : %s : linha %d\n", yytext, line_log);
 	exit(0);
 	return 1;
 }

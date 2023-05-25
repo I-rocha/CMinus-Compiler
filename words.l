@@ -1,11 +1,13 @@
 %{
 	#include<stdio.h>
 	#include<stdlib.h>
+	#include<string.h>
 	#include "ast/ast.h"
 	#include "parser.tab.h"
 	
 	extern FILE* fl;
 	int lexError();
+	int line_log = 1;
 %}
 
 CSYMBOL \+|\-|\*|\/|\<|\>|\=|\;|\,|\(|\)|\[|\]|\{|\}  
@@ -22,7 +24,19 @@ COMMENT \/\*([^\/]|\n|\t)*\*\/
 
 %%
 
-{COMMENT} {fprintf(fl, "COMMENT: %s\n", yytext);}
+{COMMENT} {
+	fprintf(fl, "COMMENT: %s\n", yytext);
+	
+	char* str = yytext;
+	int i = 0;
+
+	char* pchr = strchr(str, '\n');
+	while(pchr != NULL){
+		i++;
+		pchr = strchr(&pchr[1], '\n');
+	}
+	line_log += i;
+}
 
 
 if {
@@ -93,7 +107,7 @@ while {
 
 [\t ]+ {}
 
-\n {}
+\n {line_log++;}
 
 . {
 	fprintf(fl, "Error, unknown token\n");/*TODO: Verificar casos de espaços*/
@@ -103,7 +117,7 @@ while {
 %%
 
 int lexError(){
-	printf("Erro léxico : %s : linha %d\n", yytext, yylineno);
+	printf("Erro léxico : %s : linha %d\n", yytext, line_log);
 	exit(0);
 	return 1;
 }

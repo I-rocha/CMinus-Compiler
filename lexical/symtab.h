@@ -91,7 +91,7 @@ symEntry* symTLook(symTable* hash, char* lookup);
 void updateDef(symEntry* entry, unsigned short line);
 
 /* Add new reference-line of call*/
-void updateCall(symEntry* entry, unsigned short line);
+void symTUpdateCall(symEntry* entry, unsigned short line);
 
 /* Get quantity of line-references call */
 unsigned short symTGetNCall(symEntry* entry);

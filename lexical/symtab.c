@@ -262,7 +262,7 @@ symEntry* symTPut(symTable* hash, Token tok, char* lexeme, Token type, int attr,
 					attr,
 					line
 					);
-			updateCall(entry, line);
+			symTUpdateCall(entry, line);
 			break;
 		default:
 			return NULL;
@@ -322,9 +322,9 @@ void updateDef(symEntry* entry, unsigned short line){
 	return;
 }
 
-void updateCall(symEntry* entry, unsigned short line){
+void symTUpdateCall(symEntry* entry, unsigned short line){
 	int len = symTGetNCall(entry);
-	entry->def = (unsigned short*)realloc(entry->def, (len+1) * sizeof(unsigned short));
+	entry->call = (unsigned short*)realloc(entry->call, (len+1) * sizeof(unsigned short));
 	entry->call[len] = line;
 	entry->ncall = len+1;
 	return;

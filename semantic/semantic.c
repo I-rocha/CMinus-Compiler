@@ -15,12 +15,12 @@
 symTable *headEnv, *env;
 
 // Private Func
-void semanticStart();
-void handleItem(astNo* root);
-Token handleTable(astNo* root);
-Token handleOp(astNo* no);
-int checkMain();
-void addIO();
+static void semanticStart();
+static void handleItem(astNo* root);
+static Token handleTable(astNo* root);
+static Token handleOp(astNo* no);
+static int checkMain();
+static void addIO();
 
 symEntry* declared(astNo* no, symTable* target_env);
 void param(astNo* no, symEntry* target);
@@ -137,7 +137,7 @@ void handleItem(astNo* root){
 					aux->instance,
 					root->label,
 					0,
-					root->line,
+					aux->line,
 					_DECLARATION);
 
 				if(aux->len_child == 1)
@@ -156,7 +156,7 @@ void handleItem(astNo* root){
 					aux->instance,
 					root->label,
 					0,
-					root->line,
+					aux->line,
 					_DECLARATION);
 				break;
 
@@ -167,7 +167,7 @@ void handleItem(astNo* root){
 					aux->instance,
 					root->label,
 					0,
-					root->line,
+					aux->line,
 					_DECLARATION);
 				break;
 
@@ -177,7 +177,7 @@ void handleItem(astNo* root){
 					aux->instance,
 					root->label,
 					0,
-					root->line,
+					aux->line,
 					_DECLARATION);
 				break;
 
@@ -187,7 +187,7 @@ void handleItem(astNo* root){
 					aux->instance,
 					root->label,
 					atoi(aux->child[0]->instance),
-					root->line,
+					aux->line,
 					_DECLARATION);
 				break;
 			default:
@@ -197,10 +197,19 @@ void handleItem(astNo* root){
 	}
 	else if (root->label == VAR_K || root->label == VAR_ARRAY_K){
 		entry = declared(root, env);
+		if(entry){
+			symTUpdateCall(entry, root->line);	
+		}
+
+
 	}
 	else if (root->label == CALL_K){
 		entry = declared(root, headEnv);
 		param(root, entry);
+		if(entry){
+			symTUpdateCall(entry, root->line);	
+		}
+
 	}
 	return;
 }
@@ -292,7 +301,7 @@ Token handleOp(astNo* no){
 	symEntry* ret;
 	Token lval, rval;
 
-	if(no->label == CALL_K || no->label == VAR_K){
+	if(no->label == CALL_K || no->label == VAR_K || no->label == VAR_ARRAY_K){
 		ret = symTLook(env, no->instance);
 		return ret->type;
 	}
