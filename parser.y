@@ -5,6 +5,7 @@
 #include "ast/ast.h"
 #include "cgen/cgen.h"
 #include "lexical/symtab.h"
+#define I2A_SZ 10
 
 int yyerror(char* s);
 extern int yylex();
@@ -70,7 +71,7 @@ var_decl:
 	free($2);
 	}
 	| tipo_esp ID EPSLON_LINE '[' NUM ']' ';'{
-	char str[2];
+	char str[I2A_SZ];
 	sprintf(str, "%d", $5);
 
 	astNo* aux[] = {astCreateTerminal(ALLOC_ARRAY_K, $2, NULL, 0, $3)};
@@ -313,7 +314,9 @@ fator:
 	| var  {$$ = $1;}
 	| act	{$$ = $1;}
 	| NUM	EPSLON_LINE{
-	$$ = astCreateTerminal(NUM_K, NULL, NULL, 0, $2);
+	char str[I2A_SZ];
+	sprintf(str, "%d", $1);
+	$$ = astCreateTerminal(NUM_K, strdup(str), NULL, 0, $2);
 	}
 	;
 act:
