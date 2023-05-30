@@ -348,12 +348,14 @@ void multiple_declaration_err(int line, char* err, unsigned short def_line){
 	COLOR_RESET();
 	printf("%d| %s : Multiple declaration of %s. First defined on line %d\n",line, err, err, def_line);
 	printf("\n");
+	printf("\n");
 }
 void op_type_err(int line){
 	COLOR_RED();
-	printf("%d|  : Different types of operands. Trying to make  op \n",line);
-	COLOR_RESET();
 	printf("Erro semantico\n");
+	COLOR_RESET();
+	printf("%d|  : Different types of operands. Trying to make  op \n",line);
+	printf("\n");
 	printf("\n");
 }
 void main_err(int line){
@@ -362,6 +364,7 @@ void main_err(int line){
 	COLOR_RESET();
 	printf("%d| %s: Main function not defined\n", line, MAINF);
 	printf("\n");
+	printf("\n");
 }
 void param_err(int line, char* err, int n_expected, int n_giving){
 	COLOR_RED();
@@ -369,11 +372,13 @@ void param_err(int line, char* err, int n_expected, int n_giving){
 	COLOR_RESET();
 	printf("%d| %s: Giving wrong number of arguments. Expected [%d], giving [%d]\n", line, err, n_expected, n_giving);
 	printf("\n");
+	printf("\n");
 }
 void declaration_err(int line, char* call){
 	COLOR_RED();
 	printf("Erro semantico\n");
 	COLOR_RESET();
 	printf("%d| %s: Calling name %s which is not declared", line, call, call);
+	printf("\n");
 	printf("\n");
 }
