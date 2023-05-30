@@ -23,7 +23,7 @@ void assignState(
 		unsigned short* call, 
 		unsigned short* def, 
 		unsigned short ndef,
-		unsigned short l,
+		unsigned short ncall,
 		unsigned short nparam,
 		symTable* env, 
 		int null, 
