@@ -25,13 +25,15 @@ static void addIO();
 static symEntry* declared(astNo* no, symTable* target_env);
 static void param(astNo* no, symEntry* target);
 static void lrtype(astNo* t1, astNo* t2);
+static void type_declaration(symEntry* entry);
 
 // ERROR FUNCTIONS	
-void multiple_declaration_err(int line, char* err, unsigned short def_line);
-void op_type_err(char* op1, char* type1, char* op2, char* type2, int line);
-void main_err(int line);
-void param_err(int line, char* err, int n_expected, int n_giving);
-void declaration_err(int line, char* call);
+static void multiple_declaration_err(int line, char* err, unsigned short def_line);
+static void op_type_err(char* op1, char* type1, char* op2, char* type2, int line);
+static void main_err(int line);
+static void param_err(int line, char* err, int n_expected, int n_giving);
+static void declaration_err(int line, char* call);
+static void type_declaration_err(int line, char* err, char* type);
 
 /*	Definition	*/
 
@@ -200,6 +202,7 @@ void handleItem(astNo* root){
 			default:
 				entry = NULL;
 		}
+		type_declaration(entry);
 		multiple_declaration(entry);
 	}
 	else if (root->label == VAR_K || root->label == VAR_ARRAY_K){
@@ -290,16 +293,7 @@ astNo* handleTable(astNo* root){
 			root->label == DIV_K ||
 			root->label == ASSIGN_K 
 			){
-				astNo *lval, *rval;
 				ret = handleOp(root);
-				//lval = handleOp(root->child[0]);
-				//rval = handleOp(root->child[1]);
-
-				// Check types
-				//lrtype(lval, rval);
-
-				//return lval;
-
 			}else{
 			for(int i = 0; i < root->len_child; i++)
 				handleTable(root->child[i]);
@@ -363,11 +357,37 @@ void lrtype(astNo* t1, astNo* t2){
 
 	return;
 }
+
+void type_declaration(symEntry* entry){
+	if(!entry)
+		return;
+
+	if(
+	entry->id == ARG_K ||
+	entry->id == ARG_ARRAY_K ||
+	entry->id == ALLOC_K ||
+	entry->id == ALLOC_ARRAY_K
+	){
+		if(entry->type == VOID_K)
+			type_declaration_err(entry->def[0], entry->lexeme, tokenStr(entry->type));
+	}
+}
+
 void COLOR_RED(){
 	printf("\033[0;31m");
 }
 void COLOR_RESET(){
 	printf("\033[0m");
+}
+
+void type_declaration_err(int line, char* err, char* type){
+	COLOR_RED();
+	printf("Erro semantico\n");
+	COLOR_RESET();
+	printf("%d| (%s) : Type declaration error, trying to declare variable %s with type %s", line, err, err, type);
+	printf("\n");
+	printf("\n");
+
 }
 
 void multiple_declaration_err(int line, char* err, unsigned short def_line){
