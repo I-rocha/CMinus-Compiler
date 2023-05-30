@@ -17,18 +17,18 @@ symTable *headEnv, *env;
 // Private Func
 static void semanticStart();
 static void handleItem(astNo* root);
-static Token handleTable(astNo* root);
-static Token handleOp(astNo* no);
+static astNo* handleTable(astNo* root);
+static astNo* handleOp(astNo* no);
 static int checkMain();
 static void addIO();
 
 static symEntry* declared(astNo* no, symTable* target_env);
 static void param(astNo* no, symEntry* target);
-static Token lrtype(Token t1, Token t2);
+static void lrtype(astNo* t1, astNo* t2);
 
 // ERROR FUNCTIONS	
 void multiple_declaration_err(int line, char* err, unsigned short def_line);
-void op_type_err(int line);
+void op_type_err(char* op1, char* type1, char* op2, char* type2, int line);
 void main_err(int line);
 void param_err(int line, char* err, int n_expected, int n_giving);
 void declaration_err(int line, char* call);
@@ -222,9 +222,8 @@ void handleItem(astNo* root){
 }
 
 
-Token handleTable(astNo* root){
-	Token ret;
-
+astNo* handleTable(astNo* root){
+	astNo* ret; 
 	if(!root)
 		return BLANK;
 
@@ -237,7 +236,7 @@ Token handleTable(astNo* root){
 
 			// Call for child
 			for(int i = 0; i < root->len_child; i++)
-				ret = handleTable(root->child[i]);
+				handleTable(root->child[i]);
 
 			env = symTExit(env);
 			break;
@@ -247,7 +246,7 @@ Token handleTable(astNo* root){
 
 			// Call for child
 			for(int i = 0; i < root->len_child; i++)
-				ret = handleTable(root->child[i]);
+				handleTable(root->child[i]);
 
 			env = symTExit(env);
 			break;
@@ -257,8 +256,8 @@ Token handleTable(astNo* root){
 			env = symTNewEnv(env, strdup("IF"));	// TODO: Remove strdup
 
 			// Call for child
-			ret = handleTable(root->child[0]);
-			ret = handleTable(root->child[1]);
+			handleTable(root->child[0]);
+			handleTable(root->child[1]);
 
 			env = symTExit(env);
 
@@ -267,7 +266,7 @@ Token handleTable(astNo* root){
 				env = symTNewEnv(env, strdup("ELSE"));	// TODO: Remove strdup
 
 				// Call for child
-				ret = handleTable(root->child[2]);
+				handleTable(root->child[2]);
 				env = symTExit(env);
 			}
 
@@ -275,6 +274,10 @@ Token handleTable(astNo* root){
 		default:
 			// Operations
 			if(
+			root->label == CALL_K ||
+			root->label == VAR_K ||
+			root->label == VAR_ARRAY_K ||
+			root->label == NUM_K ||
 			root->label == LEQ_K ||
 			root->label == LESS_K ||
 			root->label == GRAND_K ||
@@ -287,38 +290,42 @@ Token handleTable(astNo* root){
 			root->label == DIV_K ||
 			root->label == ASSIGN_K 
 			){
-				Token lval, rval;
-				lval = handleOp(root->child[0]);
-				rval = handleOp(root->child[1]);
+				astNo *lval, *rval;
+				ret = handleOp(root);
+				//lval = handleOp(root->child[0]);
+				//rval = handleOp(root->child[1]);
 
 				// Check types
-				ret = lrtype(lval, rval);
+				//lrtype(lval, rval);
+
+				//return lval;
 
 			}else{
 			for(int i = 0; i < root->len_child; i++)
-				ret = handleTable(root->child[i]);
+				handleTable(root->child[i]);
 			}
 	}
 	
 	handleTable(root->sibling);
-	return ret;
+	return (ret == NULL) ? root : ret;
 }
 
-Token handleOp(astNo* no){
-	symEntry* ret;
-	Token lval, rval;
+astNo* handleOp(astNo* no){
+	astNo *lval, *rval;
 
-	if(no->label == CALL_K || no->label == VAR_K || no->label == VAR_ARRAY_K){
-		ret = symTLook(env, no->instance);
-		return ret->type;
+	if(!no)
+		return NULL;
+
+	// Return symEntry
+	if(no->label == CALL_K || no->label == VAR_K || no->label == VAR_ARRAY_K || no->label == NUM_K){
+		return no;
 	}
-	else if(no->label == NUM_K){
-		return INT_K;
-	}
+
 	lval = handleTable(no->child[0]);
 	rval = handleTable(no->child[1]);
 
-	return lrtype(lval, rval);
+	lrtype(lval, rval);
+	return lval;
 }
 
 void semantic(astNo* root){
@@ -328,12 +335,33 @@ void semantic(astNo* root){
 	checkMain();
 }
 
-Token lrtype(Token t1, Token t2){
-	if(t1 != t2){
-		op_type_err(0);
-		return INT_K;
+void lrtype(astNo* t1, astNo* t2){
+	symEntry pseudo1, pseudo2;
+	symEntry *e1, *e2;
+	int line;
+
+	if(!t1 || !t2)
+		return;
+
+	if(t1->label == NUM_K){
+		pseudo1.type = INT_K;
+		pseudo1.lexeme = t1->instance;
 	}
-	return t1;
+	if(t2->label == NUM_K){
+		pseudo2.type = INT_K;
+		pseudo2.lexeme = t2->instance;
+	}
+	e1 = (t1->label == NUM_K) ? &pseudo1 : symTLook(env, t1->instance);
+	e2 = (t2->label == NUM_K) ? &pseudo2 : symTLook(env, t2->instance);	
+	line = t1->line;
+
+	if(!e1 || !e2)
+		return;
+
+	if(e1->type != e2->type)
+		op_type_err(e1->lexeme, tokenStr(e1->type), e2->lexeme, tokenStr(e2->type), line);
+
+	return;
 }
 void COLOR_RED(){
 	printf("\033[0;31m");
@@ -346,15 +374,15 @@ void multiple_declaration_err(int line, char* err, unsigned short def_line){
 	COLOR_RED();
 	printf("Erro semantico\n");
 	COLOR_RESET();
-	printf("%d| %s : Multiple declaration of %s. First defined on line %d\n",line, err, err, def_line);
+	printf("%d| (%s) : Multiple declaration of %s. First defined on line %d\n",line, err, err, def_line);
 	printf("\n");
 	printf("\n");
 }
-void op_type_err(int line){
+void op_type_err(char* op1, char* type1, char* op2, char* type2, int line){
 	COLOR_RED();
 	printf("Erro semantico\n");
 	COLOR_RESET();
-	printf("%d|  : Different types of operands. Trying to make  op \n",line);
+	printf("%d| (%s) : Different types of operands. Trying to make (%s op %s) gives (%s op %s) \n", line, op1, op1, op2, type1, type2);
 	printf("\n");
 	printf("\n");
 }
@@ -362,7 +390,7 @@ void main_err(int line){
 	COLOR_RED();
 	printf("Erro semantico\n");
 	COLOR_RESET();
-	printf("%d| %s: Main function not defined\n", line, MAINF);
+	printf("%d| (%s): Main function not defined\n", line, MAINF);
 	printf("\n");
 	printf("\n");
 }
@@ -370,7 +398,7 @@ void param_err(int line, char* err, int n_expected, int n_giving){
 	COLOR_RED();
 	printf("Erro semantico\n");
 	COLOR_RESET();
-	printf("%d| %s: Giving wrong number of arguments. Expected [%d], giving [%d]\n", line, err, n_expected, n_giving);
+	printf("%d| (%s): Giving wrong number of arguments. Expected [%d], giving [%d]\n", line, err, n_expected, n_giving);
 	printf("\n");
 	printf("\n");
 }
@@ -378,7 +406,7 @@ void declaration_err(int line, char* call){
 	COLOR_RED();
 	printf("Erro semantico\n");
 	COLOR_RESET();
-	printf("%d| %s: Calling name %s which is not declared", line, call, call);
+	printf("%d| (%s): Calling name %s which is not declared", line, call, call);
 	printf("\n");
 	printf("\n");
 }
