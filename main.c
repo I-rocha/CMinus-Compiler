@@ -11,8 +11,7 @@ extern FILE* yyin;
 FILE* fl;
 
 astNo* astTree;
-symTable *env, *headEnv;
-
+extern symTable *headEnv;
 int main(int argc, char** argv){
 	FILE *fp;
 	
@@ -35,30 +34,23 @@ int main(int argc, char** argv){
 	yyin = fp;
 
 
-	/*
-	 *	Symbol Table
-	 * */
-	env = symTInit();
-	headEnv = env;
-	addIO();
-
 	// Parser + Lexical
 	yyparse();
 	astSave(astTree, "output/ast.txt");
 	//printf("End parser\n");
 
 	/*	Symbol Table	*/
-	//checkMain();
-	symTPrint(headEnv, 0);
+	semantic(astTree);
+//	symTPrint(headEnv, 0);
 	symTSave(headEnv, "output/symbolTable.txt");
 
-	quad* code;
+/*	quad* code;
 	code = gen(astTree);
 	// Intermediate Code
 	printQuad(code);
 
 	saveCI(code, "output/cgen.txt");
-	
+*/	
 
 	// Close files
 	if(fp)
