@@ -12,3 +12,5 @@ symtab/*.o
 
 # Temporary
 *.swp
+
+-Wall
