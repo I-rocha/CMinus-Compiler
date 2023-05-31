@@ -139,7 +139,7 @@ void handleItem(astNo* root){
 
 		switch(aux->label){
 			case FUN_K:
-				no_param = aux->child[0];
+				no_param = (aux->child) ? aux->child[0] : NULL;
 
 				entry = symTPut(headEnv,
 					aux->label,
