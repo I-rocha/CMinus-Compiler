@@ -456,8 +456,6 @@ exp genOp(quad **code, astNo* tree){
 			exp val;
 
 			aux = (tree->child) ? tree->child[0] : NULL;
-			if(!symTLook(headEnv, "ID", "Function", tree->label, NULL))
-				printf("Erro semantico : Funcao %s nao declarada : Linha : %d\n", tree->label, yylineno);
 
 			while(aux){
 				val = genOp(code, aux);
