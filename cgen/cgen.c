@@ -114,16 +114,25 @@ quad* gen(astNo* astTree){
 }
 
 void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
+	char slabel1[10], slabel2[10];
 	char sreg[10];
+	symEntry* aux;
+	exp retop;
 
 	if(!tree)
 		return ;
 
 	switch(tree->label){
 		case FUN_K:
+			
+			aux = symTLook(headEnv, tree->instance);
+			if(!aux){
+				printf("CGEN: Internal ERROR : Not finding function on symtable \n");
+				exit(0);
+			}
 
-			lastScope = tree->label;
-			*code = addQuad(*code, tree->type, lastType, tree->label, NULL);
+			lastScope = tree->instance;
+			*code = addQuad(*code, tokenStr(tree->label), lastType, tree->instance, NULL);
 
 			// It's know that len_child is at most 2 in this case (but in some case is 1)
 			for(int i = 0; i < tree->len_child; i++)
@@ -135,37 +144,40 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 			cleanFilled();
 			cgen(code, tree->sibling, lastScope, lastType);
 
-			*code = addQuad(*code, "END", tree->label, NULL, NULL);
+			*code = addQuad(*code, "END", tree->instance, NULL, NULL);
 
 			return;
 			break;
 
-		case TYPE_K:
-			cgen(code, tree->child[0], lastScope, tree->label);
-			cgen(code, tree->sibling, lastScope, tree->label);
+		case INT_K:
+			cgen(code, tree->child[0], lastScope, tokenStr(INT_K));
+			cgen(code, tree->sibling, lastScope, tokenStr(INT_K));
+			return;
+			break;
+
+		case VOID_K:
+			cgen(code, tree->child[0], lastScope, tokenStr(VOID_K));
+			cgen(code, tree->sibling, lastScope, tokenStr(VOID_K));
 			return;
 			break;
 
 		case ARG_K:
-			sprintf(sreg, "$t%d", linkReg(tree->label)); // reg
+			sprintf(sreg, "$t%d", linkReg(tree->instance)); // reg
 
-			*code = addQuad(*code, tree->type, lastType, tree->label, lastScope);
-			*code = addQuad(*code, "LOAD", sreg, tree->label, NULL);
+			*code = addQuad(*code, tokenStr(tree->label), lastType, tree->instance, lastScope);
+			*code = addQuad(*code, "LOAD", sreg, tree->instance, NULL);
 			cgen(code, tree->sibling, lastScope, lastType);
 			return;
 			break;
 
 		case ALLOC_K:
-			*code = addQuad(*code, tree->type, tree->label, lastScope, NULL);
+			*code = addQuad(*code, tokenStr(tree->label), tree->instance, lastScope, NULL);
 			cgen(code, tree->sibling, lastScope, NULL);
 
 			return;
 		break;
 	
 		case IF_K:
-			exp retop;
-			char slabel1[10], slabel2[10];
-
 			retop = genOp(code, tree->child[0]);
 			(retop.type == REGT) ? sprintf(sreg, "$t%d", retop.value) : sprintf(sreg, "%d", retop.value);
 		
@@ -194,9 +206,6 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 			return;
 			break;
 		case WHILE_K:
-			exp retop;
-			char slabel1[10], slabel2[10];
-
 			// TODO: LABEL MUST CREATE ITS OWN NAME WITHOUT CONFLICT
 			sprintf(slabel1, "L%d", labelid++);
 			sprintf(slabel2, "L%d", labelid++);
@@ -218,7 +227,6 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 			return;
 			break;
 		case RETURN_K:
-			exp retop;
 			if(tree->child){
 				retop = genOp(code, tree->child[0]);
 				(retop.type == REGT) ? sprintf(sreg, "$t%d", retop.value) : sprintf(sreg, "%d", retop.value);
@@ -249,10 +257,11 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 }
 
 exp genOp(quad **code, astNo* tree){
+	int nreg, nnreg, sz;
 	char sreg[10], sreg1[10], sreg2[10];
-	exp ret, err;
-	int nreg;
-	exp lval, rval;
+	exp lval, rval, ret, err, val;
+	astNo* aux;
+
 
 	err = (exp){.type = -1, .value = -2};
 
@@ -429,17 +438,17 @@ exp genOp(quad **code, astNo* tree){
 
 
 		case NUM_K:
-			ret = (exp){.type = LITT, .value = atoi(tree->label)};
+			ret = (exp){.type = LITT, .value = atoi(tree->instance)};
 	//		return ret;
 			break;
 		
 		case VAR_K:
-			int nnreg = getReg(tree->label);
+			nnreg = getReg(tree->instance);
 
 			if(nnreg < 0){
-				nreg = linkReg(tree->label);
+				nreg = linkReg(tree->instance);
 				sprintf(sreg, "$t%d", nreg);
-				*code = addQuad(*code, "LOAD", sreg, tree->label, NULL);
+				*code = addQuad(*code, "LOAD", sreg, tree->instance, NULL);
 			}
 			else
 				nreg = nnreg;
@@ -450,10 +459,7 @@ exp genOp(quad **code, astNo* tree){
 			break;
 		
 		case CALL_K:
-			astNo* aux;
-			char sreg[10], sreg1[10];
-			int sz = 0;
-			exp val;
+			sz = 0;
 
 			aux = (tree->child) ? tree->child[0] : NULL;
 
@@ -468,7 +474,7 @@ exp genOp(quad **code, astNo* tree){
 			nreg = linkReg(NULL);
 			sprintf(sreg, "$t%d", nreg);
 			sprintf(sreg1, "%d", sz);
-			*code = addQuad(*code, "CALL", sreg, tree->label, sreg1);
+			*code = addQuad(*code, "CALL", sreg, tree->instance, sreg1);
 
 			ret = (exp){.type = REGT, .value = nreg};
 	//		return ret;

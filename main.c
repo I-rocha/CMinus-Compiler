@@ -5,6 +5,7 @@
 #include "parser.tab.h"
 #include "lexical/symtab.h"
 #include "semantic/semantic.h"
+#include  "cgen/cgen.h"
 
 extern FILE* yyin;
 FILE* fl;
@@ -43,13 +44,13 @@ int main(int argc, char** argv){
 //	symTPrint(headEnv, 0);
 	symTSave(headEnv, "output/symbolTable.txt");
 
-/*	quad* code;
+	quad* code;
 	code = gen(astTree);
 	// Intermediate Code
 	printQuad(code);
 
 	saveCI(code, "output/cgen.txt");
-*/	
+	
 
 	// Close files
 	if(fp)
