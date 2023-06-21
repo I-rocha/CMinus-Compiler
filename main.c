@@ -42,6 +42,7 @@ int main(int argc, char** argv){
 	/*	Symbol Table	*/
 	semantic(astTree);
 //	symTPrint(headEnv, 0);
+
 	symTSave(headEnv, "output/symbolTable.txt");
 
 	quad* code;

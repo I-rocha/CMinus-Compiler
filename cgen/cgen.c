@@ -123,8 +123,7 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 		return ;
 
 	switch(tree->label){
-		case FUN_K:
-			
+		case FUN_K:		
 			aux = symTLook(headEnv, tree->instance);
 			if(!aux){
 				printf("CGEN: Internal ERROR : Not finding function on symtable \n");
@@ -145,7 +144,6 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 			cgen(code, tree->sibling, lastScope, lastType);
 
 			*code = addQuad(*code, END_C, tree->instance, NULL, NULL);
-
 			return;
 			break;
 
@@ -184,6 +182,7 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 			// TODO: LABEL MUST CREATE ITS OWN NAME WITHOUT CONFLICT
 			sprintf(slabel1, "L%d", labelid++);
 			sprintf(slabel2, "L%d", labelid++);
+
 			*code = addQuad(*code, IFF_C, sreg, slabel1, NULL);
 
 			// LEN_CHILD is at most 3
@@ -215,7 +214,6 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 			retop = genOp(code, tree->child[0]);
 			(retop.type == REGT) ? sprintf(sreg, "$t%d", retop.value) : sprintf(sreg, "%d", retop.value);
 		
-
 			*code = addQuad(*code, IFF_C, sreg, slabel2, NULL);
 
 			cgen(code, tree->child[1], lastScope, NULL);
@@ -223,6 +221,7 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 			*code = addQuad(*code, GOTO_C, slabel1, NULL, NULL);
 
 			*code = addQuad(*code, LABEL_C, slabel2, NULL, NULL);
+
 			cgen(code, tree->sibling, lastScope, NULL);
 			return;
 			break;
@@ -467,6 +466,7 @@ exp genOp(quad **code, astNo* tree){
 				val = genOp(code, aux);
 				(val.type == REGT) ? sprintf(sreg, "$t%d", val.value) : sprintf(sreg, "%d", val.value);
 				*code = addQuad(*code, PARAM_C, sreg, NULL, NULL);
+
 				sz++;
 				aux = aux->sibling;
 			}
@@ -475,6 +475,7 @@ exp genOp(quad **code, astNo* tree){
 			sprintf(sreg, "$t%d", nreg);
 			sprintf(sreg1, "%d", sz);
 			*code = addQuad(*code, CALL_C, sreg, tree->instance, sreg1);
+
 
 			ret = (exp){.type = REGT, .value = nreg};
 	//		return ret;
