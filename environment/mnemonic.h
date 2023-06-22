@@ -11,6 +11,7 @@
 #define F2_LEN 15
 #define F3_LEN 13
 #define BIT_ARCH 32
+#define N_OPERATIONS 41
 
 typedef enum{
 	add = 0,
@@ -85,5 +86,6 @@ void initGlobal();
 instruction newInstruction(operation_t operation, ...);
 char* instruction2BinStr(instruction* instr);
 char* instruction2String(instruction* instr);
+char* operation2String(operation_t* operation);
 
 #endif

@@ -9,6 +9,50 @@ instruction_subset formatI, formatII, formatIII, format_set[SUBSET_SZ];
 operation_t o1[] = {add, sub, AND, OR, NOT, XOR, less, grand, eq, neq, leq, geq, shiftL, shiftR};
 operation_t o2[] = {mvi, addi, subi, ANDi, ORi, NOTi, XORi, lessi, grandi, eqi, neqi, leqi, geqi, lup, ldown};
 operation_t o3[] = {mv, jump, jal, jc, branch, bal, bc, sw, lw, get, print, NOP, STOP};
+char * mnemonic[] = {
+	"add\0"
+	"sub\0",
+	"addi\0",
+	"subi\0",
+	"AND\0",
+	"OR\0",
+	"NOT\0",
+	"XOR\0",
+	"ANDi\0",
+	"ORi\0",
+	"NOTi\0",
+	"XORi\0",
+	"shiftL\0",
+	"shiftR\0",
+	"less\0",
+	"grand\0",
+	"eq\0",
+	"neq\0",
+	"leq\0",
+	"geq\0",
+	"lessi\0",
+	"grandi\0",
+	"eqi\0",
+	"neqi\0",
+	"leqi\0",
+	"geqi\0",
+	"mv\0",
+	"mvi\0",
+	"sw\0",
+	"lw\0",
+	"lup\0",
+	"ldown\0",
+	"jump\0",
+	"jal\0",
+	"jc\0",
+	"branch\0",
+	"bal\0",
+	"bc\0",
+	"get\0",
+	"print\0",
+	"NOP\0",
+	"STOP\0"
+};
 
 static int getFormat(operation_t* op);
 static int setMeta(instruction* instr);
@@ -170,7 +214,7 @@ char* int2Bin(int dec, int nbits){
 
 // TODO: Need to dealocate str in some place
 char* instruction2String(instruction* instr){
-	char *str;
+	char *str, *operation;
 
 	str = (char*)malloc(sizeof(char) * (BIT_ARCH+1));
 	if(!str){
@@ -179,16 +223,18 @@ char* instruction2String(instruction* instr){
 	}
 	str[0]='\0';
 
+	operation = operation2String(&instr->operation);
+
 	switch(instr->formatID){
 	case FORMAT_I:
-		sprintf(str, "$r%d, $r%d, %d", instr->r1, instr->r2, instr->shamt);
+		sprintf(str, "%s $r%d, $r%d, %d", operation, instr->r1, instr->r2, instr->shamt);
 		break;
 	case FORMAT_II:
-		sprintf(str, "$r%d, %d", instr->r1, instr->immediate);
+		sprintf(str, "%s $r%d, %d", operation, instr->r1, instr->immediate);
 		
 		break;
 	case FORMAT_III:
-		sprintf(str, "$r%d, $r%d, %d", instr->r1, instr->r2, instr->desl);
+		sprintf(str, "%s $r%d, $r%d, %d", operation, instr->r1, instr->r2, instr->desl);
 		break;
 	}
 	return str;
@@ -210,6 +256,15 @@ int getFormat(operation_t* op){
 		}
 	}
 	return -1;
+}
+
+
+char* operation2String(operation_t* operation){
+	if(*operation >= N_OPERATIONS){
+		return "UNKNOWN";
+	}
+	else
+		return mnemonic[*operation];
 }
 
 int setMeta(instruction* instr){
@@ -416,9 +471,4 @@ int setMeta(instruction* instr){
 		return -1;
 	}
 	return 1;
-}
-
-char* operation2String(operation_t* operation){
-
-
 }
