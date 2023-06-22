@@ -14,3 +14,6 @@ symtab/*.o
 *.swp
 
 -Wall
+
+# Outputs
+output/*
