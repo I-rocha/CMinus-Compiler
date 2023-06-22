@@ -10,7 +10,9 @@
 
 cell memory[MEM_SZ];
 
-
+void envInitGlobal(){
+	initGlobal();
+}
 
 void initFunCode(quad* head){
 	int idx = 0;

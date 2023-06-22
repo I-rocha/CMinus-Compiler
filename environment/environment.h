@@ -19,6 +19,7 @@ typedef union{
 } cell;
 
 void initFunCode(quad* head);
+void envInitGlobal();
 
 void test();
 

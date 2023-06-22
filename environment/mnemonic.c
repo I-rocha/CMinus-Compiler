@@ -417,3 +417,8 @@ int setMeta(instruction* instr){
 	}
 	return 1;
 }
+
+char* operation2String(operation_t* operation){
+
+
+}

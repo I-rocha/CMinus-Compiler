@@ -57,7 +57,7 @@ int main(int argc, char** argv){
 	printf("------ BEGIN ENV --------\n");	
 	/* ENVIRONMENT */
 	//initFunCode(code);
-	initGlobal();
+	envInitGlobal();
 	test();
 
 	// Close files
