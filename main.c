@@ -6,6 +6,7 @@
 #include "lexical/symtab.h"
 #include "semantic/semantic.h"
 #include  "cgen/cgen.h"
+#include "environment/environment.h"
 
 extern FILE* yyin;
 FILE* fl;
@@ -51,7 +52,13 @@ int main(int argc, char** argv){
 	printQuad(code);
 
 	saveCI(code, "output/cgen.txt");
-	
+
+	printf("------ END CGEN --------\n");	
+	printf("------ BEGIN ENV --------\n");	
+	/* ENVIRONMENT */
+	//initFunCode(code);
+	initGlobal();
+	test();
 
 	// Close files
 	if(fp)
