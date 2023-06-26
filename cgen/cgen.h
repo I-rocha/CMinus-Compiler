@@ -34,10 +34,14 @@ typedef enum {
 	NONE_C
 	
 }CToken;
-
-
+/*
+#define REGT 0
+#define LITT 1
+*/
 typedef struct quad{
 	CToken op;
+//	int a1, a2, r;
+//	int t1, t2, tr;
 	char *arg1, *arg2, *result;
 	struct quad* next;
 }quad;
