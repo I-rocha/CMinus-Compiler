@@ -4,13 +4,15 @@
 #include <stdarg.h>	// variadic
 
 #include "mnemonic.h"
+#include "../utils.h"
 
-instruction_subset formatI, formatII, formatIII, format_set[SUBSET_SZ];
-operation_t o1[] = {add, sub, AND, OR, NOT, XOR, less, grand, eq, neq, leq, geq, shiftL, shiftR};
-operation_t o2[] = {mvi, addi, subi, ANDi, ORi, NOTi, XORi, lessi, grandi, eqi, neqi, leqi, geqi, lup, ldown};
-operation_t o3[] = {mv, jump, jal, jc, branch, bal, bc, sw, lw, get, print, NOP, STOP};
-char * mnemonic[] = {
-	"add\0"
+static int lineno = -1;
+static instruction_subset formatI, formatII, formatIII, format_set[SUBSET_SZ];
+static operation_t o1[] = {add, sub, AND, OR, NOT, XOR, less, grand, eq, neq, leq, geq, shiftL, shiftR};
+static operation_t o2[] = {mvi, addi, subi, ANDi, ORi, NOTi, XORi, lessi, grandi, eqi, neqi, leqi, geqi, lup, ldown};
+static operation_t o3[] = {mv, jump, jal, jc, branch, bal, bc, sw, lw, get, print, NOP, STOP};
+static char * mnemonic[] = {
+	"add\0",
 	"sub\0",
 	"addi\0",
 	"subi\0",
@@ -51,12 +53,24 @@ char * mnemonic[] = {
 	"get\0",
 	"print\0",
 	"NOP\0",
-	"STOP\0"
+	"STOP\0",
+	"UNKNOWN\0"
 };
 
 static int getFormat(operation_t* op);
 static int setMeta(instruction* instr);
 static char* int2Bin(int dec, int nbits);
+
+static memmory ram;
+
+void printRam(){
+	char* str;
+	for(int i = 0; i < ram.len; i++){
+		str = instruction2String(&ram.instr[i]);
+		printf("%s\n", str);
+	}
+	return;
+}
 
 void initGlobal(){
 	formatI.operation = o1;	
@@ -74,13 +88,15 @@ void initGlobal(){
 	format_set[0] = formatI;
 	format_set[1] = formatII;
 	format_set[2] = formatIII;
-}
 
+	lineno = -1;
+	ram.len = 0;
+	ram.instr = NULL;
+}
 
 instruction newInstruction(operation_t operation, ...){
 	instruction this_instruction;
 	instruction *instr = &this_instruction;
-	int r1, r2, imm, desl, shamt;
 
 	// Variadic arguments
 	va_list args;
@@ -91,7 +107,7 @@ instruction newInstruction(operation_t operation, ...){
 	
 	// set META
 	if(setMeta(instr) == -1)
-		printf("Error assigning META\n");
+		printf("Error assigning META. (%s)\n", __func__);
 
 	// Check format of instruction and assign attributes accordingly
 	switch(instr->formatID){
@@ -115,8 +131,13 @@ instruction newInstruction(operation_t operation, ...){
 		break;
 	}
 
-	// Finalizes variadic
+	// End variadic
 	va_end(args);
+
+
+	ram.instr = (instruction*)realloc(ram.instr, sizeof(instruction) * (ram.len + 1));
+	allocateValidator((void**)&ram.instr, REALLOC_VALIDATE);
+	ram.instr[ram.len++] = *instr;
 	return *instr;
 }
 
@@ -265,6 +286,10 @@ char* operation2String(operation_t* operation){
 	}
 	else
 		return mnemonic[*operation];
+}
+
+int getLine(){
+	return lineno;
 }
 
 int setMeta(instruction* instr){
@@ -470,5 +495,6 @@ int setMeta(instruction* instr){
 	default:
 		return -1;
 	}
+	instr->line = ++lineno;
 	return 1;
 }

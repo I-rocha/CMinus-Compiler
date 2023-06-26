@@ -11,7 +11,7 @@
 #define F2_LEN 15
 #define F3_LEN 13
 #define BIT_ARCH 32
-#define N_OPERATIONS 41
+#define N_OPERATIONS 42
 
 typedef enum{
 	add = 0,
@@ -55,7 +55,8 @@ typedef enum{
 	get,
 	print,
 	NOP,
-	STOP
+	STOP,
+	UNKNOWN
 }operation_t;
 
 typedef struct{
@@ -63,6 +64,7 @@ typedef struct{
 	int formatID;	// automatically set by operation
 	int opcode;		// automatically set by operation
 	int funct;   // automatically set by operation
+	int line;	// automatically set by operation
 
 	// User-like
 	operation_t operation;
@@ -73,6 +75,12 @@ typedef struct{
 	int desl;
 
 }instruction;
+
+typedef struct{
+	int len;
+
+	instruction* instr;
+}memmory;
 
 // defines formatI, formatII, formatIII
 typedef struct {
@@ -87,5 +95,7 @@ instruction newInstruction(operation_t operation, ...);
 char* instruction2BinStr(instruction* instr);
 char* instruction2String(instruction* instr);
 char* operation2String(operation_t* operation);
+void printRam();
+int getLine();
 
 #endif

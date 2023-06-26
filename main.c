@@ -58,7 +58,7 @@ int main(int argc, char** argv){
 	/* ENVIRONMENT */
 	//initFunCode(code);
 	envInitGlobal();
-	test();
+	test(code);
 
 	// Close files
 	if(fp)

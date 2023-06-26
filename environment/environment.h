@@ -18,9 +18,12 @@ typedef union{
 	registry activation;
 } cell;
 
-void initFunCode(quad* head);
-void envInitGlobal();
 
-void test();
+void envInitGlobal();
+void endEnv();
+
+
+void initFunCode(quad* head);
+void test(quad* head);
 
 #endif
