@@ -7,4 +7,5 @@ int fact(int k){
 int foo(void){
     int b;
     int a;
+    a = 3 + 5;
 }
