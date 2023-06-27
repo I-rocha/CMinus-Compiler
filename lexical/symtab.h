@@ -111,6 +111,14 @@ void symTAddParam(symEntry* entry, Token param);
 /* Get number of params*/
 int symTGetNParam(symEntry* entry);
 
+/*
+ * Get table by scope starting from head
+ * (ret) - addr to table
+ * (ret) - null if not found
+ */
+symTable* symTGetFromScope(symTable* head, char* scope);
+
+
 /* Print detailed info of entry */
 void printSingleDetail(symEntry* entry);
 

@@ -392,6 +392,24 @@ int symTGetNParam(symEntry* entry){
 	return entry->nparam; 
 }
 
+symTable* symTGetFromScope(symTable* head, char* scope){
+	symTable* ret;
+
+	if(!head){
+		return NULL;
+	}
+	if(strcmp(head->scope, scope) == 0)
+		return head;
+
+	// Look for the first valid address and returns it
+	for(int i = 0; i < head->len; i++){
+		ret = symTGetFromScope(&head->child[i], scope);
+		if(ret)
+			return ret;
+	}
+	return NULL;
+}
+
 void printSingleDetail(symEntry* entry){
 	if(!entry)
 		return;
@@ -469,7 +487,6 @@ void symTPrint(symTable* hash, int deep){
 	return;
 
 }
-
 
 int symTSave(symTable* hash, char* path){
 	FILE* fd;
