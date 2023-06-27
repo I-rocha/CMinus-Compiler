@@ -18,9 +18,9 @@ void allocateValidator(void** ptr, const char* msg, const char* func);
 /* Free pointer and set null */
 void freeNull(void** ptr);
 
-listString newListString();
-int addListString(listString ls, char* str);
-int getKeyListString(listString ls, char* str);
-void freeListString(listString ls);
+listString* newListString();
+int addListString(listString* ls, char* str);
+int getKeyListString(listString* ls, char* str);
+void freeListString(listString* ls);
 
 #endif
