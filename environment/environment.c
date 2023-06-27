@@ -37,6 +37,13 @@ int addList(listDefinition* l, int id, int line, int* addr);
 definition removeList(listDefinition* l, int id);
 void printList(listDefinition* l);
 
+/* to assembly */
+void processGlobal(quad *head);
+void saveReturn();
+void saveBinding();
+void processFunctionRec(quad* fun);
+void processFunction(quad* fun);
+
 
 static listDefinition labels, requests;	// requests to labels
 
@@ -228,8 +235,28 @@ void processRelational(quad* fun, operation_t op, operation_t opi){
 	}
 }
 
+void saveReturn(){
+	newInstruction(addi, sp, -1);
+	newInstruction(sw, sp, dj, 0);
+}
+
+void saveBinding(){
+	newInstruction(addi, sp, -1);
+	newInstruction(sw, sp, fp, 0);	
+	newInstruction(mv, fp, sp, 0);
+}
+
+/* Convert to assembly a whole function, including address and control */
 void processFunction(quad* fun){
 
+	saveReturn();
+	saveBinding();
+	// processFunctionRec(fun);
+	return;
+}
+
+/* Conver CI to assembly */
+void processFunctionRec(quad* fun){
 	if(!fun)
 		return;
 
@@ -243,9 +270,7 @@ void processFunction(quad* fun){
 	case ARG_C:
 		break;
 	case ALLOC_C:
-		newInstruction(sw, sp, hp, 0);
-		newInstruction(addi, hp, -1);
-		newInstruction(addi, sp, 1);
+		newInstruction(addi, sp, -1);
 		break;
 	case BEGINCODE_C:
 		newInstruction(NOP, 0, 0, 0);	// Does nothing
@@ -321,10 +346,9 @@ void processFunction(quad* fun){
 		break;
 		/**/
 	}
-	processFunction(fun->next);
-
-	return;
+	processFunctionRec(fun->next);
 }
+
 
 /* Makes global allocation */
 void processGlobal(quad *head){
@@ -349,9 +373,9 @@ void toAssembly(quad* head){
 	for(int i = 0; i < la.len; i++){
 		printf("function: %s\n", la.code[i]->arg2);
 	}
-	/*
+	
 	processFunction(la.code[0]);
-	*/
+	
 	printRam();
 	/*
 	if(la.code){
