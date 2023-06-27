@@ -17,3 +17,6 @@ symtab/*.o
 
 # Outputs
 output/*
+
+# Inputs
+input/*
