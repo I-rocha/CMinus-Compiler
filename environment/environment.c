@@ -8,7 +8,11 @@
 #include "../utils.h"
 
 #define MEM_SZ 1000
-#define RM 31
+
+#define sp 31
+#define fp 30
+#define hp 29
+#define oa 28
 
 
 cell memory[MEM_SZ];
@@ -216,10 +220,10 @@ void processAritmetic(quad* fun, operation_t op, operation_t opi){
 		newInstruction(op, arg1, arg2, 0, 0);
 	}
 	else{
-		newInstruction(mv, RM, arg2, 0, 0);
+		newInstruction(mv, oa, arg2, 0, 0);
 		newInstruction(op, arg2, r, 0, 0);
 		newInstruction(op, arg1, arg2);
-		newInstruction(mv, arg2, RM);
+		newInstruction(mv, arg2, oa);
 	}
 }
 
@@ -232,8 +236,8 @@ void processRelational(quad* fun, operation_t op, operation_t opi){
 
 	// Create instruction based on where arguments are register or immediate
 	if(!isreg_arg1 && !isreg_arg2){
-		newInstruction(mvi, RM, arg1);
-		newInstruction(opi, RM, arg2);
+		newInstruction(mvi, oa, arg1);
+		newInstruction(opi, oa, arg2);
 	}
 	else if(isreg_arg1 && !isreg_arg2){
 		newInstruction(opi, arg1, arg2);
@@ -247,6 +251,7 @@ void processRelational(quad* fun, operation_t op, operation_t opi){
 }
 
 void processFunction(quad* fun){
+	var_name* vlist;
 
 	if(!fun)
 		return;
@@ -261,6 +266,9 @@ void processFunction(quad* fun){
 	case ARG_C:
 		break;
 	case ALLOC_C:
+		newInstruction(sw, sp, hp, 0);
+		newInstruction(addi, hp, -1);
+		newInstruction(addi, sp, 1);
 		break;
 	case BEGINCODE_C:
 		newInstruction(NOP, 0, 0, 0);	// Does nothing
@@ -270,6 +278,7 @@ void processFunction(quad* fun){
 		break;
 	case ENDCODE_C:
 		newInstruction(NOP, 0, 0, 0);	// Does nothing
+		return;
 		break;
 	case END_C:
 		return;
@@ -278,13 +287,15 @@ void processFunction(quad* fun){
 		break;
 	case IFF_C:
 		// Trocar a condicao
-		instr = newInstruction(bc, 0, 0, -1);
+		instr = newInstruction(bc, 0, 0, -1);	// TODO: bc Must be bcn (branch conditional negate)
 		addList(&requests, atoi(&fun->arg2[1]), getLine(), &instr->desl);
 		break;
 	case LABEL_C:
 		addList(&labels, atoi(&fun->arg1[1]), getLine(), NULL);
 		break;
 	case GOTO_C:
+		instr = newInstruction(branch, 0, 0, -1);
+		addList(&requests, atoi(&fun->arg1[1]), getLine(), &instr->desl);
 		break;
 	case ADD_C:
 		processAritmetic(fun, add, addi);
