@@ -14,10 +14,6 @@
 #define hp 29
 #define oa 28
 
-
-cell memory[MEM_SZ];
-instruction mem[MEM_SZ];
-
 typedef struct{
 	int id;
 	int line;
@@ -166,28 +162,6 @@ quadList getFuncions(quad* head){
 		curr = curr->next;
 	}
 	return fun_list;
-}
-
-void initFunCode(quad* head){
-	int idx = 0;
-	quad* curr;
-	curr = head;
-	while(curr != NULL){
-		switch(curr->op){
-		case FUN_C:
-			memory[idx++].code = curr;
-			break;
-		default:
-			break;
-		}
-		curr = curr->next;
-	}
-	
-	for(int j = 0; j < idx; j++){
-		printf("%s", memory[j].code->arg2);
-		printf("\n");
-	}
-
 }
 
 int isReg(char* str){
@@ -349,7 +323,7 @@ void processFunction(quad* fun){
 }
 
 
-void test(quad* head){
+void toAssembly(quad* head){
 	quadList la;
 	la = getFuncions(head);
 	
