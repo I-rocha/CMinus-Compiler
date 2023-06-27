@@ -90,11 +90,12 @@ void initGlobal(){
 	format_set[2] = formatIII;
 
 	lineno = -1;
+
 	ram.len = 0;
 	ram.instr = NULL;
 }
 
-instruction newInstruction(operation_t operation, ...){
+instruction* newInstruction(operation_t operation, ...){
 	instruction this_instruction;
 	instruction *instr = &this_instruction;
 
@@ -138,7 +139,7 @@ instruction newInstruction(operation_t operation, ...){
 	ram.instr = (instruction*)realloc(ram.instr, sizeof(instruction) * (ram.len + 1));
 	allocateValidator((void**)&ram.instr, REALLOC_VALIDATE);
 	ram.instr[ram.len++] = *instr;
-	return *instr;
+	return &ram.instr[ram.len];
 }
 
 // TODO: str_instr must be dealocated somewhere

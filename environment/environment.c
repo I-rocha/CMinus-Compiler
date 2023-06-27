@@ -251,14 +251,13 @@ void processRelational(quad* fun, operation_t op, operation_t opi){
 }
 
 void processFunction(quad* fun){
-	var_name* vlist;
 
 	if(!fun)
 		return;
 
 	// operation_t op;
 	int arg1, arg2;
-	instruction instr;
+	instruction* instr;
 
 	switch(fun->op){
 	case FUN_C:

@@ -77,7 +77,7 @@ typedef struct{
 }instruction;
 
 typedef struct{
-	int len;
+	unsigned int len;
 
 	instruction* instr;
 }memmory;
@@ -91,7 +91,7 @@ typedef struct {
 
 // Public
 void initGlobal();
-instruction newInstruction(operation_t operation, ...);
+instruction* newInstruction(operation_t operation, ...);
 char* instruction2BinStr(instruction* instr);
 char* instruction2String(instruction* instr);
 char* operation2String(operation_t* operation);
