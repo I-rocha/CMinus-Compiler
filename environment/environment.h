@@ -6,6 +6,7 @@
 void envInitGlobal();
 void endEnv();
 
+void processGlobal(quad *head);
 void toAssembly(quad* head);
 
 #endif

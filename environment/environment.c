@@ -9,10 +9,11 @@
 
 #define MEM_SZ 1000
 
-#define sp 31
-#define fp 30
-#define hp 29
-#define oa 28
+#define dj 31
+#define sp 30
+#define fp 29
+#define hp 28
+#define oa 27
 
 typedef struct{
 	int id;
@@ -322,9 +323,24 @@ void processFunction(quad* fun){
 	return;
 }
 
+/* Makes global allocation */
+void processGlobal(quad *head){
+	if(
+		!head || 
+		(head->op != ALLOC_C)
+	 ){
+		return;
+	}
+
+	newInstruction(addi, sp, -1);
+	processGlobal(head->next);
+}
 
 void toAssembly(quad* head){
-	quadList la;
+	// quadList la;
+	processGlobal(head->next);
+
+	/*
 	la = getFuncions(head);
 	
 	for(int i = 0; i < la.len; i++){
@@ -332,9 +348,12 @@ void toAssembly(quad* head){
 	}
 
 	processFunction(la.code[0]);
+	*/
 	printRam();
+	/*
 	if(la.code){
 		free(la.code);
 		la.code = NULL;
 	}
+	*/
 }
