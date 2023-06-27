@@ -151,7 +151,10 @@ quadList getFuncions(quad* head){
 			temp = curr;
 
 			// Alloc main at first position
-			if(strcmp(curr->arg2, "main") == 0){
+			if(
+				(strcmp(curr->arg2, "main") == 0) && 
+				(fun_list.len > 0)
+				){
 				temp = fun_list.code[0];
 				fun_list.code[0] = curr;
 			}
@@ -337,16 +340,16 @@ void processGlobal(quad *head){
 }
 
 void toAssembly(quad* head){
-	// quadList la;
+	quadList la;
 	processGlobal(head->next);
 
-	/*
+	
 	la = getFuncions(head);
 	
 	for(int i = 0; i < la.len; i++){
 		printf("function: %s\n", la.code[i]->arg2);
 	}
-
+	/*
 	processFunction(la.code[0]);
 	*/
 	printRam();
