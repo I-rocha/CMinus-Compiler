@@ -49,7 +49,7 @@ typedef struct{
 /* Lists operations */
 // definitionByID* getListDefinition(listDefinition* l, int id);
 void* ldGet(listDefinition* l, void* def);
-int addList(listDefinition* l, int id, int line, int* addr);
+int ldAdd(listDefinition* l, void* def, int line, int* addr);
 definitionByID removeList(listDefinition* l, int id);
 void printList(listDefinition* l);
 
@@ -70,6 +70,10 @@ void envInitGlobal(){
 	labels.itemId = NULL;
 	labels.len = 0;
 	labels.type = DEF_ID;
+
+	requests.itemId = NULL;
+	requests.len = 0;
+	requests.type = DEF_ID;
 }
 
 void endEnv(){
@@ -113,41 +117,42 @@ void* ldGet(listDefinition* l, void* def){
 }
 
 /* Add definition to list if element not exist*/
-int addList(listDefinition* l, int id, int line, int* addr){
+int ldAdd(listDefinition* l, void* def, int line, int* addr){
 
 	if(!l){
 		printf("List not exist (addList)\n");
 		exit(0);
 		return -1;
 	}
-	
-	if(!l->itemId){
-		l->itemId = (definitionByID*)malloc(sizeof(definitionByID));
-		allocateValidator((void**)&l->itemId, MALLOC_VALIDATE);
-
-		l->itemId[0].id = id;
-		l->itemId[0].line = line;
-		l->itemId[0].addr = addr;
-		l->len = 1;
-		return 1;
-	}
-
-	if(ldGet(l, (void*)&id))
+	if(ldGet(l, def))
 		return 0;
-	
-	l->itemId = (definitionByID*)realloc(l->itemId, sizeof(definitionByID) * (l->len + 1));
-	allocateValidator((void**)&l->itemId, REALLOC_VALIDATE);
 
-	l->itemId[l->len].line = line;
-	l->itemId[l->len].id = id;	
-	l->itemId[0].addr = addr;
-	l->len++;
-
+	// Check type and alloc new item
+	switch(l->type){
+	case DEF_ID:
+		l->itemId = (definitionByID*)realloc(l->itemId, sizeof(definitionByID) * (l->len + 1));
+		allocateValidator((void**)&l->itemId, REALLOC_VALIDATE);
+		l->itemId[l->len].id = *(int*)def;
+		l->itemId[l->len].line = line;
+		l->itemId[l->len].addr = addr;
+		l->len++;
+		return 1;
+		break;
+	case DEF_STR:
+		l->itemStr = (definitionByStr*)realloc(l->itemStr, sizeof(definitionByStr) * (l->len + 1));
+		allocateValidator((void**)&l->itemStr, REALLOC_VALIDATE);
+		l->itemStr[l->len].str = strdup((char*)def);
+		l->itemStr[l->len].line = line;
+		l->itemStr[l->len].addr = addr;
+		l->len++;
+		return 1;
+		break;
+	default:
+		return -2;
+	}
 	return 1;
 }
 
-/* Get element specified by id, remove from list and returns it */
-/* NOTE: If element does'nt exist. return is unclear */
 definitionByID removeList(listDefinition* l, int id){
 	definitionByID ret, *temp;
 	ret.id = -1;
@@ -315,7 +320,7 @@ void locateTemps(){
 
 /* Conver CI to assembly */
 void processFunctionRec(quad* fun, listString* ls){
-	int positional, reg;
+	int positional, reg, label;
 
 	if(!fun)
 		return;
@@ -359,14 +364,17 @@ void processFunctionRec(quad* fun, listString* ls){
 	case IFF_C:
 		// Trocar a condicao
 		instr = newInstruction(bc, 0, 0, -1);	// TODO: bc Must be bcn (branch conditional negate)
-		addList(&requests, atoi(&fun->arg2[1]), getLine(), &instr->desl);
+		label = atoi(&fun->arg2[1]);
+		ldAdd(&requests, &label, getLine(), &instr->desl);
 		break;
 	case LABEL_C:
-		addList(&labels, atoi(&fun->arg1[1]), getLine(), NULL);
+		label = atoi(&fun->arg1[1]);
+		ldAdd(&labels, &label, getLine(), NULL);
 		break;
 	case GOTO_C:
 		instr = newInstruction(branch, 0, 0, -1);
-		addList(&requests, atoi(&fun->arg1[1]), getLine(), &instr->desl);
+		label = atoi(&fun->arg1[1]);
+		ldAdd(&requests, &label, getLine(), &instr->desl);
 		break;
 	case ADD_C:
 		processAritmetic(fun, add, addi);
