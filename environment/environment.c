@@ -9,12 +9,14 @@
 
 #define MEM_SZ 1000
 
-#define dj 31
-#define sp 30
-#define fp 29
-#define hp 28
-#define oa 27
-#define rd 26
+
+#define ntemps 16 // Number of temporary
+#define dj 31	// data jump
+#define sp 30	// stack pointer
+#define fp 29	// frame pointer
+#define hp 28	// heap pointer ??
+#define oa 27	// override aux
+#define rd 26	// return data
 
 typedef struct{
 	int id;
@@ -44,6 +46,7 @@ void saveReturn();
 void saveBinding();
 void processFunctionRec(quad* fun, listString* ls);
 void processFunction(quad* fun);
+void loadTemps();
 
 
 static listDefinition labels, requests;	// requests to labels
@@ -263,6 +266,16 @@ void processFunction(quad* fun){
 	return;
 }
 
+void loadTemps(){
+	int rt;
+	for(int i = 0; i < ntemps; i++){
+		rt = ntemps - i;
+		newInstruction(mv, rt, sp, 0);
+		newInstruction(lw, rt, 0, 0);
+		newInstruction(addi, sp, 1);	// update sp
+	}
+}
+
 /* Conver CI to assembly */
 void processFunctionRec(quad* fun, listString* ls){
 	int positional, reg;
@@ -362,9 +375,30 @@ void processFunctionRec(quad* fun, listString* ls){
 		/**/
 		break;
 	case RETURN_C:
+		// store return data and update pointers
+
+		if(fun->arg1){
+			// save return data
+			newInstruction(mv, rd, atoi(&fun->arg1[1]), 0);
+		}
+		// update PC
+		newInstruction(mv, oa, fp, 0);
+		newInstruction(addi, oa, 1);
+		newInstruction(jump, oa, 0, 0);
+
+		// Update sp
+		newInstruction(mv, sp, fp, 0);
+		newInstruction(lw, sp, 0, 2);
+
+		loadTemps();
+
+		// update fp
+		newInstruction(lw, fp, 0, 0);
+
 		/**/
 		break;
 	case CALL_C:
+
 		/**/
 		break;
 	default:
