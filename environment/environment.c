@@ -102,31 +102,15 @@ void* ldGet(listDefinition* l, void* def){
 	// Look each item and see if definition exists
 	for(int i = 0; i < l->len; i++){
 		// Type of union
-		/*
-		switch(l->type){
-		case DEF_ID:
-			itID = &l->itemId[i];
-			if(itID->id == *(int*)def)
-				return itID;
-			break;
-		case DEF_STR:
-			itStr = &l->itemStr[i];
-			if(strcmp(itStr->str, (char*)def) == 0)
-				return itStr;
-			break;
-		default:
-			return NULL;
-		}
-		*/
 		if(l->type == DEF_ID){
-			itID = &l->itemId[i];
-			if(itID->id == *(int*)def)
+			itID = &l->itemId[i];		// get item
+			if(itID->id == *(int*)def)	// check definition
 				return itID;
 		}
 		// Type of union
 		else if(l->type == DEF_STR){
-			itStr = &l->itemStr[i];
-			if(strcmp(itStr->str, (char*)def) == 0)
+			itStr = &l->itemStr[i];	// get item
+			if(strcmp(itStr->str, (char*)def) == 0)	// check definition
 				return itStr;
 		}
 	}
