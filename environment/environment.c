@@ -14,6 +14,7 @@
 #define fp 29
 #define hp 28
 #define oa 27
+#define rd 26
 
 typedef struct{
 	int id;
@@ -275,8 +276,10 @@ void processFunctionRec(quad* fun, listString* ls){
 
 	switch(fun->op){
 	case FUN_C:
+		/**/
 		break;
 	case ARG_C:
+		/**/
 		break;
 	case ALLOC_C:
 		// Need to considerate array
@@ -356,14 +359,17 @@ void processFunctionRec(quad* fun, listString* ls){
 		newInstruction(sw, fp, reg, positional);
 		break;
 	case PARAM_C:
+		/**/
 		break;
 	case RETURN_C:
+		/**/
 		break;
 	case CALL_C:
+		/**/
 		break;
 	default:
-		break;
 		/**/
+		break;
 	}
 	processFunctionRec(fun->next, ls);
 }
