@@ -32,7 +32,6 @@ typedef struct{
 }definitionByStr;
 
 typedef struct ListDefinition{
-	// definitionByID* item;
 	union{
 		definitionByID *itemId;
 		definitionByStr *itemStr;
@@ -74,6 +73,8 @@ void envInitGlobal(){
 	requests.itemId = NULL;
 	requests.len = 0;
 	requests.type = DEF_ID;
+
+
 }
 
 void endEnv(){
@@ -187,8 +188,10 @@ int ldRm(listDefinition* l, void* def){
 		// Resizing array
 		l->itemId = (definitionByID*)realloc(l->itemId, sizeof(definitionByID) * (--l->len));
 
-		if(l->len == 0)
+		if(l->len == 0){
+			free(l->itemId);
 			l->itemId = NULL;
+		}
 
 		free(addr_ref_d);
 		break;
@@ -206,8 +209,10 @@ int ldRm(listDefinition* l, void* def){
 		// Resizing array
 		l->itemStr = (definitionByStr*)realloc(l->itemStr, sizeof(definitionByStr) * (--l->len));
 
-		if(l->len == 0)
+		if(l->len == 0){
+			free(l->itemStr);
 			l->itemStr = NULL;
+		}
 
 		free(str_ref_d);
 		break;
