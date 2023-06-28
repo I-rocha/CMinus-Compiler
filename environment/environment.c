@@ -477,8 +477,13 @@ void processFunctionRec(quad* fun, listString* ls){
 		isReg(fun->arg2) ? (newInstruction(mv, arg1, arg2, 0)) : (newInstruction(mvi, arg1, arg2));
 		break;
 	case STORE_C:
-		positional = getKeyListString(ls, fun->arg2) + 1;
-		reg = atoi(&fun->arg1[1]);
+		key = getKeyListString(ls, fun->arg1);
+		positional = key + 1;
+		if(key < 0){
+			printf("## Error finding name in list (STORE_C)\n");
+			printf("## Assign 0 to positional\n");
+		}
+		reg = atoi(&fun->arg2[2]);
 		newInstruction(sw, fp, reg, positional);
 		break;
 	case PARAM_C:
