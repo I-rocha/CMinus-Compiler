@@ -62,7 +62,7 @@ void loadTemps();
 void locateTemps();
 
 
-static listDefinition labels, requests;	// requests to labels
+static listDefinition labels, requests, calls;	// requests to labels
 
 void envInitGlobal(){
 	initGlobal();
@@ -74,6 +74,9 @@ void envInitGlobal(){
 	requests.len = 0;
 	requests.type = DEF_ID;
 
+	calls.itemStr = NULL;
+	calls.len = 0;
+	calls.type = DEF_STR;
 
 }
 
@@ -491,14 +494,16 @@ void processFunctionRec(quad* fun, listString* ls){
 		/**/
 		break;
 	case CALL_C:
-		// alocar temporarios
+		// Locate temps
 		locateTemps();
 
-		// obter endereco da funcao chamada
+		instr = newInstruction(bal,0, 0, -1);
 
-
-		// fazer pulo incondicional
+		// saving call to function to addr later
+		ldAdd(&calls, (void*)fun->result, getLine(), &instr->desl);
+		
 		// armazenar retorno no resgitrador do CALL_C
+		newInstruction(mv, atoi(&fun->arg1[1]), rd, 0);
 
 		/**/
 		break;
