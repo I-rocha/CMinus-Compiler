@@ -28,7 +28,7 @@ int addListString(listString* ls, char* str);
 int getKeyListString(listString* ls, char* str);
 void freeListString(listString* ls);
 
-stack* addStack(stack* ptr);
+stack* addStack(stack* ptr, int id);
 int popStack();
 
 #endif
