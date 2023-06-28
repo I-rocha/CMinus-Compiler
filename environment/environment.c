@@ -47,7 +47,6 @@ typedef struct{
 }quadList;
 
 /* Lists operations */
-// definitionByID* getListDefinition(listDefinition* l, int id);
 void* ldGet(listDefinition* l, void* def);
 int ldAdd(listDefinition* l, void* def, int line, int* addr);
 int ldRm(listDefinition* l, void* def);
