@@ -10,6 +10,11 @@ typedef struct{
 	int len;
 }listString;
 
+typedef struct Stack{
+	int id;
+	struct Stack* next;
+}stack;
+
 char* lexformat(char* tok, char* lex);
 
 /* Check if ptr was indeed allocated */
@@ -22,5 +27,8 @@ listString* newListString();
 int addListString(listString* ls, char* str);
 int getKeyListString(listString* ls, char* str);
 void freeListString(listString* ls);
+
+stack* addStack(stack* ptr);
+int popStack();
 
 #endif

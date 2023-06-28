@@ -95,3 +95,40 @@ void freeListString(listString* ls){
 	free(ls);
 	ls = NULL;
 }
+
+stack* addStack(stack* ptr, int id){
+	stack* new;
+
+	// Allocate new struct
+	new = (stack*)malloc(sizeof(stack));
+	allocateValidator((void**)&new, MALLOC_VALIDATE);
+
+	new->id = id;
+
+	// Check if ptr already exist and update next
+	if(!ptr){
+		new->next = NULL;
+	}
+	else
+		new->next = ptr;
+	
+	ptr = new;
+
+	return ptr;
+}
+
+int popStack(stack** ptr){
+	stack* toRemove;
+	int ret;
+
+	if(!ptr || !*ptr)
+		return -1;
+	
+	ret = (*ptr)->id;
+
+	toRemove = *ptr;
+	*ptr = (*ptr)->next;
+
+	freeNull((void**)&toRemove);
+	return ret;
+}
