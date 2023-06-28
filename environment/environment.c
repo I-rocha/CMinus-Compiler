@@ -410,6 +410,7 @@ void processFunctionRec(quad* fun, listString* ls){
 		break;
 	case CALL_C:
 		// alocar temporarios
+		locateTemps();
 		// obter endereco da funcao chamada
 		// fazer pulo incondicional
 		// armazenar retorno no resgitrador do CALL_C
