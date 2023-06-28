@@ -306,7 +306,7 @@ void processAritmetic(quad* fun, operation_t op, operation_t opi){
 	else{
 		newInstruction(mv, oa, arg2, 0);
 		newInstruction(op, arg2, r, 0, 0);
-		newInstruction(op, arg1, arg2);
+		newInstruction(op, arg1, arg2, 0, 0);
 		newInstruction(mv, arg2, oa, 0);
 	}
 }
