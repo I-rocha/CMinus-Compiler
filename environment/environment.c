@@ -63,6 +63,7 @@ void locateTemps();
 
 
 static listDefinition labels, requests, calls;	// requests to labels
+static stack* params;
 
 void envInitGlobal(){
 	initGlobal();
@@ -78,6 +79,7 @@ void envInitGlobal(){
 	calls.len = 0;
 	calls.type = DEF_STR;
 
+	params = NULL;
 }
 
 void endEnv(){
@@ -292,10 +294,10 @@ void processAritmetic(quad* fun, operation_t op, operation_t opi){
 		newInstruction(op, arg1, arg2, 0, 0);
 	}
 	else{
-		newInstruction(mv, oa, arg2, 0, 0);
+		newInstruction(mv, oa, arg2, 0);
 		newInstruction(op, arg2, r, 0, 0);
 		newInstruction(op, arg1, arg2);
-		newInstruction(mv, arg2, oa);
+		newInstruction(mv, arg2, oa, 0);
 	}
 }
 
@@ -368,15 +370,21 @@ void locateTemps(){
 	return;
 }
 
+void stackParam(int len){
+	int param;
+	param = popStack(&params);
+	for(int i = 0; i < len; i++){
+		newInstruction(sw, sp, param, (-i-1));
+	}
+}
 
 /* Conver CI to assembly */
 void processFunctionRec(quad* fun, listString* ls){
-	int positional, reg, label;
+	int key, positional, reg, label;
 
 	if(!fun)
 		return;
 
-	// operation_t op;
 	int arg1, arg2;
 	instruction* instr;
 
@@ -385,6 +393,7 @@ void processFunctionRec(quad* fun, listString* ls){
 		/**/
 		break;
 	case ARG_C:
+		addListString(ls, fun->arg2);
 		/**/
 		break;
 	case ALLOC_C:
@@ -407,9 +416,15 @@ void processFunctionRec(quad* fun, listString* ls){
 		break;
 	case LOAD_C:
 		// 
-		positional = getKeyListString(ls, fun->arg2) + 1;
-		reg = atoi(&fun->arg1[1]);
-		newInstruction(mv, reg, fp);
+		key = getKeyListString(ls, fun->arg2);
+		positional = key + 1;
+		if(key < 0){
+			printf("## Error finding name in list (LOAD_C)\n");
+			printf("## Assign 0 to positional\n");
+		}
+		positional++;
+		reg = atoi(&fun->arg1[2]);
+		newInstruction(mv, reg, fp, 0);
 		newInstruction(lw, reg, 0, positional);
 		break;
 	case IFF_C:
@@ -468,6 +483,7 @@ void processFunctionRec(quad* fun, listString* ls){
 		newInstruction(sw, fp, reg, positional);
 		break;
 	case PARAM_C:
+		params = addStack(params, atoi(&fun->arg1[1]));
 		/**/
 		break;
 	case RETURN_C:
@@ -497,13 +513,16 @@ void processFunctionRec(quad* fun, listString* ls){
 		// Locate temps
 		locateTemps();
 
+		// Update next args
+		stackParam(atoi(fun->result));
+
 		instr = newInstruction(bal,0, 0, -1);
 
 		// saving call to function to addr later
 		ldAdd(&calls, (void*)fun->result, getLine(), &instr->desl);
 		
 		// armazenar retorno no resgitrador do CALL_C
-		newInstruction(mv, atoi(&fun->arg1[1]), rd, 0);
+		newInstruction(mv, atoi(&fun->arg1[1]), rd, 0); 
 
 		/**/
 		break;
