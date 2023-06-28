@@ -298,7 +298,7 @@ void processFunctionRec(quad* fun, listString* ls){
 		break;
 	case LOAD_C:
 		// 
-		positional = getKeyListString(ls, fun->arg2);
+		positional = getKeyListString(ls, fun->arg2) + 1;
 		reg = atoi(&fun->arg1[1]);
 		newInstruction(mv, reg, fp);
 		newInstruction(lw, reg, 0, positional);
@@ -351,6 +351,9 @@ void processFunctionRec(quad* fun, listString* ls){
 		isReg(fun->arg2) ? (newInstruction(mv, arg1, arg2, 0)) : (newInstruction(mvi, arg1, arg2));
 		break;
 	case STORE_C:
+		positional = getKeyListString(ls, fun->arg2) + 1;
+		reg = atoi(&fun->arg1[1]);
+		newInstruction(sw, fp, reg, positional);
 		break;
 	case PARAM_C:
 		break;
