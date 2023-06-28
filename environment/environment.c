@@ -47,6 +47,7 @@ void saveBinding();
 void processFunctionRec(quad* fun, listString* ls);
 void processFunction(quad* fun);
 void loadTemps();
+void locateTemps();
 
 
 static listDefinition labels, requests;	// requests to labels
@@ -274,7 +275,17 @@ void loadTemps(){
 		newInstruction(lw, rt, 0, 0);
 		newInstruction(addi, sp, 1);	// update sp
 	}
+	return;
 }
+
+void locateTemps(){
+	for(int rt = 0; rt < ntemps; rt++){
+		newInstruction(addi, sp, -1);	// update sp
+		newInstruction(sw, sp, rt, 0);	// allocate
+	}
+	return;
+}
+
 
 /* Conver CI to assembly */
 void processFunctionRec(quad* fun, listString* ls){
@@ -398,6 +409,10 @@ void processFunctionRec(quad* fun, listString* ls){
 		/**/
 		break;
 	case CALL_C:
+		// alocar temporarios
+		// obter endereco da funcao chamada
+		// fazer pulo incondicional
+		// armazenar retorno no resgitrador do CALL_C
 
 		/**/
 		break;
