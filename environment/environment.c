@@ -50,7 +50,8 @@ typedef struct{
 // definitionByID* getListDefinition(listDefinition* l, int id);
 void* ldGet(listDefinition* l, void* def);
 int ldAdd(listDefinition* l, void* def, int line, int* addr);
-definitionByID removeList(listDefinition* l, int id);
+int ldRm(listDefinition* l, void* def);
+
 void printList(listDefinition* l);
 
 /* to assembly */
@@ -101,6 +102,22 @@ void* ldGet(listDefinition* l, void* def){
 	// Look each item and see if definition exists
 	for(int i = 0; i < l->len; i++){
 		// Type of union
+		/*
+		switch(l->type){
+		case DEF_ID:
+			itID = &l->itemId[i];
+			if(itID->id == *(int*)def)
+				return itID;
+			break;
+		case DEF_STR:
+			itStr = &l->itemStr[i];
+			if(strcmp(itStr->str, (char*)def) == 0)
+				return itStr;
+			break;
+		default:
+			return NULL;
+		}
+		*/
 		if(l->type == DEF_ID){
 			itID = &l->itemId[i];
 			if(itID->id == *(int*)def)
@@ -153,27 +170,70 @@ int ldAdd(listDefinition* l, void* def, int line, int* addr){
 	return 1;
 }
 
-definitionByID removeList(listDefinition* l, int id){
-	definitionByID ret, *temp;
-	ret.id = -1;
-	ret.line = -1;
+/* 1: Removed
+ * 0: Definition not exist
+ * -1: Error
+ */
+int ldRm(listDefinition* l, void* def){
+	definitionByID* replace_id_t, *lastItemID;
+	definitionByStr* replace_str_t, *lastItemStr;
+	char* str_ref_d;
+	int* addr_ref_d;
 
-	temp = ldGet(l, (void*)&id);
+	void* toRemove;
 
-	if(!temp)
-		return ret;
+	if(!l || l->len == 0)
+		return 0;
 
-	ret = *temp;
-	*temp = l->itemId[--l->len];
+	toRemove = ldGet(l, def);
+	if(!toRemove)
+		return 0;
 
-	if(l->len > 0){
-		l->itemId = (definitionByID*)realloc(l->itemId, sizeof(definitionByID)*l->len);
-		allocateValidator((void**)&l->itemId, REALLOC_VALIDATE);
+	// Check type, copy last item into replace item and free old allocated types (fields of replaced item)
+	switch(l->type){
+	case DEF_ID:
+		lastItemID = &l->itemId[l->len-1];
+		replace_id_t = (definitionByID*)toRemove;
+		addr_ref_d = replace_id_t->addr;	// Saving to free later
+
+		// Copy
+		replace_id_t->id = lastItemID->id;
+		replace_id_t->line = lastItemID->line;
+		replace_id_t->addr = lastItemID->addr;
+
+		// Resizing array
+		l->itemId = (definitionByID*)realloc(l->itemId, sizeof(definitionByID) * (--l->len));
+
+		if(l->len == 0)
+			l->itemId = NULL;
+
+		free(addr_ref_d);
+		break;
+
+	case DEF_STR:
+		lastItemStr = &l->itemStr[l->len-1];
+		replace_str_t = (definitionByStr*)toRemove;
+		str_ref_d = replace_str_t->str;	// Saving to free later
+
+		// Copy
+		replace_str_t->str = lastItemStr->str;
+		replace_str_t->line = lastItemStr->line;
+		replace_str_t->addr = lastItemStr->addr;
+
+		// Resizing array
+		l->itemStr = (definitionByStr*)realloc(l->itemStr, sizeof(definitionByStr) * (--l->len));
+
+		if(l->len == 0)
+			l->itemStr = NULL;
+
+		free(str_ref_d);
+		break;
+
+	default:
+		return 0;
 	}
-	else
-		freeNull((void**)&l->itemId);
 
-	return ret;
+	return 1;
 }
 
 /* Note that quadList.code must be deallocated */
