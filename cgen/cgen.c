@@ -90,7 +90,6 @@ quad* addQuad(quad* code, Token op, char* arg1, char* arg2, char* result){
 	code->arg1 = (arg1) ? strdup(arg1) : strdup("-");
 	code->arg2 = (arg2) ? strdup(arg2) : strdup("-");
 	code->result = (result) ? strdup(result) : strdup("-");
-	printSingle(code);
 	return code;
 }
 
