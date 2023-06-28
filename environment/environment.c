@@ -8,7 +8,8 @@
 #include "../utils.h"
 
 #define MEM_SZ 1000
-
+#define DEF_ID 0 
+#define DEF_STR 1 
 
 #define ntemps 16 // Number of temporary
 #define dj 31	// data jump
@@ -24,9 +25,20 @@ typedef struct{
 	int* addr;
 }definitionByID;
 
+typedef struct{
+	char* str;
+	int line;
+	int* addr;
+}definitionByStr;
+
 typedef struct ListDefinition{
-	definitionByID* item;
+	// definitionByID* item;
+	union{
+		definitionByID *itemId;
+		definitionByStr *itemStr;
+	};
 	int len;
+	int type;
 }listDefinition;
 
 typedef struct{
@@ -35,7 +47,8 @@ typedef struct{
 }quadList;
 
 /* Lists operations */
-definitionByID* getListDefinition(listDefinition* l, int id);
+// definitionByID* getListDefinition(listDefinition* l, int id);
+void* ldGet(listDefinition* l, void* def);
 int addList(listDefinition* l, int id, int line, int* addr);
 definitionByID removeList(listDefinition* l, int id);
 void printList(listDefinition* l);
@@ -54,34 +67,47 @@ static listDefinition labels, requests;	// requests to labels
 
 void envInitGlobal(){
 	initGlobal();
-	labels.item = NULL;
+	labels.itemId = NULL;
 	labels.len = 0;
+	labels.type = DEF_ID;
 }
 
 void endEnv(){
 
 	// freeListDefinition();
-	freeNull((void**)&labels.item);
-	freeNull((void**)&requests.item);
+	freeNull((void**)&labels.itemId);
+	freeNull((void**)&requests.itemId);
 }
 void printList(listDefinition* l){
 	if(!l)
 		return;
 	printf("List: \n");
 	for(int i = 0; i < l->len; i++)
-		printf("Line %d -- label %d", l->item[i].line, l->item[i].id);
+		printf("Line %d -- label %d", l->itemId[i].line, l->itemId[i].id);
 	printf("\n");
 }
 
-definitionByID* getListDefinition(listDefinition* l, int id){
-	definitionByID* it;
+void* ldGet(listDefinition* l, void* def){
+	definitionByID* itID;
+	definitionByStr* itStr;
+
 	if(!l)
 		return NULL;
 
+	// Look each item and see if definition exists
 	for(int i = 0; i < l->len; i++){
-		it = &l->item[i];
-		if(it->id == id)
-			return it;
+		// Type of union
+		if(l->type == DEF_ID){
+			itID = &l->itemId[i];
+			if(itID->id == *(int*)def)
+				return itID;
+		}
+		// Type of union
+		else if(l->type == DEF_STR){
+			itStr = &l->itemStr[i];
+			if(strcmp(itStr->str, (char*)def) == 0)
+				return itStr;
+		}
 	}
 	return NULL;
 }
@@ -95,26 +121,26 @@ int addList(listDefinition* l, int id, int line, int* addr){
 		return -1;
 	}
 	
-	if(!l->item){
-		l->item = (definitionByID*)malloc(sizeof(definitionByID));
-		allocateValidator((void**)&l->item, MALLOC_VALIDATE);
+	if(!l->itemId){
+		l->itemId = (definitionByID*)malloc(sizeof(definitionByID));
+		allocateValidator((void**)&l->itemId, MALLOC_VALIDATE);
 
-		l->item[0].id = id;
-		l->item[0].line = line;
-		l->item[0].addr = addr;
+		l->itemId[0].id = id;
+		l->itemId[0].line = line;
+		l->itemId[0].addr = addr;
 		l->len = 1;
 		return 1;
 	}
 
-	if(getListDefinition(l, id))
+	if(ldGet(l, (void*)&id))
 		return 0;
 	
-	l->item = (definitionByID*)realloc(l->item, sizeof(definitionByID) * (l->len + 1));
-	allocateValidator((void**)&l->item, REALLOC_VALIDATE);
+	l->itemId = (definitionByID*)realloc(l->itemId, sizeof(definitionByID) * (l->len + 1));
+	allocateValidator((void**)&l->itemId, REALLOC_VALIDATE);
 
-	l->item[l->len].line = line;
-	l->item[l->len].id = id;	
-	l->item[0].addr = addr;
+	l->itemId[l->len].line = line;
+	l->itemId[l->len].id = id;	
+	l->itemId[0].addr = addr;
 	l->len++;
 
 	return 1;
@@ -127,20 +153,20 @@ definitionByID removeList(listDefinition* l, int id){
 	ret.id = -1;
 	ret.line = -1;
 
-	temp = getListDefinition(l, id);
+	temp = ldGet(l, (void*)&id);
 
 	if(!temp)
 		return ret;
 
 	ret = *temp;
-	*temp = l->item[--l->len];
+	*temp = l->itemId[--l->len];
 
 	if(l->len > 0){
-		l->item = (definitionByID*)realloc(l->item, sizeof(definitionByID)*l->len);
-		allocateValidator((void**)&l->item, REALLOC_VALIDATE);
+		l->itemId = (definitionByID*)realloc(l->itemId, sizeof(definitionByID)*l->len);
+		allocateValidator((void**)&l->itemId, REALLOC_VALIDATE);
 	}
 	else
-		freeNull((void**)&l->item);
+		freeNull((void**)&l->itemId);
 
 	return ret;
 }
