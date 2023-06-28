@@ -268,9 +268,19 @@ int isReg(char* str){
 	return (str[0] == '$')? 1 : 0;
 }
 
-/* NOTE: str must be reg or literal string */
+int isLabel(char* str){
+	return (str[0] == 'L') ? 1 : 0;
+}
+
+/* NOTE: str must be reg, label or literal string */
 int getN(char* str){
-	return (isReg(str))? atoi(&str[2]) : atoi(str);
+	if(isReg(str))
+		return atoi(&str[2]);
+
+	if(isLabel(str))
+		return atoi(&str[1]);
+
+	return atoi(str);
 }
 
 void processAritmetic(quad* fun, operation_t op, operation_t opi){
@@ -422,7 +432,7 @@ void processFunctionRec(quad* fun, listString* ls){
 			printf("## Error finding name in list (LOAD_C)\n");
 			printf("## Assign 0 to positional\n");
 		}
-		reg = atoi(&fun->arg1[2]);
+		reg = getN(fun->arg1);
 		newInstruction(mv, reg, fp, 0);
 		newInstruction(lw, reg, 0, positional);
 		break;
@@ -483,11 +493,11 @@ void processFunctionRec(quad* fun, listString* ls){
 			printf("## Error finding name in list (STORE_C)\n");
 			printf("## Assign 0 to positional\n");
 		}
-		reg = atoi(&fun->arg2[2]);
+		reg = getN(fun->arg2);
 		newInstruction(sw, fp, reg, positional);
 		break;
 	case PARAM_C:
-		params = addStack(params, atoi(&fun->arg1[1]));
+		params = addStack(params, atoi(&fun->arg1[2]));
 		/**/
 		break;
 	case RETURN_C:
