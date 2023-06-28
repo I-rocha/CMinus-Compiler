@@ -439,16 +439,16 @@ void processFunctionRec(quad* fun, listString* ls){
 	case IFF_C:
 		// Trocar a condicao
 		instr = newInstruction(bc, 0, 0, -1);	// TODO: bc Must be bcn (branch conditional negate)
-		label = atoi(&fun->arg2[1]);
+		label = getN(fun->arg2);
 		ldAdd(&requests, &label, getLine(), &instr->desl);
 		break;
 	case LABEL_C:
-		label = atoi(&fun->arg1[1]);
+		label = getN(fun->arg1);
 		ldAdd(&labels, &label, getLine(), NULL);
 		break;
 	case GOTO_C:
 		instr = newInstruction(branch, 0, 0, -1);
-		label = atoi(&fun->arg1[1]);
+		label = getN(fun->arg1);
 		ldAdd(&requests, &label, getLine(), &instr->desl);
 		break;
 	case ADD_C:
