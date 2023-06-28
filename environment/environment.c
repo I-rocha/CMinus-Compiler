@@ -22,10 +22,10 @@ typedef struct{
 	int id;
 	int line;
 	int* addr;
-}definition;
+}definitionByID;
 
 typedef struct ListDefinition{
-	definition* item;
+	definitionByID* item;
 	int len;
 }listDefinition;
 
@@ -35,9 +35,9 @@ typedef struct{
 }quadList;
 
 /* Lists operations */
-definition* getListDefinition(listDefinition* l, int id);
+definitionByID* getListDefinition(listDefinition* l, int id);
 int addList(listDefinition* l, int id, int line, int* addr);
-definition removeList(listDefinition* l, int id);
+definitionByID removeList(listDefinition* l, int id);
 void printList(listDefinition* l);
 
 /* to assembly */
@@ -73,8 +73,8 @@ void printList(listDefinition* l){
 	printf("\n");
 }
 
-definition* getListDefinition(listDefinition* l, int id){
-	definition* it;
+definitionByID* getListDefinition(listDefinition* l, int id){
+	definitionByID* it;
 	if(!l)
 		return NULL;
 
@@ -96,7 +96,7 @@ int addList(listDefinition* l, int id, int line, int* addr){
 	}
 	
 	if(!l->item){
-		l->item = (definition*)malloc(sizeof(definition));
+		l->item = (definitionByID*)malloc(sizeof(definitionByID));
 		allocateValidator((void**)&l->item, MALLOC_VALIDATE);
 
 		l->item[0].id = id;
@@ -109,7 +109,7 @@ int addList(listDefinition* l, int id, int line, int* addr){
 	if(getListDefinition(l, id))
 		return 0;
 	
-	l->item = (definition*)realloc(l->item, sizeof(definition) * (l->len + 1));
+	l->item = (definitionByID*)realloc(l->item, sizeof(definitionByID) * (l->len + 1));
 	allocateValidator((void**)&l->item, REALLOC_VALIDATE);
 
 	l->item[l->len].line = line;
@@ -122,8 +122,8 @@ int addList(listDefinition* l, int id, int line, int* addr){
 
 /* Get element specified by id, remove from list and returns it */
 /* NOTE: If element does'nt exist. return is unclear */
-definition removeList(listDefinition* l, int id){
-	definition ret, *temp;
+definitionByID removeList(listDefinition* l, int id){
+	definitionByID ret, *temp;
 	ret.id = -1;
 	ret.line = -1;
 
@@ -136,7 +136,7 @@ definition removeList(listDefinition* l, int id){
 	*temp = l->item[--l->len];
 
 	if(l->len > 0){
-		l->item = (definition*)realloc(l->item, sizeof(definition)*l->len);
+		l->item = (definitionByID*)realloc(l->item, sizeof(definitionByID)*l->len);
 		allocateValidator((void**)&l->item, REALLOC_VALIDATE);
 	}
 	else
@@ -411,7 +411,10 @@ void processFunctionRec(quad* fun, listString* ls){
 	case CALL_C:
 		// alocar temporarios
 		locateTemps();
+
 		// obter endereco da funcao chamada
+
+
 		// fazer pulo incondicional
 		// armazenar retorno no resgitrador do CALL_C
 
