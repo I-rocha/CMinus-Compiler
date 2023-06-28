@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>	// variadic
+#include <math.h>
 
 #include "mnemonic.h"
 #include "../utils.h"
@@ -179,7 +180,8 @@ char* instruction2BinStr(instruction* instr){
 		break;
 
 	case FORMAT_II:
-		str_immediate = int2Bin(instr->immediate, 16);
+		str_immediate = (instr->opcode == lup) ? int2Bin(instr->immediate >> 16, 16) : int2Bin(instr->immediate, 16);
+
 		str_funct = int2Bin(instr->funct, 5);
 
 		strcat(str_partial, str_immediate);
@@ -204,6 +206,16 @@ char* instruction2BinStr(instruction* instr){
 char* int2Bin(int dec, int nbits){
 	int bit, mask, aux_mask;
 	char *str;
+
+	unsigned long int abs_range;
+	abs_range = ((unsigned long int) pow((double)2, ((double)nbits - 1))) - 1;
+
+	// Validateing range
+	if((dec > abs_range) || (dec < abs_range)){
+		printf("Overflow trying to convert int to bin. (int2bin)\n");
+		printf("Returning \"BINERR\" instead\n");
+		return strdup("BINERR");
+	}
 	
 	// Mask will help to eliminate the most significant bit
 	mask = 63;	// b'111111

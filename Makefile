@@ -1,5 +1,5 @@
 main: parser.tab.o lex.yy.o ast.o main.o utils.o symtab.o semantic.o cgen.o regbank.o environment.o mnemonic.o
-	gcc parser.tab.o lex.yy.o ast.o main.o symtab.o semantic.o cgen.o regbank.o environment.o mnemonic.o utils.o -o exe	
+	gcc parser.tab.o lex.yy.o ast.o main.o symtab.o semantic.o cgen.o regbank.o environment.o mnemonic.o utils.o -lm -o exe	
 
 lex.yy.o: lex.yy.c
 	gcc lex.yy.c -Wall -c
