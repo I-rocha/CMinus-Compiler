@@ -422,7 +422,6 @@ void processFunctionRec(quad* fun, listString* ls){
 			printf("## Error finding name in list (LOAD_C)\n");
 			printf("## Assign 0 to positional\n");
 		}
-		positional++;
 		reg = atoi(&fun->arg1[2]);
 		newInstruction(mv, reg, fp, 0);
 		newInstruction(lw, reg, 0, positional);
