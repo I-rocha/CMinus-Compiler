@@ -41,7 +41,7 @@ void printList(listDefinition* l);
 void processGlobal(quad *head);
 void saveReturn();
 void saveBinding();
-void processFunctionRec(quad* fun);
+void processFunctionRec(quad* fun, listString* ls);
 void processFunction(quad* fun);
 
 
@@ -246,17 +246,26 @@ void saveBinding(){
 	newInstruction(mv, fp, sp, 0);
 }
 
+void allocate(listString* ls, char* str){
+	addListString(ls, str);
+	newInstruction(addi, sp, -1);
+}
+
 /* Convert to assembly a whole function, including address and control */
 void processFunction(quad* fun){
+	listString* ls;
+	ls = newListString();
 
 	saveReturn();
 	saveBinding();
-	// processFunctionRec(fun);
+	processFunctionRec(fun, ls);
 	return;
 }
 
 /* Conver CI to assembly */
-void processFunctionRec(quad* fun){
+void processFunctionRec(quad* fun, listString* ls){
+	int positional, reg;
+
 	if(!fun)
 		return;
 
@@ -270,7 +279,9 @@ void processFunctionRec(quad* fun){
 	case ARG_C:
 		break;
 	case ALLOC_C:
-		newInstruction(addi, sp, -1);
+		// Need to considerate array
+		allocate(ls, fun->arg1);
+		// newInstruction(addi, sp, -1);
 		break;
 	case BEGINCODE_C:
 		newInstruction(NOP, 0, 0, 0);	// Does nothing
@@ -286,6 +297,11 @@ void processFunctionRec(quad* fun){
 		return;
 		break;
 	case LOAD_C:
+		// 
+		positional = getKeyListString(ls, fun->arg2);
+		reg = atoi(&fun->arg1[1]);
+		newInstruction(mv, reg, fp);
+		newInstruction(lw, reg, 0, positional);
 		break;
 	case IFF_C:
 		// Trocar a condicao
@@ -346,7 +362,7 @@ void processFunctionRec(quad* fun){
 		break;
 		/**/
 	}
-	processFunctionRec(fun->next);
+	processFunctionRec(fun->next, ls);
 }
 
 
