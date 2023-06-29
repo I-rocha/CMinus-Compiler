@@ -7,6 +7,13 @@
 #include "mnemonic.h"
 #include "../utils.h"
 
+#define dj 31	// data jump
+#define sp 30	// stack pointer
+#define fp 29	// frame pointer
+#define hp 28	// heap pointer ??
+#define oa 27	// override aux
+#define rd 26	// return data
+
 static int lineno = -1;
 static instruction_subset formatI, formatII, formatIII, format_set[SUBSET_SZ];
 static operation_t o1[] = {add, sub, AND, OR, NOT, XOR, less, grand, eq, neq, leq, geq, shiftL, shiftR};
@@ -57,6 +64,40 @@ static char * mnemonic[] = {
 	"STOP\0",
 	"UNKNOWN\0"
 };
+static char* register_name[] = {
+	"$t0\0",
+	"$t1\0",
+	"$t2\0",
+	"$t3\0",
+	"$t4\0",
+	"$t5\0",
+	"$t6\0",
+	"$t7\0",
+	"$t8\0",
+	"$t9\0",
+	"$t10\0",
+	"$t11\0",
+	"$t12\0",
+	"$t13\0",
+	"$t14\0",
+	"$t15\0",
+	"$t16\0",
+	"$t17\0",
+	"$t18\0",
+	"$t19\0",
+	"$t20\0",
+	"$t21\0",
+	"$t22\0",
+	"$t23\0",
+	"$t24\0",
+	"$t25\0",
+	"$rd\0",
+	"$oa\0",
+	"$hp\0",
+	"$fp\0",
+	"$sp\0",
+	"$dj\0",
+};
 
 static int getFormat(operation_t* op);
 static int setMeta(instruction* instr);
@@ -67,7 +108,7 @@ static memmory ram;
 void printRam(){
 	char* str;
 	for(int i = 0; i < ram.len; i++){
-		str = instruction2String(&ram.instr[i]);
+		str = instruction2StringPretty(&ram.instr[i]);
 		printf("%s\n", str);
 	}
 	return;
@@ -250,7 +291,7 @@ char* int2Bin(int dec, int nbits){
 char* instruction2String(instruction* instr){
 	char *str, *operation;
 
-	str = (char*)malloc(sizeof(char) * (BIT_ARCH+1));
+	str = (char*)malloc(sizeof(char) * (50+1));
 	if(!str){
 		printf("Error: String allocation denied. (instruction2String)\n");
 		return NULL;
@@ -269,6 +310,34 @@ char* instruction2String(instruction* instr){
 		break;
 	case FORMAT_III:
 		sprintf(str, "%s $r%d, $r%d, %d", operation, instr->r1, instr->r2, instr->desl);
+		break;
+	}
+	return str;
+}
+
+// TODO: Need to dealocate str in some place
+char* instruction2StringPretty(instruction* instr){
+	char *str, *operation;
+
+	str = (char*)malloc(sizeof(char) * (50+1));
+	if(!str){
+		printf("Error: String allocation denied. (instruction2String)\n");
+		return NULL;
+	}
+	str[0]='\0';
+
+	operation = operation2String(&instr->operation);
+
+	switch(instr->formatID){
+	case FORMAT_I:
+		sprintf(str, "%s %s, %s, %d", operation, register_name[instr->r1], register_name[instr->r2], instr->shamt);
+		break;
+	case FORMAT_II:
+		sprintf(str, "%s %s, %d", operation, register_name[instr->r1], instr->immediate);
+		
+		break;
+	case FORMAT_III:
+		sprintf(str, "%s %s, %s, %d", operation, register_name[instr->r1], register_name[instr->r2], instr->desl);
 		break;
 	}
 	return str;

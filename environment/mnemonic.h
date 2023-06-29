@@ -94,6 +94,7 @@ void initGlobal();
 instruction* newInstruction(operation_t operation, ...);
 char* instruction2BinStr(instruction* instr);
 char* instruction2String(instruction* instr);
+char* instruction2StringPretty(instruction* instr);
 char* operation2String(operation_t* operation);
 void printRam();
 int getLine();
