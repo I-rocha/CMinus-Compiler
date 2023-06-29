@@ -317,22 +317,20 @@ void processAritmetic(quad* fun, operation_t op, operation_t opi){
 }
 
 void processRelational(quad* fun, operation_t op, operation_t opi){
-	//const int arg1 = getN(fun->arg1);
-	const int arg2 = getN(fun->arg2);
-	const int r = getN(fun->result);
-	//const int isreg_arg1 = isReg(fun->arg1);
-	const int isreg_arg2 = isReg(fun->arg2);
-	const int isreg_r = isReg(fun->result);
+	const int operand1 = getN(fun->arg2);
+	const int operand2 = getN(fun->result);
+	const int isreg_operand1 = isReg(fun->arg2);
+	const int isreg_operand2 = isReg(fun->result);
 
 	// Create instruction based on where arguments are register or immediate
-	if(!isreg_arg2 && !isreg_r){
-		newInstruction(mvi, oa, arg2);
-		newInstruction(opi, oa, r);
+	if(!isreg_operand1 && !isreg_operand2){
+		newInstruction(mvi, oa, operand1);
+		newInstruction(opi, oa, operand2);
 	}
-	else if(isreg_arg2 && !isreg_r){
-		newInstruction(opi, arg2, r);
+	else if(isreg_operand1 && !isreg_operand2){
+		newInstruction(opi, operand1, operand2);
 	}
-	else if(!isreg_arg2 && isreg_r){
+	else if(!isreg_operand1 && isreg_operand2){
 		// change argument position and makes inverse operation of opi
 		switch(opi){
 		case lessi:
@@ -356,10 +354,10 @@ void processRelational(quad* fun, operation_t op, operation_t opi){
 		default:
 			opi = UNKNOWN;
 		}
-		newInstruction(opi, r, arg2);
+		newInstruction(opi, operand2, operand1);
 	}
 	else{
-		newInstruction(op, arg2, r, 0, 0);
+		newInstruction(op, operand1, operand2, 0, 0);
 	}
 }
 
