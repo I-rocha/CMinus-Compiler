@@ -84,6 +84,7 @@ void envInitGlobal(){
 	globals = newListString();
 
 	params = NULL;
+	
 }
 
 void endEnv(){
@@ -454,11 +455,11 @@ void processFunctionRec(quad* fun, listString* ls){
 
 	switch(fun->op){
 	case FUN_C:
-		/**/
+		// 
 		break;
 	case ARG_C:
 		addListString(ls, fun->arg2);
-		/**/
+		//
 		break;
 	case ALLOC_C:
 		// Need to considerate array
@@ -533,10 +534,11 @@ void processFunctionRec(quad* fun, listString* ls){
 		break;
 	case STORE_C:
 		store(fun, ls);
+		
 		break;
 	case PARAM_C:
 		params = addStack(params, atoi(&fun->arg1[2]));
-		/**/
+		
 		break;
 	case RETURN_C:
 		// store return data and update pointers
@@ -559,7 +561,6 @@ void processFunctionRec(quad* fun, listString* ls){
 		// update fp
 		newInstruction(lw, fp, 0, 0);
 
-		/**/
 		break;
 	case CALL_C:
 		// Locate temps
@@ -575,8 +576,7 @@ void processFunctionRec(quad* fun, listString* ls){
 		
 		// armazenar retorno no resgitrador do CALL_C
 		newInstruction(mv, atoi(&fun->arg1[1]), rd, 0); 
-
-		/**/
+		
 		break;
 	default:
 		/**/
@@ -585,6 +585,29 @@ void processFunctionRec(quad* fun, listString* ls){
 	processFunctionRec(fun->next, ls);
 }
 
+void updateLabels(){
+	definitionByID* lb;
+	int id_req, line_req;
+	int* desl_addr;
+
+	// Get label id that matches with label_request and update address
+	for(int i = 0; i < labels_request.len; i++){
+
+		// mapping attr of itemId
+		id_req = labels_request.itemId[i].id;
+		desl_addr = labels_request.itemId[i].addr;
+		line_req = labels_request.itemId[i].line;
+
+		lb = (definitionByID*) ldGet(&labels, (void*)&id_req);
+		
+		if(!lb){
+			printf("ERROR: Missing label L%d\n", id_req);
+			return;
+		}
+		*desl_addr	 = (lb->line - line_req);
+	}
+	return;
+}
 
 /* Makes global allocation */
 void processGlobal(quad *head){
@@ -607,11 +630,14 @@ void toAssembly(quad* head){
 	la = getFuncions(head);
 	
 	for(int i = 0; i < la.len; i++){
-		printf("function: %s\n", la.code[i]->arg2);
+		printf("function: %s\n"
+			"##########\n", la.code[i]->arg2);
 	}
-	
 	processFunction(la.code[0]);
-	
+	printList(&labels_request);
+	printList(&labels);
+
+	// updateLabels();
 	printRam();
 	/*
 	if(la.code){
