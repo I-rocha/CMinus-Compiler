@@ -623,7 +623,6 @@ void processGlobal(quad *head){
 }
 
 void toAssembly(quad* head){
-	instruction* instr;
 	quadList la;
 	processGlobal(head->next);
 
@@ -635,10 +634,8 @@ void toAssembly(quad* head){
 			"##########\n", la.code[i]->arg2);
 	}
 	processFunction(la.code[0]);
-	printList(&labels_request);
-	printList(&labels);
 
-	// updateLabels();
+	updateLabels();
 	printRam();
 	/*
 	if(la.code){
