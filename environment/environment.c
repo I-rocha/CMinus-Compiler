@@ -63,7 +63,7 @@ void locateTemps();
 
 
 // Mark definitions that needs to be adjusted (as addresses of instructions/variables/labels)
-static listDefinition labels, labels_request, calls;	// requests refers to labels
+static listDefinition labels, labels_request, calls, calls_request;
 static listString* globals;
 static stack* params;
 
@@ -80,6 +80,10 @@ void envInitGlobal(){
 	calls.itemStr = NULL;
 	calls.len = 0;
 	calls.type = DEF_STR;
+
+	calls_request.itemStr = NULL;
+	calls_request.len = 0;
+	calls_request.type = DEF_STR;
 
 	globals = newListString();
 
@@ -100,6 +104,14 @@ void printList(listDefinition* l){
 	for(int i = 0; i < l->len; i++)
 		printf("Line %d -- label %d", l->itemId[i].line, l->itemId[i].id);
 	printf("\n");
+}
+
+void printLDString(listDefinition* l){
+	if(!l)
+		return;
+	printf("List: \n");
+	for(int i = 0; i < l->len; i++)
+		printf("Line %d -- func %s\n", l->itemStr[i].line, l->itemStr[i].str);
 }
 
 void* ldGet(listDefinition* l, void* def){
@@ -477,6 +489,7 @@ void processFunctionRec(quad* fun, listString* ls){
 
 	switch(fun->op){
 	case FUN_C:
+		ldAdd(&calls, fun->arg2, getLine(), NULL);
 		// 
 		break;
 	case ARG_C:
@@ -499,6 +512,12 @@ void processFunctionRec(quad* fun, listString* ls){
 		return;
 		break;
 	case END_C:
+		if(strcmp(fun->arg1, "main") != 0){
+			newInstruction(mv, dj, fp, 1);
+			newInstruction(jump, dj, 0, 0);
+		}
+		else
+			newInstruction(STOP, 0, 0, 0);
 		return;
 		break;
 	case LOAD_C:
@@ -594,7 +613,7 @@ void processFunctionRec(quad* fun, listString* ls){
 		instr = newInstruction(bal,0, 0, -1);
 
 		// saving call to function to addr later
-		ldAdd(&calls, (void*)fun->result, getLine(), instr->desl);
+		ldAdd(&calls_request, (void*)fun->arg2, getLine(), instr->desl);
 		
 		// armazenar retorno no resgitrador do CALL_C
 		newInstruction(mv, atoi(&fun->arg1[1]), rd, 0); 
@@ -620,15 +639,39 @@ void updateLabels(){
 		desl_addr = labels_request.itemId[i].addr;
 		line_req = labels_request.itemId[i].line;
 
+		// item requested
 		lb = (definitionByID*) ldGet(&labels, (void*)&id_req);
 		
 		if(!lb){
 			printf("ERROR: Missing label L%d\n", id_req);
 			return;
 		}
-		*desl_addr	 = (line_req - lb->line);
+		*desl_addr = (line_req - lb->line);
 	}
 	return;
+}
+
+void updateCalls(){
+	definitionByStr* called;
+	char* str_req;
+	int line_req;
+	int* desl_addr;
+
+	for(int i = 0; i < calls_request.len; i++){
+		// Mapping attr of itemStr
+		str_req = calls_request.itemStr[i].str;
+		desl_addr = calls_request.itemStr[i].addr;
+		line_req = calls_request.itemStr[i].line;
+
+		// Item requested
+		called = (definitionByStr*) ldGet(&calls, (void*)str_req);
+
+		if(!called){
+			printf("ERROR: missing def of function %s\n", str_req);
+			return;
+		}
+		*desl_addr = (line_req - called->line);
+	}
 }
 
 /* Makes global allocation */
@@ -656,8 +699,10 @@ void toAssembly(quad* head){
 			"##########\n", la.code[i]->arg2);
 	}
 	processFunction(la.code[0]);
+	processFunction(la.code[1]);
 
 	updateLabels();
+	updateCalls();
 	printRam();
 	/*
 	if(la.code){
