@@ -626,7 +626,7 @@ void updateLabels(){
 			printf("ERROR: Missing label L%d\n", id_req);
 			return;
 		}
-		*desl_addr	 = (lb->line - line_req);
+		*desl_addr	 = (line_req - lb->line);
 	}
 	return;
 }
