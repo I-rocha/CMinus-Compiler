@@ -394,8 +394,6 @@ void processFunction(quad* fun){
 	listString* ls;
 	ls = newListString();
 
-	saveReturn();
-	saveBinding();
 	processFunctionRec(fun, ls);
 	return;
 }
@@ -490,6 +488,8 @@ void processFunctionRec(quad* fun, listString* ls){
 	switch(fun->op){
 	case FUN_C:
 		ldAdd(&calls, fun->arg2, getLine(), NULL);
+		saveReturn();
+		saveBinding();
 		// 
 		break;
 	case ARG_C:
@@ -512,12 +512,27 @@ void processFunctionRec(quad* fun, listString* ls){
 		return;
 		break;
 	case END_C:
-		if(strcmp(fun->arg1, "main") != 0){
-			newInstruction(mv, dj, fp, 1);
-			newInstruction(jump, dj, 0, 0);
-		}
-		else
+		if(strcmp(fun->arg1, "main") == 0){
 			newInstruction(STOP, 0, 0, 0);
+			break;
+		}
+		// Update register pointer and return to function
+
+		// Restore jump_back address
+		newInstruction(mv, dj, fp, 1);
+
+		// Update sp
+		newInstruction(mv, sp, fp, 0);
+		newInstruction(lw, sp, 0, 2);
+
+		loadTemps();
+
+		// update fp
+		newInstruction(lw, fp, 0, 0);
+
+		// update pc
+		newInstruction(jump, dj, 0, 0);
+
 		return;
 		break;
 	case LOAD_C:
@@ -582,26 +597,12 @@ void processFunctionRec(quad* fun, listString* ls){
 		
 		break;
 	case RETURN_C:
-		// store return data and update pointers
+		// store return_data
 
 		if(fun->arg1){
 			// save return data
 			newInstruction(mv, rd, atoi(&fun->arg1[1]), 0);
 		}
-		// update PC
-		newInstruction(mv, oa, fp, 0);
-		newInstruction(addi, oa, 1);
-		newInstruction(jump, oa, 0, 0);
-
-		// Update sp
-		newInstruction(mv, sp, fp, 0);
-		newInstruction(lw, sp, 0, 2);
-
-		loadTemps();
-
-		// update fp
-		newInstruction(lw, fp, 0, 0);
-
 		break;
 	case CALL_C:
 		// Locate temps
