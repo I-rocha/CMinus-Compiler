@@ -486,7 +486,7 @@ void processFunctionRec(quad* fun, listString* ls){
 		// Trocar a condicao
 		instr = newInstruction(bc, 0, 0, -1);	// TODO: bc Must be bcn (branch conditional negate)
 		label = getN(fun->arg2);
-		ldAdd(&labels_request, &label, getLine(), &instr->desl);
+		ldAdd(&labels_request, &label, getLine(), instr->desl);
 		break;
 	case LABEL_C:
 		label = getN(fun->arg1);
@@ -495,7 +495,7 @@ void processFunctionRec(quad* fun, listString* ls){
 	case GOTO_C:
 		instr = newInstruction(branch, 0, 0, -1);
 		label = getN(fun->arg1);
-		ldAdd(&labels_request, &label, getLine(), &instr->desl);
+		ldAdd(&labels_request, &label, getLine(), instr->desl);
 		break;
 	case ADD_C:
 		processAritmetic(fun, add, addi);
@@ -572,7 +572,7 @@ void processFunctionRec(quad* fun, listString* ls){
 		instr = newInstruction(bal,0, 0, -1);
 
 		// saving call to function to addr later
-		ldAdd(&calls, (void*)fun->result, getLine(), &instr->desl);
+		ldAdd(&calls, (void*)fun->result, getLine(), instr->desl);
 		
 		// armazenar retorno no resgitrador do CALL_C
 		newInstruction(mv, atoi(&fun->arg1[1]), rd, 0); 
@@ -623,6 +623,7 @@ void processGlobal(quad *head){
 }
 
 void toAssembly(quad* head){
+	instruction* instr;
 	quadList la;
 	processGlobal(head->next);
 

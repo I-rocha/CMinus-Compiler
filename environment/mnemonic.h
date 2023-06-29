@@ -72,7 +72,7 @@ typedef struct{
 	int shamt;
 	int r1;
 	int r2;
-	int desl;
+	int* desl;
 
 }instruction;
 

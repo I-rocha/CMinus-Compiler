@@ -167,9 +167,11 @@ instruction* newInstruction(operation_t operation, ...){
 		break;
 
 	case FORMAT_III:
+		instr->desl = (int*)malloc(sizeof(int));
+		allocateValidator((void**)&instr->desl, MALLOC_VALIDATE);
 		instr->r1 = va_arg(args, int); 	// r1
 		instr->r2 = va_arg(args, int); 	// r2
-		instr->desl = va_arg(args, int); // desl
+		*instr->desl = va_arg(args, int); // desl
 
 		break;
 	}
@@ -238,7 +240,7 @@ char* instruction2BinStr(instruction* instr){
 
 	case FORMAT_III:
 		str_r2 = int2Bin(instr->r2, 5);
-		str_desl = int2Bin(instr->desl, 16);
+		str_desl = int2Bin(*instr->desl, 16);
 
 		strcat(str_partial, str_r2);
 		strcat(str_partial, str_desl);
@@ -316,7 +318,7 @@ char* instruction2String(instruction* instr){
 		
 		break;
 	case FORMAT_III:
-		sprintf(str, "%s $r%d, $r%d, %d", operation, instr->r1, instr->r2, instr->desl);
+		sprintf(str, "%s $r%d, $r%d, %d", operation, instr->r1, instr->r2, *instr->desl);
 		break;
 	}
 	return str;
@@ -344,7 +346,7 @@ char* instruction2StringPretty(instruction* instr){
 		
 		break;
 	case FORMAT_III:
-		sprintf(str, "%s %s, %s, %d", operation, register_name[instr->r1], register_name[instr->r2], instr->desl);
+		sprintf(str, "%s %s, %s, %d", operation, register_name[instr->r1], register_name[instr->r2], *instr->desl);
 		break;
 	}
 	return str;
