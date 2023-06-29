@@ -62,7 +62,9 @@ void loadTemps();
 void locateTemps();
 
 
-static listDefinition labels, requests, calls;	// requests to labels
+// Mark definitions that needs to be adjusted (as addresses of instructions/variables/labels)
+static listDefinition labels, labels_request, calls;	// requests refers to labels
+static listString* globals;
 static stack* params;
 
 void envInitGlobal(){
@@ -71,13 +73,15 @@ void envInitGlobal(){
 	labels.len = 0;
 	labels.type = DEF_ID;
 
-	requests.itemId = NULL;
-	requests.len = 0;
-	requests.type = DEF_ID;
+	labels_request.itemId = NULL;
+	labels_request.len = 0;
+	labels_request.type = DEF_ID;
 
 	calls.itemStr = NULL;
 	calls.len = 0;
 	calls.type = DEF_STR;
+
+	globals = newListString();
 
 	params = NULL;
 }
@@ -86,7 +90,7 @@ void endEnv(){
 
 	// freeListDefinition();
 	freeNull((void**)&labels.itemId);
-	freeNull((void**)&requests.itemId);
+	freeNull((void**)&labels_request.itemId);
 }
 void printList(listDefinition* l){
 	if(!l)
@@ -388,9 +392,59 @@ void stackParam(int len){
 	}
 }
 
+void load(quad* fun, listString* ls){
+	int key, desl, reg;
+
+	reg = getN(fun->arg1);
+	key = getKeyListString(ls, fun->arg2);
+
+	if(key < 0){
+		// Load from global variable. Store address of global var to reg
+		key = getKeyListString(globals, fun->arg2);
+
+		if(key < 0)
+			printf("Variable definition not found local or global. (load)\n");
+
+		desl = -key-1;
+
+		newInstruction(ldown, reg, MEM_SZ);
+		newInstruction(lup, reg, MEM_SZ);
+	}
+	else{
+		// Load from local variable.
+		desl = -key-1;
+		newInstruction(mv, reg, fp, 0);
+
+	}
+	newInstruction(lw, reg, 0, desl);
+}
+
+void store(quad* fun, listString* ls){
+	int key, desl, reg;
+	reg = getN(fun->arg2);
+	key = getKeyListString(ls, fun->arg1);
+
+	// Check if var is local or global accessed and store it's address
+	if(key < 0){
+		key = getKeyListString(globals, fun->arg1);
+
+		if(key < 0)
+			printf("Variable definition not found local or global. (store)\n");
+		desl = -key - 1;
+
+		newInstruction(ldown, oa, MEM_SZ);
+		newInstruction(lup, oa, MEM_SZ);
+		newInstruction(sw, oa, reg, desl);
+	}
+	else{
+		desl = -key - 1;
+		newInstruction(sw, fp, reg, desl);
+	}
+}
+
 /* Conver CI to assembly */
 void processFunctionRec(quad* fun, listString* ls){
-	int key, positional, reg, label;
+	int label;
 
 	if(!fun)
 		return;
@@ -425,22 +479,13 @@ void processFunctionRec(quad* fun, listString* ls){
 		return;
 		break;
 	case LOAD_C:
-		// 
-		key = getKeyListString(ls, fun->arg2);
-		positional = key + 1;
-		if(key < 0){
-			printf("## Error finding name in list (LOAD_C)\n");
-			printf("## Assign 0 to positional\n");
-		}
-		reg = getN(fun->arg1);
-		newInstruction(mv, reg, fp, 0);
-		newInstruction(lw, reg, 0, positional);
+		load(fun, ls);
 		break;
 	case IFF_C:
 		// Trocar a condicao
 		instr = newInstruction(bc, 0, 0, -1);	// TODO: bc Must be bcn (branch conditional negate)
 		label = getN(fun->arg2);
-		ldAdd(&requests, &label, getLine(), &instr->desl);
+		ldAdd(&labels_request, &label, getLine(), &instr->desl);
 		break;
 	case LABEL_C:
 		label = getN(fun->arg1);
@@ -449,7 +494,7 @@ void processFunctionRec(quad* fun, listString* ls){
 	case GOTO_C:
 		instr = newInstruction(branch, 0, 0, -1);
 		label = getN(fun->arg1);
-		ldAdd(&requests, &label, getLine(), &instr->desl);
+		ldAdd(&labels_request, &label, getLine(), &instr->desl);
 		break;
 	case ADD_C:
 		processAritmetic(fun, add, addi);
@@ -487,14 +532,7 @@ void processFunctionRec(quad* fun, listString* ls){
 		isReg(fun->arg2) ? (newInstruction(mv, arg1, arg2, 0)) : (newInstruction(mvi, arg1, arg2));
 		break;
 	case STORE_C:
-		key = getKeyListString(ls, fun->arg1);
-		positional = key + 1;
-		if(key < 0){
-			printf("## Error finding name in list (STORE_C)\n");
-			printf("## Assign 0 to positional\n");
-		}
-		reg = getN(fun->arg2);
-		newInstruction(sw, fp, reg, positional);
+		store(fun, ls);
 		break;
 	case PARAM_C:
 		params = addStack(params, atoi(&fun->arg1[2]));
@@ -556,8 +594,8 @@ void processGlobal(quad *head){
 	 ){
 		return;
 	}
-
 	newInstruction(addi, sp, -1);
+	addListString(globals, head->arg1);
 	processGlobal(head->next);
 }
 
