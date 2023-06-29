@@ -180,8 +180,15 @@ instruction* newInstruction(operation_t operation, ...){
 
 	ram.instr = (instruction*)realloc(ram.instr, sizeof(instruction) * (ram.len + 1));
 	allocateValidator((void**)&ram.instr, REALLOC_VALIDATE);
-	ram.instr[ram.len++] = *instr;
-	return &ram.instr[ram.len];
+	ram.instr[ram.len] = *instr;
+	return &(ram.instr[ram.len++]);
+}
+
+instruction* getInstruction(int idx){
+	if(idx < 0 || idx >= ram.len)
+		return NULL;
+
+	return &ram.instr[idx];
 }
 
 // TODO: str_instr must be dealocated somewhere

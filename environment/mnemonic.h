@@ -92,6 +92,7 @@ typedef struct {
 // Public
 void initGlobal();
 instruction* newInstruction(operation_t operation, ...);
+instruction* getInstruction(int idx);
 char* instruction2BinStr(instruction* instr);
 char* instruction2String(instruction* instr);
 char* instruction2StringPretty(instruction* instr);
