@@ -167,14 +167,25 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 			cgen(code, tree->sibling, lastScope, lastType);
 			return;
 			break;
+		case ARG_ARRAY_K:
+			*code = addQuad(*code, ARG_ARRAY_C, lastType, tree->instance, lastScope);
+			cgen(code, tree->sibling, lastScope, lastType);
+
+			return;
+			break;
 
 		case ALLOC_K:
 			*code = addQuad(*code, ALLOC_C, tree->instance, lastScope, NULL);
 			cgen(code, tree->sibling, lastScope, NULL);
 
 			return;
-		break;
-	
+			break;
+		case ALLOC_ARRAY_K:
+			*code = addQuad(*code, ALLOC_ARRAY_C, tree->instance, lastScope, tree->child[0]->instance); // Child is supposed to exist
+			cgen(code, tree->sibling, lastScope, NULL);
+
+			return;
+			break;
 		case IF_K:
 			retop = genOp(code, tree->child[0]);
 			(retop.type == REGT) ? sprintf(sreg, "$t%d", retop.value) : sprintf(sreg, "%d", retop.value);
@@ -257,7 +268,7 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 
 exp genOp(quad **code, astNo* tree){
 	int nreg, nnreg, sz;
-	char sreg[10], sreg1[10], sreg2[10];
+	char sreg[10], sreg1[10], sreg2[10], v_arr[11];
 	exp lval, rval, ret, err, val;
 	astNo* aux;
 
@@ -456,7 +467,21 @@ exp genOp(quad **code, astNo* tree){
 
 			return ret;
 			break;
-		
+		case VAR_ARRAY_K:
+			sprintf(v_arr, "%s[%s]", tree->instance, tree->child[0]->instance);
+			nnreg = getReg(v_arr);
+
+			if(nnreg < 0){
+				nreg = linkReg(v_arr);
+				sprintf(sreg, "$t%d", nreg);
+				*code = addQuad(*code, LOAD_C, sreg, v_arr, NULL);
+			}
+			else
+				nreg = nnreg;
+
+			ret = (exp){.type = REGT, .value = nreg};
+			return ret;
+			break;
 		case CALL_K:
 			sz = 0;
 
@@ -516,8 +541,14 @@ char* ctokenStr(CToken tok){
 	case ARG_C:
 		return "ARG";
 		break;
+	case ARG_ARRAY_C:
+		return "ARG_ARRAY";
+		break;
 	case ALLOC_C:
 		return "ALLOC";
+		break;
+	case ALLOC_ARRAY_C:
+		return "ALLOC_ARRAY";
 		break;
 	case BEGINCODE_C:
 		return "BEGINCODE";
