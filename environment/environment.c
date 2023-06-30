@@ -519,7 +519,8 @@ void processFunctionRec(quad* fun, listString* ls){
 		// Update register pointer and return to function
 
 		// Restore jump_back address
-		newInstruction(mv, dj, fp, 1);
+		newInstruction(mv, dj, fp, 0);
+		newInstruction(lw, dj, 0, 1);
 
 		// Update sp
 		newInstruction(mv, sp, fp, 0);
