@@ -10,8 +10,6 @@
 #define F1_LEN 14
 #define F2_LEN 15
 #define F3_LEN 13
-#define BIT_ARCH 32
-#define N_OPERATIONS 42
 
 typedef enum{
 	add = 0,
@@ -91,13 +89,15 @@ typedef struct {
 
 // Public
 void initGlobal();
-instruction* newInstruction(operation_t operation, ...);
-instruction* getInstruction(int idx);
+memmory* newMem();
+memmory* mergeInstructions(memmory* mem1, memmory* mem2);
+instruction* newInstruction(memmory* mem, operation_t operation, ...);
+instruction* getInstruction(memmory* mem, int idx);
 char* instruction2BinStr(instruction* instr);
 char* instruction2String(instruction* instr);
 char* instruction2StringPretty(instruction* instr);
 char* operation2String(operation_t* operation);
-void printRam();
+void printMem(memmory* mem);
 int getLine();
 
 #endif

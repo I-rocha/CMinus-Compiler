@@ -2,70 +2,34 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "environment.h"
 #include "../cgen/cgen.h"
-#include "mnemonic.h"
 #include "../utils.h"
+#include "ld.h"
+#include "mnemonic.h"
+#include "../GLOBALS.h"
+#include "environment.h"
 
-#define MEM_SZ 1000
-#define DEF_ID 0 
-#define DEF_STR 1 
 
-#define ntemps 16 // Number of temporary
-#define dj 31	// data jump
-#define sp 30	// stack pointer
-#define fp 29	// frame pointer
-#define hp 28	// heap pointer ??
-#define oa 27	// override aux
-#define rd 26	// return data
-
-typedef struct{
-	int id;
-	int line;
-	int* addr;
-}definitionByID;
-
-typedef struct{
-	char* str;
-	int line;
-	int* addr;
-}definitionByStr;
-
-typedef struct ListDefinition{
-	union{
-		definitionByID *itemId;
-		definitionByStr *itemStr;
-	};
-	int len;
-	int type;
-}listDefinition;
-
+/* List of function begin in ci */
 typedef struct{
 	quad** code;
 	int len;
 }quadList;
 
-/* Lists operations */
-void* ldGet(listDefinition* l, void* def);
-int ldAdd(listDefinition* l, void* def, int line, int* addr);
-int ldRm(listDefinition* l, void* def);
-
-void printList(listDefinition* l);
-
 /* to assembly */
 void processGlobal(quad *head);
 void saveReturn();
 void saveBinding();
-void processFunctionRec(quad* fun, listString* ls);
+void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep);
 void processFunction(quad* fun);
-void loadTemps();
-void locateTemps();
 
 
 // Mark definitions that needs to be adjusted (as addresses of instructions/variables/labels)
 static listDefinition labels, labels_request, calls, calls_request;
-static listString* globals;
+static listVar* globals;	// Global var position in-memmory
+static dictVar* dict_lvar;
 static stack* params;
+static memmory* ram;
 
 void envInitGlobal(){
 	initGlobal();
@@ -85,10 +49,11 @@ void envInitGlobal(){
 	calls_request.len = 0;
 	calls_request.type = DEF_STR;
 
-	globals = newListString();
+	globals = newListVar();
+	dict_lvar = NULL;
 
 	params = NULL;
-	
+	ram = newMem();
 }
 
 void endEnv(){
@@ -97,154 +62,7 @@ void endEnv(){
 	freeNull((void**)&labels.itemId);
 	freeNull((void**)&labels_request.itemId);
 }
-void printList(listDefinition* l){
-	if(!l)
-		return;
-	printf("List: \n");
-	for(int i = 0; i < l->len; i++)
-		printf("Line %d -- label %d", l->itemId[i].line, l->itemId[i].id);
-	printf("\n");
-}
 
-void printLDString(listDefinition* l){
-	if(!l)
-		return;
-	printf("List: \n");
-	for(int i = 0; i < l->len; i++)
-		printf("Line %d -- func %s\n", l->itemStr[i].line, l->itemStr[i].str);
-}
-
-void* ldGet(listDefinition* l, void* def){
-	definitionByID* itID;
-	definitionByStr* itStr;
-
-	if(!l)
-		return NULL;
-
-	// Look each item and see if definition exists
-	for(int i = 0; i < l->len; i++){
-		// Type of union
-		if(l->type == DEF_ID){
-			itID = &l->itemId[i];		// get item
-			if(itID->id == *(int*)def)	// check definition
-				return itID;
-		}
-		// Type of union
-		else if(l->type == DEF_STR){
-			itStr = &l->itemStr[i];	// get item
-			if(strcmp(itStr->str, (char*)def) == 0)	// check definition
-				return itStr;
-		}
-	}
-	return NULL;
-}
-
-/* Add definition to list if element not exist*/
-int ldAdd(listDefinition* l, void* def, int line, int* addr){
-
-	if(!l){
-		printf("List not exist (addList)\n");
-		exit(0);
-		return -1;
-	}
-	if(ldGet(l, def))
-		return 0;
-
-	// Check type and alloc new item
-	switch(l->type){
-	case DEF_ID:
-		l->itemId = (definitionByID*)realloc(l->itemId, sizeof(definitionByID) * (l->len + 1));
-		allocateValidator((void**)&l->itemId, REALLOC_VALIDATE);
-		l->itemId[l->len].id = *(int*)def;
-		l->itemId[l->len].line = line;
-		l->itemId[l->len].addr = addr;
-		l->len++;
-		return 1;
-		break;
-	case DEF_STR:
-		l->itemStr = (definitionByStr*)realloc(l->itemStr, sizeof(definitionByStr) * (l->len + 1));
-		allocateValidator((void**)&l->itemStr, REALLOC_VALIDATE);
-		l->itemStr[l->len].str = strdup((char*)def);
-		l->itemStr[l->len].line = line;
-		l->itemStr[l->len].addr = addr;
-		l->len++;
-		return 1;
-		break;
-	default:
-		return -2;
-	}
-	return 1;
-}
-
-/* 1: Removed
- * 0: Definition not exist
- * -1: Error
- */
-int ldRm(listDefinition* l, void* def){
-	definitionByID* replace_id_t, *lastItemID;
-	definitionByStr* replace_str_t, *lastItemStr;
-	char* str_ref_d;
-	int* addr_ref_d;
-
-	void* toRemove;
-
-	if(!l || l->len == 0)
-		return 0;
-
-	toRemove = ldGet(l, def);
-	if(!toRemove)
-		return 0;
-
-	// Check type, copy last item into replace item and free old allocated types (fields of replaced item)
-	switch(l->type){
-	case DEF_ID:
-		lastItemID = &l->itemId[l->len-1];
-		replace_id_t = (definitionByID*)toRemove;
-		addr_ref_d = replace_id_t->addr;	// Saving to free later
-
-		// Copy
-		replace_id_t->id = lastItemID->id;
-		replace_id_t->line = lastItemID->line;
-		replace_id_t->addr = lastItemID->addr;
-
-		// Resizing array
-		l->itemId = (definitionByID*)realloc(l->itemId, sizeof(definitionByID) * (--l->len));
-
-		if(l->len == 0){
-			free(l->itemId);
-			l->itemId = NULL;
-		}
-
-		free(addr_ref_d);
-		break;
-
-	case DEF_STR:
-		lastItemStr = &l->itemStr[l->len-1];
-		replace_str_t = (definitionByStr*)toRemove;
-		str_ref_d = replace_str_t->str;	// Saving to free later
-
-		// Copy
-		replace_str_t->str = lastItemStr->str;
-		replace_str_t->line = lastItemStr->line;
-		replace_str_t->addr = lastItemStr->addr;
-
-		// Resizing array
-		l->itemStr = (definitionByStr*)realloc(l->itemStr, sizeof(definitionByStr) * (--l->len));
-
-		if(l->len == 0){
-			free(l->itemStr);
-			l->itemStr = NULL;
-		}
-
-		free(str_ref_d);
-		break;
-
-	default:
-		return 0;
-	}
-
-	return 1;
-}
 
 /* Note that quadList.code must be deallocated */
 quadList getFuncions(quad* head){
@@ -309,22 +127,22 @@ void processAritmetic(quad* fun, operation_t op, operation_t opi){
 
 	// Create instruction based on where arguments are register or immediate
 	if(!isreg_arg2 && !isreg_r){
-		newInstruction(opi, arg1, arg2);
-		newInstruction(opi, arg1, r);
+		newInstruction(ram, opi, arg1, arg2);
+		newInstruction(ram, opi, arg1, r);
 	}
 	else if(!isreg_arg2 && isreg_r){
-		newInstruction(mvi, arg1, arg2);
-		newInstruction(op, arg1, r, 0, 0);
+		newInstruction(ram, mvi, arg1, arg2);
+		newInstruction(ram, op, arg1, r, 0, 0);
 	}
 	else if(isreg_arg2 && !isreg_r){
-		newInstruction(mvi, arg1, r);
-		newInstruction(op, arg1, arg2, 0, 0);
+		newInstruction(ram, mvi, arg1, r);
+		newInstruction(ram, op, arg1, arg2, 0, 0);
 	}
 	else{
-		newInstruction(mv, oa, arg2, 0);
-		newInstruction(op, arg2, r, 0, 0);
-		newInstruction(op, arg1, arg2, 0, 0);
-		newInstruction(mv, arg2, oa, 0);
+		newInstruction(ram, mv, oa, arg2, 0);
+		newInstruction(ram, op, arg2, r, 0, 0);
+		newInstruction(ram, op, arg1, arg2, 0, 0);
+		newInstruction(ram, mv, arg2, oa, 0);
 	}
 }
 
@@ -336,11 +154,11 @@ void processRelational(quad* fun, operation_t op, operation_t opi){
 
 	// Create instruction based on where arguments are register or immediate
 	if(!isreg_operand1 && !isreg_operand2){
-		newInstruction(mvi, oa, operand1);
-		newInstruction(opi, oa, operand2);
+		newInstruction(ram, mvi, oa, operand1);
+		newInstruction(ram, opi, oa, operand2);
 	}
 	else if(isreg_operand1 && !isreg_operand2){
-		newInstruction(opi, operand1, operand2);
+		newInstruction(ram, opi, operand1, operand2);
 	}
 	else if(!isreg_operand1 && isreg_operand2){
 		// change argument position and makes inverse operation of opi
@@ -366,124 +184,310 @@ void processRelational(quad* fun, operation_t op, operation_t opi){
 		default:
 			opi = UNKNOWN;
 		}
-		newInstruction(opi, operand2, operand1);
+		newInstruction(ram, opi, operand2, operand1);
 	}
 	else{
-		newInstruction(op, operand1, operand2, 0, 0);
+		newInstruction(ram, op, operand1, operand2, 0, 0);
 	}
 }
 
 void saveReturn(){
-	newInstruction(addi, sp, -1);
-	newInstruction(sw, sp, dj, 0);
+	newInstruction(ram, addi, sp, -1);
+	newInstruction(ram, sw, sp, dj, 0);
 }
 
 void saveBinding(){
-	newInstruction(addi, sp, -1);
-	newInstruction(sw, sp, fp, 0);	
-	newInstruction(mv, fp, sp, 0);
+	newInstruction(ram, addi, sp, -1);
+	newInstruction(ram, sw, sp, fp, 0);	
+	newInstruction(ram, mv, fp, sp, 0);
 }
 
-void allocate(listString* ls, char* str){
-	addListString(ls, str);
-	newInstruction(addi, sp, -1);
-}
+void allocate(listVar* lv, char* str, int len){
+	addListVar(lv, str, len);
 
-/* Convert to assembly a whole function, including address and control */
-void processFunction(quad* fun){
-	listString* ls;
-	ls = newListString();
-
-	processFunctionRec(fun, ls);
-	return;
-}
-
-void loadTemps(){
-	int rt;
-	for(int i = 0; i < ntemps; i++){
-		rt = ntemps - i;
-		newInstruction(mv, rt, sp, 0);
-		newInstruction(lw, rt, 0, 0);
-		newInstruction(addi, sp, 1);	// update sp
+	// Var
+	if(len == 0){
+		newInstruction(ram, addi, sp, -1);
+		return;
 	}
-	return;
-}
 
-void locateTemps(){
-	for(int rt = 0; rt < ntemps; rt++){
-		newInstruction(addi, sp, -1);	// update sp
-		newInstruction(sw, sp, rt, 0);	// allocate
-	}
+	// Array
+	newInstruction(ram, addi, sp, -len);
 	return;
 }
 
 void stackParam(int len){
-	int param;
-	param = popStack(&params);
-	for(int i = 0; i < len; i++){
-		newInstruction(sw, sp, param, (-i-1));
+	const int const_desl = 2;
+	int n_param;
+	char* param;
+	while(len > 0){
+		param = popStack(&params);
+		n_param = getN(param);
+		if(isReg(param)){
+			newInstruction(ram, sw, sp, n_param, -(len + const_desl));
+		}
+		else{
+			newInstruction(ram, mvi, oa, n_param);
+			newInstruction(ram, sw, sp, oa, -(len + const_desl));
+		}
+		len--;
 	}
 }
 
-void load(quad* fun, listString* ls){
-	int key, desl, reg;
+void loadVar(listVar* lv, char* var, int reg){
+	int key;
+	char str_aux[100] = "&";
 
-	reg = getN(fun->arg1);
-	key = getKeyListString(ls, fun->arg2);
+	strcat(str_aux, var);
+	key = getKeyListVar(lv, var);
 
-	if(key < 0){
-		// Load from global variable. Store address of global var to reg
-		key = getKeyListString(globals, fun->arg2);
-
-		if(key < 0)
-			printf("Variable definition not found local or global. (load)\n");
-
-		desl = -key-1;
-
-		newInstruction(ldown, reg, MEM_SZ);
-		newInstruction(lup, reg, MEM_SZ);
+	if(key >= 0){
+		// Local definition
+		if(isArray(lv, var)){
+			newInstruction(ram, mv, reg, fp, 0);
+			newInstruction(ram, addi, reg, -(key+1));
+		}
+		else{
+			newInstruction(ram, mv, reg, fp, 0);
+			newInstruction(ram, lw, reg, 0, -(key+1));
+		}
+		return;
 	}
-	else{
-		// Load from local variable.
-		desl = -key-1;
-		newInstruction(mv, reg, fp, 0);
-
+	key = getKeyListVar(lv, str_aux);
+	if(key >= 0){
+		// Reference definition
+		newInstruction(ram, mv, reg, fp, 0);
+		newInstruction(ram, addi, reg, -(key + 1));
+		return;
 	}
-	newInstruction(lw, reg, 0, desl);
+
+	key = getKeyListVar(globals, var);
+	if(key >= 0){
+		// Global definition
+		if(isArray(globals, var)){
+			newInstruction(ram, ldown, reg, (MEM_SZ-1));
+			newInstruction(ram, lup, reg, (MEM_SZ-1));
+			newInstruction(ram, addi, reg, -(key+1));
+		}
+		else{
+			newInstruction(ram, ldown, reg, (MEM_SZ-1));
+			newInstruction(ram, lup, reg, (MEM_SZ-1));
+			newInstruction(ram, lw, reg, 0, -(key+1));	
+		}
+		return;
+	}
+	printf("Error, variable definition not found in local or global (%s)\n", __func__);
+	return;
 }
 
-void store(quad* fun, listString* ls){
-	int key, desl, reg;
+void loadVarArray(quad* fun, listVar* lv, char* var, int reg){
+	const int arr_desl = getN(fun->result);
+	int key;
+	int is_reg;
+	char str_aux[100] = "&";
+
+	is_reg = isReg(fun->result);
+
+	strcat(str_aux, var);
+	key = getKeyListVar(lv, var);
+
+	if(key >= 0){
+		// Local definition
+		if(is_reg){
+			// Desl is register
+			newInstruction(ram, mv, reg, fp, 0);
+			newInstruction(ram, sub, reg, arr_desl, 0, 0);
+			newInstruction(ram, lw, reg, 0, -(key + 1));
+		}
+		else{
+			// Desl is immediate
+			newInstruction(ram, mv, reg, fp, 0);
+			newInstruction(ram, lw, reg, 0, -(key + 1 + arr_desl));
+		}
+		return;
+	}
+
+	key = getKeyListVar(lv, str_aux);
+
+	if(key >= 0){
+		// Reference definition
+		if(is_reg){
+			// Desl is register
+			newInstruction(ram, mv, reg, fp, 0);
+			newInstruction(ram, lw, reg, 0, -(key + 1));
+			newInstruction(ram, sub, reg, arr_desl, 0, 0);
+			newInstruction(ram, lw, reg, 0, 0);
+		}
+		else{
+			// Desl is immediate
+			newInstruction(ram, mv, reg, fp, 0);
+			newInstruction(ram, lw, reg, 0, -(key + 1 + arr_desl));
+		}
+		return;
+	}
+
+	key = getKeyListVar(globals, var);
+
+	if(key >= 0){
+		// Global definition
+		if(is_reg){
+			// Desl is register
+			newInstruction(ram, ldown, reg, (MEM_SZ-1));
+			newInstruction(ram, lup, reg, (MEM_SZ-1));
+			newInstruction(ram, sub, reg, arr_desl, 0, 0);
+			newInstruction(ram, lw, reg, 0, -(key+1));
+		}
+		else{
+			// Desl is immediate
+			newInstruction(ram, ldown, reg, (MEM_SZ-1));
+			newInstruction(ram, lup, reg, (MEM_SZ-1));
+			newInstruction(ram, lw, reg, 0, -(key + 1 + arr_desl));
+		}
+		return;
+	}
+	printf("Error, variable definition not found local or global (%s)\n", __func__);
+	return;
+}
+
+void load(quad* fun, listVar* lv){
+	const int reg = getN(fun->arg1);
+
+	if(fun->result[0] == '-'){
+		// Load simple variable
+		loadVar(lv, fun->arg2, reg);
+		return;
+	}
+	// Load from array
+	loadVarArray(fun, lv, fun->arg2, reg);
+
+	return;
+}	
+
+void store(quad* fun, listVar* lv){
+	int key, reg, arr_desl, is_reg;
+	char str_aux[100] = "&";
+	strcat(str_aux, fun->arg1);
+
 	reg = getN(fun->arg2);
-	key = getKeyListString(ls, fun->arg1);
+	key = getKeyListVar(lv, fun->arg1);
+	is_reg = (fun->result[0] != '-')? isReg(fun->result) : 0;
+	arr_desl = (fun->result[0] == '-') ? 0 : getN(fun->result);
 
-	// Check if var is local or global accessed and store it's address
-	if(key < 0){
-		key = getKeyListString(globals, fun->arg1);
-
-		if(key < 0)
-			printf("Variable definition not found local or global. (store)\n");
-		desl = -key - 1;
-
-		newInstruction(ldown, oa, MEM_SZ);
-		newInstruction(lup, oa, MEM_SZ);
-		newInstruction(sw, oa, reg, desl);
+	if(key >= 0){
+		// Save to local
+		if(is_reg){
+			// Desl is register
+			newInstruction(ram, mv, oa, fp, 0);
+			newInstruction(ram, sub, oa, arr_desl, 0, 0);
+			newInstruction(ram, sw, oa, reg, -(key+1));
+			return;
+		}
+		else{
+			// Desl is immediate
+			newInstruction(ram, sw, fp, reg, -(key + 1 + arr_desl));
+			return;
+		}
 	}
+
+	key = getKeyListVar(lv, str_aux);
+
+	if(key >= 0){
+		// Save to ref
+
+		if(is_reg){
+			// Desl is register
+			newInstruction(ram, mv, oa, fp, 0);
+			newInstruction(ram, lw, oa, 0, -(key + 1));
+			newInstruction(ram, sub, oa, arr_desl, 0, 0);
+			newInstruction(ram, sw, oa, reg, 0);
+			return;
+		}
+		else{
+			// Desl is immediate
+			newInstruction(ram, mv, oa, fp, 0);
+			newInstruction(ram, lw, oa, 0, -(key + 1));
+			newInstruction(ram, sw, oa, reg, -arr_desl);
+			return;
+		}
+	}
+
+	key = getKeyListVar(globals, fun->arg1);
+	if(key >= 0){
+		// Save to global
+		if(is_reg){
+			// Desl is reg
+			newInstruction(ram, ldown, oa, (MEM_SZ-1));
+			newInstruction(ram, lup, oa, (MEM_SZ-1));
+			newInstruction(ram, sub, oa, arr_desl, 0, 0);
+			newInstruction(ram, sw, oa, reg, -(key + 1));
+			return;
+		}
+		else{
+			// Desl is immediate
+			newInstruction(ram, ldown, oa, (MEM_SZ-1));
+			newInstruction(ram, lup, oa, (MEM_SZ-1));
+			newInstruction(ram, sw, oa, reg, -(key + 1 + arr_desl));
+			return;
+		}
+	}
+
+	printf("Variable definition not found local or global. (%s)\n", __func__);
+	return;
+}
+
+void start_decl(int** var_nested, int* deep){
+	*var_nested = (int*)realloc(*var_nested, sizeof(int) * (++*deep));
+	*var_nested[*deep-1] = 0;
+	allocateValidator((void**)var_nested, REALLOC_VALIDATE);
+	return;
+}
+
+void end_decl(int** var_nested, int* deep){
+	int nested_len;
+	if(*deep <= 0)
+		return;
+	
+	nested_len = *var_nested[*deep-1];
+	for(int i = 0; i < nested_len; i++){
+		newInstruction(ram, addi, sp, 1);
+	}
+
+	if(*deep == 1)
+		freeNull((void**)var_nested);
+	
 	else{
-		desl = -key - 1;
-		newInstruction(sw, fp, reg, desl);
+		*var_nested = (int*)realloc(*var_nested, sizeof(int) * (*deep - 1));
+		allocateValidator((void**)var_nested, REALLOC_VALIDATE);
 	}
+
+	(*deep)--;
+	return;
+}
+
+/* Convert to assembly a whole function, including address and control */
+void processFunction(quad* fun){
+	int deep = 0;
+	int* var_nested;
+	listVar* lv;
+
+	var_nested = NULL;
+	lv = getListVar(dict_lvar, fun->arg2);
+
+	processFunctionRec(fun, lv, &var_nested, &deep);
+
+	return;
 }
 
 /* Conver CI to assembly */
-void processFunctionRec(quad* fun, listString* ls){
+void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
+	char str_aux[100], ref[100] = "&";
 	int label;
+	int arg1, arg2;
+	int reg;
+	instruction* instr;
 
 	if(!fun)
 		return;
-
-	int arg1, arg2;
-	instruction* instr;
 
 	switch(fun->op){
 	case FUN_C:
@@ -493,55 +497,71 @@ void processFunctionRec(quad* fun, listString* ls){
 		// 
 		break;
 	case ARG_C:
-		addListString(ls, fun->arg2);
-		//
+		addListVar(lv, fun->arg2, 0);
+		newInstruction(ram, addi, sp, -1);
+		break;
+	case ARG_ARRAY_C:
+		strcpy(str_aux, ref);
+		strcat(str_aux, fun->arg2);
+		addListVar(lv, str_aux, 0);
+		newInstruction(ram, addi, sp, -1);
 		break;
 	case ALLOC_C:
-		// Need to considerate array
-		allocate(ls, fun->arg1);
-		// newInstruction(addi, sp, -1);
+		allocate(lv, fun->arg1, 0);
+		/*
+		if(*deep > 0){
+			*var_nested[*deep-1] += 1;
+		}*/
+		break;
+	case ALLOC_ARRAY_C:
+		allocate(lv, fun->arg1, atoi(fun->result));
+		/*
+		if(*deep > 0){
+			*var_nested[*deep-1] += atoi(fun->result);
+		}*/
 		break;
 	case BEGINCODE_C:
-		newInstruction(NOP, 0, 0, 0);	// Does nothing
+		newInstruction(ram, NOP, 0, 0, 0);	// Does nothing
 		break;
 	case HALT_C:
-		newInstruction(STOP, 0, 0, 0);
+		newInstruction(ram, STOP, 0, 0, 0);
 		break;
 	case ENDCODE_C:
-		newInstruction(NOP, 0, 0, 0);	// Does nothing
+		newInstruction(ram, NOP, 0, 0, 0);	// Does nothing
 		return;
 		break;
 	case END_C:
 		if(strcmp(fun->arg1, "main") == 0){
-			newInstruction(STOP, 0, 0, 0);
+			newInstruction(ram, STOP, 0, 0, 0);
+			return;
 			break;
 		}
 		// Update register pointer and return to function
 
 		// Restore jump_back address
-		newInstruction(mv, dj, fp, 0);
-		newInstruction(lw, dj, 0, 1);
+		newInstruction(ram, mv, dj, fp, 0);
+		newInstruction(ram, lw, dj, 0, 1);
 
 		// Update sp
-		newInstruction(mv, sp, fp, 0);
-		newInstruction(lw, sp, 0, 2);
-
-		loadTemps();
+		newInstruction(ram, mv, sp, fp, 0);
+		newInstruction(ram, addi, sp, 2);
 
 		// update fp
-		newInstruction(lw, fp, 0, 0);
+		newInstruction(ram, lw, fp, 0, 0);
 
 		// update pc
-		newInstruction(jump, dj, 0, 0);
+		newInstruction(ram, jump, dj, 0, 0);
 
 		return;
 		break;
 	case LOAD_C:
-		load(fun, ls);
+		load(fun, lv);
 		break;
+	
 	case IFF_C:
 		// Trocar a condicao
-		instr = newInstruction(bc, 0, 0, -1);	// TODO: bc Must be bcn (branch conditional negate)
+		newInstruction(ram, addi, rf, 1);
+		instr = newInstruction(ram, bc, 0, 0, -1);
 		label = getN(fun->arg2);
 		ldAdd(&labels_request, &label, getLine(), instr->desl);
 		break;
@@ -550,7 +570,7 @@ void processFunctionRec(quad* fun, listString* ls){
 		ldAdd(&labels, &label, getLine(), NULL);
 		break;
 	case GOTO_C:
-		instr = newInstruction(branch, 0, 0, -1);
+		instr = newInstruction(ram, branch, 0, 0, -1);
 		label = getN(fun->arg1);
 		ldAdd(&labels_request, &label, getLine(), instr->desl);
 		break;
@@ -587,45 +607,73 @@ void processFunctionRec(quad* fun, listString* ls){
 	case ASSIGN_C:
 		arg1 = getN(fun->arg1);
 		arg2 = getN(fun->arg2);
-		isReg(fun->arg2) ? (newInstruction(mv, arg1, arg2, 0)) : (newInstruction(mvi, arg1, arg2));
+		isReg(fun->arg2) ? (newInstruction(ram, mv, arg1, arg2, 0)) : (newInstruction(ram, mvi, arg1, arg2));
 		break;
 	case STORE_C:
-		store(fun, ls);
-		
+		store(fun, lv);	
 		break;
 	case PARAM_C:
-		params = addStack(params, atoi(&fun->arg1[2]));
-		
+		params = addStack(params, fun->arg1);
 		break;
 	case RETURN_C:
 		// store return_data
 
 		if(fun->arg1){
 			// save return data
-			newInstruction(mv, rd, atoi(&fun->arg1[1]), 0);
+			newInstruction(ram, mv, rd, atoi(&fun->arg1[1]), 0);
 		}
 		break;
 	case CALL_C:
-		// Locate temps
-		locateTemps();
+		if(strcmp(fun->arg2, "input") == 0){
+			reg = getN(fun->arg1);
+			newInstruction(ram, mvi, oa, 0);
+			newInstruction(ram, get, oa, 0, 0);
+			newInstruction(ram, mv, reg, oa, 0);
+			break;
+		}
+		else if(strcmp(fun->arg2, "output") == 0){
+			reg = getN(popStack(&params));
+			newInstruction(ram, mvi, oa, 1);
+			newInstruction(ram, sw, oa, reg, 0);
+			newInstruction(ram, print, oa, 0, 0);
+			break;
+		}
 
 		// Update next args
-		stackParam(atoi(fun->result));
+		stackParam(atoi(fun->result)); // FIX POSITION OF ARGS
 
-		instr = newInstruction(bal,0, 0, -1);
+		instr = newInstruction(ram, bal,0, 0, -1);
 
 		// saving call to function to addr later
 		ldAdd(&calls_request, (void*)fun->arg2, getLine(), instr->desl);
 		
 		// armazenar retorno no resgitrador do CALL_C
-		newInstruction(mv, atoi(&fun->arg1[1]), rd, 0); 
-		
+		newInstruction(ram, mv, getN(fun->arg1), rd, 0); 
 		break;
+	/*
+	case START_WHILE_C:
+		start_decl(var_nested, deep);
+		break;*/
+	/*case END_WHILE_C:
+		end_decl(var_nested, deep);
+		break;*/
+	case START_IF_C:
+		start_decl(var_nested, deep);
+		break;/*
+	case END_IF_C:
+		end_decl(var_nested, deep);
+		break;*/
+	case START_ELSE_C:
+		start_decl(var_nested, deep);
+		break;/*
+	case END_ELSE_C:
+		end_decl(var_nested, deep);
+		break;
+	*/
 	default:
-		/**/
 		break;
 	}
-	processFunctionRec(fun->next, ls);
+	processFunctionRec(fun->next, lv, var_nested, deep);
 }
 
 void updateLabels(){
@@ -678,34 +726,66 @@ void updateCalls(){
 
 /* Makes global allocation */
 void processGlobal(quad *head){
+	int len = 0;
 	if(
 		!head || 
-		(head->op != ALLOC_C)
+		(head->op == FUN_C)
 	 ){
 		return;
 	}
-	newInstruction(addi, sp, -1);
-	addListString(globals, head->arg1);
+	switch(head->op){
+	case ALLOC_C:
+		newInstruction(ram, addi, sp, -1);
+		break;
+	case ALLOC_ARRAY_C:
+		len = atoi(head->result);
+		newInstruction(ram, addi, sp, -(len));
+		break;
+	default:
+		printf("Unexpected symbol at (%s)\n", __func__);
+		return;
+	}
+
+	addListVar(globals, head->arg1, len);
 	processGlobal(head->next);
+}
+
+void setInitial(){
+	newInstruction(ram, ldown, sp, MEM_SZ-1);
+	newInstruction(ram, lup, sp, MEM_SZ-1);
 }
 
 void toAssembly(quad* head){
 	quadList la;
+	char** functions;
+
+	setInitial();
 	processGlobal(head->next);
 
 	
 	la = getFuncions(head);
-	
+	functions = (char**)malloc(sizeof(char*) * la.len);
+	allocateValidator((void**)&functions, MALLOC_VALIDATE);
+
 	for(int i = 0; i < la.len; i++){
 		printf("function: %s\n"
 			"##########\n", la.code[i]->arg2);
+		functions[i] = la.code[i]->arg2;
 	}
-	processFunction(la.code[0]);
-	processFunction(la.code[1]);
 
+	dict_lvar = initDictVar(functions, la.len);
+
+	
+	for(int i = 0; i < la.len; i++){
+		processFunction(la.code[i]);
+	}
+	
 	updateLabels();
 	updateCalls();
-	printRam();
+	printMem(ram);
+	/*
+	freeNull((void**)&functions);
+	*/
 	/*
 	if(la.code){
 		free(la.code);

@@ -32,6 +32,12 @@ typedef enum {
 	STORE_C,
 	PARAM_C,
 	RETURN_C,
+	START_WHILE_C,
+	END_WHILE_C,
+	START_IF_C,
+	END_IF_C,
+	START_ELSE_C,
+	END_ELSE_C,
 	CALL_C,
 	NONE_C
 	

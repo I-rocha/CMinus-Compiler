@@ -4,15 +4,9 @@
 #include <stdarg.h>	// variadic
 #include <math.h>
 
+#include "../GLOBALS.h"
 #include "mnemonic.h"
 #include "../utils.h"
-
-#define dj 31	// data jump
-#define sp 30	// stack pointer
-#define fp 29	// frame pointer
-#define hp 28	// heap pointer ??
-#define oa 27	// override aux
-#define rd 26	// return data
 
 static int lineno = -1;
 static instruction_subset formatI, formatII, formatIII, format_set[SUBSET_SZ];
@@ -93,22 +87,20 @@ static char* register_name[] = {
 	"$t25\0",
 	"$rd\0",
 	"$oa\0",
-	"$hp\0",
 	"$fp\0",
 	"$sp\0",
 	"$dj\0",
+	"$rf\0",
 };
 
 static int getFormat(operation_t* op);
 static int setMeta(instruction* instr);
 static char* int2Bin(int dec, int nbits);
 
-static memmory ram;
-
-void printRam(){
+void printMem(memmory* mem){
 	char* str;
-	for(int i = 0; i < ram.len; i++){
-		str = instruction2StringPretty(&ram.instr[i]);
+	for(int i = 0; i < mem->len; i++){
+		str = instruction2StringPretty(&mem->instr[i]);
 		printf("%s\n", str);
 	}
 	return;
@@ -132,14 +124,39 @@ void initGlobal(){
 	format_set[2] = formatIII;
 
 	lineno = -1;
-
-	ram.len = 0;
-	ram.instr = NULL;
 }
 
-instruction* newInstruction(operation_t operation, ...){
+memmory* newMem(){
+	memmory* mem;
+	mem = (memmory*)malloc(sizeof(memmory));
+	mem->len =  0;
+	mem->instr = NULL;
+	allocateValidator((void**)&mem, MALLOC_VALIDATE);
+	return mem;
+}
+
+// Merge mem2 to mem1
+memmory* mergeInstructions(memmory* mem1, memmory* mem2){
+	int len1 = 0;
+	if(!mem1)
+		return mem2;
+	if(!mem2)
+		return mem1;
+
+	mem1 = (memmory*)realloc(mem1, sizeof(memmory) * (mem1->len + mem2->len));
+	for(int i = 0; i < mem2->len; i++){
+		len1 = mem1->len;
+		mem1[mem1->len++] = mem2[i];
+	}
+	return mem1;
+}
+
+instruction* newInstruction(memmory* mem, operation_t operation, ...){
 	instruction this_instruction;
 	instruction *instr = &this_instruction;
+
+	if(!mem)
+		return NULL;
 
 	// Variadic arguments
 	va_list args;
@@ -180,17 +197,17 @@ instruction* newInstruction(operation_t operation, ...){
 	va_end(args);
 
 
-	ram.instr = (instruction*)realloc(ram.instr, sizeof(instruction) * (ram.len + 1));
-	allocateValidator((void**)&ram.instr, REALLOC_VALIDATE);
-	ram.instr[ram.len] = *instr;
-	return &(ram.instr[ram.len++]);
+	mem->instr = (instruction*)realloc(mem->instr, sizeof(instruction) * (mem->len + 1));
+	allocateValidator((void**)&mem->instr, REALLOC_VALIDATE);
+	mem->instr[mem->len] = *instr;
+	return &(mem->instr[mem->len++]);
 }
 
-instruction* getInstruction(int idx){
-	if(idx < 0 || idx >= ram.len)
+instruction* getInstruction(memmory* mem, int idx){
+	if(!mem || idx < 0 || idx >= mem->len)
 		return NULL;
 
-	return &ram.instr[idx];
+	return &mem->instr[idx];
 }
 
 // TODO: str_instr must be dealocated somewhere

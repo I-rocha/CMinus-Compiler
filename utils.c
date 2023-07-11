@@ -40,63 +40,83 @@ void allocateValidator(void** ptr, const char* msg, const char* func){
 	printf("%s", err_txt);
 	exit(0);
 }
-
-listString* newListString(){
-	listString* ls;
-	ls = (listString*) malloc(sizeof(listString));
-	ls->list = NULL;
-	ls->len = 0;
-	return ls;
+/*
+listVar* newListVar(){
+	listVar* lv;
+	lv = (listVar*) malloc(sizeof(listVar));
+	lv->list = NULL;
+	lv->len = 0;
+	lv->fun = NULL;
+	return lv;
 }
+*/
 
-int addListString(listString* ls, char* str){
-	if(!ls)
+/* Adiciona se nao existe */
+/*
+int addListVar(listVar* lv, char* str, int len){
+	if(!lv)
 		return 0;
 
-	ls->list = (char**)realloc(ls->list, sizeof(char*) * (ls->len+1));
-	
-	if(!ls->list){
-		printf("Error, allocating didn't work (addListString)\n");
-		exit(0);
-		return -1;
-	}
+	if(getKeyListVar(lv, str) == -1)
+		return 0;
 
-	ls->list[ls->len++] = strdup(str);
+	lv->list = (varDef*)realloc(lv->list, sizeof(varDef) * (lv->len+1));
+	allocateValidator((void**)&lv->list, REALLOC_VALIDATE);
+
+	lv->list[lv->len].var = strdup(str);
+	lv->list[lv->len++].len = len;
 	return 1;
 }
-
-int getKeyListString(listString* ls, char* str){
-	if(!ls || !ls->list)
+*/
+/*
+int getKeyListVar(listVar* lv, char* str){
+	if(!lv || !lv->list)
 		return -1;
 
-	for(int i = 0; i < ls->len; i++){
-		if(strcmp(ls->list[i], str) == 0)
+	for(int i = 0; i < lv->len; i++){
+		if(strcmp(lv->list[i].var, str) == 0)
 			return i;
 	}
 	return -1;
 }
 
-void freeListString(listString* ls){
-	if(!ls)
-		return;
 
-	if(!ls->list){
-		free(ls);
-		ls = NULL;
-		return;
-	}
+int getLenListVar(listVar* lv, char* str){
+	varDef* vd;
 
-	for(int i = 0; i < ls->len; i++){
-		if(!ls->list[i])
-			continue;
-		free(ls->list[i]);
+	if(!lv || !lv->list)
+		return -1;
+
+	// Look for var definition and get len
+	for(int i = 0; i < lv->len; i++){
+		vd = &lv->list[i];	// var def
+
+		if(strcmp(vd->var, str) == 0)
+			return vd->len;
 	}
-	free(ls->list);
-	free(ls);
-	ls = NULL;
+	return -1;
 }
 
-stack* addStack(stack* ptr, int id){
+void freeListVar(listVar* lv){
+	if(!lv)
+		return;
+
+	if(!lv->list){
+		free(lv);
+		lv = NULL;
+		return;
+	}
+
+	for(int i = 0; i < lv->len; i++){
+		if(!lv->list[i].var)
+			continue;
+		free(lv->list[i].var);
+	}
+	free(lv->list);
+	freeNull((void**)&lv);
+}
+*/
+stack* addStack(stack* ptr, char* id){
 	stack* new;
 
 	// Allocate new struct
@@ -117,12 +137,12 @@ stack* addStack(stack* ptr, int id){
 	return ptr;
 }
 
-int popStack(stack** ptr){
+char* popStack(stack** ptr){
 	stack* toRemove;
-	int ret;
+	char* ret;
 
 	if(!ptr || !*ptr)
-		return -1;
+		return NULL;
 	
 	ret = (*ptr)->id;
 
@@ -132,3 +152,116 @@ int popStack(stack** ptr){
 	freeNull((void**)&toRemove);
 	return ret;
 }
+/*
+dictVar* initDictVar(char** str, int nfun){
+	dictVar* dict_var;
+	listVar* lvar;
+
+	dict_var = (dictVar*) malloc(sizeof(dictVar));
+	allocateValidator((void**)&dict_var, MALLOC_VALIDATE);
+
+	dict_var->nfun = nfun;
+	dict_var->multiple_lvar = (listVar*)malloc(sizeof(listVar) * nfun);
+	allocateValidator((void**)&dict_var, MALLOC_VALIDATE);
+
+	for(int i = 0; i < nfun; i++){
+		lvar = &dict_var->multiple_lvar[i];
+		lvar->list = NULL;
+		lvar->fun = strdup(str[i]);
+		lvar->len = 0;
+	}
+	dict_var->nfun = nfun;
+	return dict_var;
+}
+
+listVar* getListVar(dictVar* dict_var, char* fun){
+	listVar* lvar;
+	if(!dict_var)
+		return NULL;
+
+	for(int i = 0; i < dict_var->nfun; i++){
+		lvar = &dict_var->multiple_lvar[i];
+		if(!lvar->fun){
+			printf("List of var without function associated (%s)\n", __func__);
+			return NULL;
+		}
+		if(strcmp(lvar->fun, fun) == 0)
+			return lvar;
+	}
+	return NULL;
+}
+
+listVar* newListArg(){
+	listARg* la;
+	la = (listArg*) malloc(sizeof(listArg));
+	allocateValidator((void**)&la, MALLOC_VALIDATE);
+	la->list = NULL;
+	la->len = 0;
+	la->fun = NULL;
+	return la;
+}
+
+int getKeyListArg(listArg* la, char* str){
+	if(!la || !la->list)
+			return -1;
+
+	for(int i = 0; i < la->len; i++){
+		if(strcmp(la->list[i].name, str) == 0)
+			return i;
+	}
+	return -1;	
+}
+
+int addListArg(listArg* la, char* str, int len, int isAlias){
+	if(!la)
+		return 0;
+
+	if(getKeyListVar(la, str) == -1)
+		return 0;
+
+	la->list = (argDef*)realloc(la->list, sizeof(argDef) * (la->len+1));
+	allocateValidator((void**)&la->list, REALLOC_VALIDATE);
+
+	la->list[la->len].name = strdup(str);
+	la->list[la->len++].isAlias = isAlias;
+	return 1;
+}
+
+dictArg* initDictArg(char** str, int nfun){
+	dictArg* dict_arg;
+	listArg* larg;
+
+	dict_arg = (dictArg*) malloc(sizeof(dictArg));
+	allocateValidator((void**)&dict_arg, MALLOC_VALIDATE);
+
+	dict_arg->nfun = nfun;
+	dict_arg->multiple_larg = (listArg*)malloc(sizeof(listArg) * nfun);
+	allocateValidator((void**)&dict_arg, MALLOC_VALIDATE);
+
+	for(int i = 0; i < nfun; i++){
+		larg = &dict_arg->multiple_larg[i];
+		larg->list = NULL;
+		larg->fun = strdup(str[i]);
+		larg->len = 0;
+	}
+	dict_arg->nfun = nfun;
+	return dict_aeg;
+}
+
+listArg* getListArg(dictArg* dict_arg, char* fun){
+	listArg* larg;
+	if(!dict_arg)
+		return NULL;
+
+	for(int i = 0; i < dict_arg->nfun; i++){
+		larg = &dict_arg->multiple_larg[i];
+		if(!larg->fun){
+			printf("List of arg without function associated (%s)\n", __func__);
+			return NULL;
+		}
+		if(strcmp(larg->fun, fun) == 0)
+			return larg;
+	}
+	return NULL;
+}
+*/

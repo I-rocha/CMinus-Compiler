@@ -55,10 +55,10 @@ int main(int argc, char** argv){
 	printf("------ END CGEN --------\n");	
 	printf("------ BEGIN ENV --------\n");	
 	/* ENVIRONMENT */
-	//initFunCode(code);
+	
 	envInitGlobal();
 	toAssembly(code);
-
+	
 	// Close files
 	if(fp)
 		fclose(fp);

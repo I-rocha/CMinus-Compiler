@@ -199,23 +199,29 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 			// LEN_CHILD is at most 3
 			//TODO: IT NEEDS TO DEAL WITH THE CASE WHERE CHILD 1 SUPPOSED TO BE FIRST IFF STATEMENT DOESNT EXIST	RIGHT NOW IS WORKING ONLY IF STATEMENT RELATED TO IF IS NEVER NULL
 			//CALL CHILD 1 - statement related to if
+			*code = addQuad(*code, START_IF_C, NULL, NULL, NULL);
 			cgen(code, tree->child[1], lastScope, NULL);
+			*code = addQuad(*code, END_IF_C, NULL, NULL, NULL);
 
 			*code = addQuad(*code, GOTO_C, slabel2, NULL, NULL);
-
+			*code = addQuad(*code, LABEL_C, slabel1, NULL, NULL);
 			// CALL CHILD 2 - statement related to else
 			if(tree->len_child > 2) {
-				*code = addQuad(*code, LABEL_C, slabel1, NULL, NULL);
+				*code = addQuad(*code, START_ELSE_C, NULL, NULL, NULL);
 				cgen(code, tree->child[2], lastScope, NULL);
+				*code = addQuad(*code, END_ELSE_C, NULL, NULL, NULL);
 
 			}
 
 			*code = addQuad(*code, LABEL_C, slabel2, NULL, NULL);
+
+
 			cgen(code, tree->sibling, lastScope, NULL);
 
 			return;
 			break;
 		case WHILE_K:
+			*code = addQuad(*code, START_WHILE_C, NULL, NULL, NULL);
 			// TODO: LABEL MUST CREATE ITS OWN NAME WITHOUT CONFLICT
 			sprintf(slabel1, "L%d", labelid++);
 			sprintf(slabel2, "L%d", labelid++);
@@ -232,6 +238,7 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 			*code = addQuad(*code, GOTO_C, slabel1, NULL, NULL);
 
 			*code = addQuad(*code, LABEL_C, slabel2, NULL, NULL);
+			*code = addQuad(*code, END_WHILE_C, NULL, NULL, NULL);
 
 			cgen(code, tree->sibling, lastScope, NULL);
 			return;
@@ -268,7 +275,7 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 
 exp genOp(quad **code, astNo* tree){
 	int nreg, nnreg, sz;
-	char sreg[10], sreg1[10], sreg2[10], v_arr[11];
+	char sreg[10], sreg1[10], sreg2[10], v_arr[11], name_arr[11], *tname_arr, *tsize_arr;
 	exp lval, rval, ret, err, val;
 	astNo* aux;
 
@@ -435,12 +442,21 @@ exp genOp(quad **code, astNo* tree){
 		case ASSIGN_K:
 			lval = genOp(code, tree->child[0]);
 			rval = genOp(code, tree->child[1]);
+			strcpy(v_arr, getVar(lval.value));
 
 			sprintf(sreg1, "$t%d", lval.value);
 			(rval.type == REGT) ? sprintf(sreg2, "$t%d", rval.value) : sprintf(sreg2, "%d", rval.value);
-
 			*code = addQuad(*code, ASSIGN_C, sreg1, sreg2, NULL);
-			*code = addQuad(*code, STORE_C, getVar(lval.value), sreg1, NULL);
+
+			if(v_arr[strlen(v_arr)-1] != ']')
+				*code = addQuad(*code, STORE_C, v_arr, sreg1, NULL);
+
+			else{
+				strcpy(name_arr, v_arr);
+				tname_arr = strtok(name_arr, "[");
+				tsize_arr = strtok(NULL, "]");
+				*code = addQuad(*code, STORE_C, tname_arr, sreg1, tsize_arr);
+			}
 
 			ret = (exp){.type = LITT, .value = 1};
 	//		return ret;
@@ -468,13 +484,17 @@ exp genOp(quad **code, astNo* tree){
 			return ret;
 			break;
 		case VAR_ARRAY_K:
-			sprintf(v_arr, "%s[%s]", tree->instance, tree->child[0]->instance);
+			val = genOp(code, tree->child[0]);
+
+			(val.type == REGT) ? sprintf(sreg1, "$t%d", val.value) : sprintf(sreg1, "%d", val.value);
+
+			sprintf(v_arr, "%s[%s]", tree->instance, strdup(sreg1));
 			nnreg = getReg(v_arr);
 
 			if(nnreg < 0){
-				nreg = linkReg(v_arr);
+				nreg = linkReg(strdup(v_arr));
 				sprintf(sreg, "$t%d", nreg);
-				*code = addQuad(*code, LOAD_C, sreg, v_arr, NULL);
+				*code = addQuad(*code, LOAD_C, sreg, tree->instance, sreg1);
 			}
 			else
 				nreg = nnreg;
@@ -615,6 +635,24 @@ char* ctokenStr(CToken tok){
 		break;
 	case CALL_C:
 		return "CALL";
+		break;
+	case START_IF_C:
+		return "START_IF";
+		break;
+	case END_IF_C:
+		return "END_IF";
+		break;
+	case START_WHILE_C:
+		return "START_WHILE";
+		break;
+	case END_WHILE_C:
+		return "END_WHILE";
+		break;
+	case START_ELSE_C:
+		return "START_ELSE";
+		break;
+	case END_ELSE_C:
+		return "END_ELSE";
 		break;
 	case RETURN_C:
 		return "RETURN";

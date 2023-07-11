@@ -1,7 +1,7 @@
 #ifndef REGBANK_H
 #define REGBANK_H
 
-#define NREG 32
+#define NREG 26
 
 typedef struct rprec{
 	int idx;
