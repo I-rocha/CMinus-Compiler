@@ -1,0 +1,62 @@
+0# ldown $sp, 999
+1# lup $sp, 999
+2# addi $sp, -1
+3# sw $sp, $dj, 0
+4# addi $sp, -1
+5# sw $sp, $fp, 0
+6# mv $fp, $sp, 0
+7# addi $sp, -1
+8# mv $t5, $fp, 0
+9# lw $t5, $t0, -1
+10# mvi $oa, 0
+11# get $oa, $t0, 0
+12# lw $oa, $t0, 0
+13# mv $t6, $oa, 0
+14# mv $t5, $t6, 0
+15# sw $fp, $t5, -1
+16# sw $sp, $t5, -1
+17# addi $sp, -1
+18# sw $sp, $t5, -3
+19# bal $t0, $t0, 8
+20# mv $t5, $sp, 0
+21# lw $t5, $t0, 0
+22# addi $sp, 1
+23# mv $t7, $rd, 0
+24# mvi $oa, 1
+25# sw $oa, $t7, 0
+26# print $oa, $t0, 0
+27# STOP $t0, $t0, 0
+28# addi $sp, -1
+29# sw $sp, $dj, 0
+30# addi $sp, -1
+31# sw $sp, $fp, 0
+32# mv $fp, $sp, 0
+33# addi $sp, -1
+34# mv $t0, $fp, 0
+35# lw $t0, $t0, -1
+36# leqi $t0, 0
+37# addi $rf, 1
+38# bc $t0, $t0, 2
+39# mvi $rd, 1
+40# branch $t0, $t0, 15
+41# mv $oa, $t0, 0
+42# subi $oa, 1
+43# mv $t2, $oa, 0
+44# sw $sp, $t0, -1
+45# addi $sp, -1
+46# sw $sp, $t2, -3
+47# bal $t0, $t0, -20
+48# mv $t0, $sp, 0
+49# lw $t0, $t0, 0
+50# addi $sp, 1
+51# mv $t3, $rd, 0
+52# mv $oa, $t0, 0
+53# mult $oa, $t3, 0
+54# mv $t4, $oa, 0
+55# mv $rd, $t4, 0
+56# mv $dj, $fp, 0
+57# lw $dj, $t0, 1
+58# mv $sp, $fp, 0
+59# addi $sp, 2
+60# lw $fp, $t0, 0
+61# jump $dj, $t0, 0
