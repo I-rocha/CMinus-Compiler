@@ -124,7 +124,7 @@ int saveMemPretty(memmory* mem, const char* path){
 
 	for(int i = 0; i < mem->len; i++){
 		str = instruction2StringPretty(&mem->instr[i]);
-		fprintf(fd, "%s\n", str);
+		fprintf(fd, "%d# %s\n", i, str);
 	}
 	fclose(fd);
 	return 1;
