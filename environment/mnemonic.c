@@ -110,6 +110,46 @@ void printMem(memmory* mem){
 	return;
 }
 
+int saveMemPretty(memmory* mem, const char* path){
+	FILE* fd;
+	char* str;
+
+	if(!mem || !path)
+		return -1;
+
+	if(!(fd = fopen(path, "w"))){
+		printf("Error saving assembly (%s)\n", __func__);
+		return -1;
+	}
+
+	for(int i = 0; i < mem->len; i++){
+		str = instruction2StringPretty(&mem->instr[i]);
+		fprintf(fd, "%s\n", str);
+	}
+	fclose(fd);
+	return 1;
+}
+
+int saveMem(memmory* mem, const char* path){
+	FILE* fd;
+	char* str;
+
+	if(!mem || !path)
+		return -1;
+
+	if(!(fd = fopen(path, "w"))){
+		printf("Error saving assembly (%s)\n", __func__);
+		return -1;
+	}
+
+	for(int i = 0; i < mem->len; i++){
+		str = instruction2BinStr(&mem->instr[i]);
+		fprintf(fd, "%s\n", str);
+	}
+	fclose(fd);
+	return 1;
+}
+
 void initGlobal(){
 	formatI.operation = o1;	
 	formatI.len = F1_LEN;
@@ -141,7 +181,6 @@ memmory* newMem(){
 
 // Merge mem2 to mem1
 memmory* mergeInstructions(memmory* mem1, memmory* mem2){
-	int len1 = 0;
 	if(!mem1)
 		return mem2;
 	if(!mem2)
@@ -149,7 +188,6 @@ memmory* mergeInstructions(memmory* mem1, memmory* mem2){
 
 	mem1 = (memmory*)realloc(mem1, sizeof(memmory) * (mem1->len + mem2->len));
 	for(int i = 0; i < mem2->len; i++){
-		len1 = mem1->len;
 		mem1[mem1->len++] = mem2[i];
 	}
 	return mem1;
@@ -253,7 +291,7 @@ char* instruction2BinStr(instruction* instr){
 		break;
 
 	case FORMAT_II:
-		str_immediate = (instr->opcode == lup) ? int2Bin(instr->immediate >> 16, 16) : int2Bin(instr->immediate, 16);
+		str_immediate = (instr->operation == lup) ? int2Bin(instr->immediate >> 16, 16) : int2Bin(instr->immediate, 16);
 
 		str_funct = int2Bin(instr->funct, 5);
 
@@ -270,8 +308,6 @@ char* instruction2BinStr(instruction* instr){
 		break;
 	}
 	strcat(str_instr, str_partial);
-	printf("Instrucao:\n%s\n\n", str_instr);
-
 	return str_instr;
 }
 
@@ -280,13 +316,14 @@ char* int2Bin(int dec, int nbits){
 	int bit, mask, aux_mask;
 	char *str;
 
-	unsigned long int abs_range;
-	abs_range = ((unsigned long int) pow((double)2, ((double)nbits - 1))) - 1;
+	long long int abs_range;
+	abs_range = ((unsigned long int) pow((double)2, ((double)nbits))) - 1;
 
 	// Validateing range
-	if((dec > abs_range) || (dec < abs_range)){
-		printf("Overflow trying to convert int to bin. (int2bin)\n");
-		printf("Returning \"BINERR\" instead\n");
+	if((dec > abs_range) || (dec < -abs_range)){
+		printf("Overflow trying to convert int to bin. (%s)--", __func__);
+		printf("(dec, abs_range): (%d, %lli)\n", dec, abs_range);
+		printf("  Returning \"BINERR\" instead\n");
 		return strdup("BINERR");
 	}
 	
@@ -548,6 +585,7 @@ int setMeta(instruction* instr){
 
 	case mvi:
 		instr->opcode = 5;
+		instr->funct = 0;
 		break;
 
 	case sw:
@@ -559,10 +597,12 @@ int setMeta(instruction* instr){
 		break;
 
 	case lup:
+		instr->funct = 0;	// Not used but exist
 		instr->opcode = 8;
 		break;
 
 	case ldown:
+		instr->funct = 0;	// Not used but exist
 		instr->opcode = 9;
 		break;
 

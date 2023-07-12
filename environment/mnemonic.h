@@ -102,6 +102,8 @@ char* instruction2String(instruction* instr);
 char* instruction2StringPretty(instruction* instr);
 char* operation2String(operation_t* operation);
 void printMem(memmory* mem);
+int saveMem(memmory* mem, const char* path);
+int saveMemPretty(memmory* mem, const char* path);
 int getLine();
 
 #endif

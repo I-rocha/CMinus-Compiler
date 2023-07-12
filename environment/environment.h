@@ -7,5 +7,7 @@ void envInitGlobal();
 void endEnv();
 
 void toAssembly(quad* head);
+void saveAssembly(const char* path);
+void saveAssemblyPretty(const char* path);
 
 #endif

@@ -802,6 +802,7 @@ void processGlobal(quad *head){
 }
 
 void setInitial(){
+	newInstruction(ram, NOP, 0, 0, 0);			// First instruction should be NOP to avoid bug's at quartus
 	newInstruction(ram, ldown, sp, MEM_SZ-1);
 	newInstruction(ram, lup, sp, MEM_SZ-1);
 }
@@ -819,8 +820,6 @@ void toAssembly(quad* head){
 	allocateValidator((void**)&functions, MALLOC_VALIDATE);
 
 	for(int i = 0; i < la.len; i++){
-		printf("function: %s\n"
-			"##########\n", la.code[i]->arg2);
 		functions[i] = la.code[i]->arg2;
 	}
 
@@ -843,4 +842,14 @@ void toAssembly(quad* head){
 		la.code = NULL;
 	}
 	*/
+}
+
+void saveAssembly(const char* path){
+	saveMem(ram, path);
+	return;
+}
+
+void saveAssemblyPretty(const char* path){
+	saveMemPretty(ram, path);
+	return;
 }

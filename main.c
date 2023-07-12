@@ -58,6 +58,8 @@ int main(int argc, char** argv){
 	
 	envInitGlobal();
 	toAssembly(code);
+	saveAssembly("output/assembly.txt");
+	saveAssemblyPretty("output/assembly_pretty.txt");
 	
 	// Close files
 	if(fp)
