@@ -7,8 +7,8 @@
 #define FORMAT_I 0
 #define FORMAT_II 1
 #define FORMAT_III 2
-#define F1_LEN 14
-#define F2_LEN 15
+#define F1_LEN 16
+#define F2_LEN 17
 #define F3_LEN 13
 
 typedef enum{
@@ -52,6 +52,10 @@ typedef enum{
 	bc,
 	get,
 	print,
+	mult,
+	_div,
+	multi,
+	divi,
 	NOP,
 	STOP,
 	UNKNOWN

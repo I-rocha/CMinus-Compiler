@@ -148,7 +148,7 @@ void processAritmetic(quad* fun, operation_t op, operation_t opi){
 		//reg op reg
 		newInstruction(ram, mv, oa, arg2, 0);	// Move reg1 to aux
 		newInstruction(ram, op, oa, r, 0, 0);	// Op reg2 to aux
-		newInstruction(ram, mv, arg2, oa, 0);	// Store to reg target
+		newInstruction(ram, mv, arg1, oa, 0);	// Store to reg target
 	}
 }
 
@@ -627,10 +627,10 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 		processAritmetic(fun, sub, subi);
 		break;
 	case MULT_C:
-		// processAritmetic(fun, mult);
+		processAritmetic(fun, mult, multi);
 		break;
 	case DIV_C:
-		// processAritmetic(fun, div);
+		processAritmetic(fun, _div, divi);
 		break;
 	case LE_C:
 		processRelational(fun, leq, leqi);
@@ -666,8 +666,10 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 
 		if(fun->arg1[0] != '-'){
 			// save return data
-			printf("Return to %d\n", getN(fun->arg1));
-			newInstruction(ram, mv, rd, getN(fun->arg1), 0);
+			if(isReg(fun->arg1))
+				newInstruction(ram, mv, rd, getN(fun->arg1), 0);
+			else
+				newInstruction(ram, mvi, rd, getN(fun->arg1));
 		}
 		break;
 	case CALL_C:

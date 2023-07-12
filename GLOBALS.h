@@ -11,6 +11,6 @@
 #define rd 26	// return data
 
 #define BIT_ARCH 32
-#define N_OPERATIONS 42
+#define N_OPERATIONS 46
 
 #endif

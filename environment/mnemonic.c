@@ -10,8 +10,8 @@
 
 static int lineno = -1;
 static instruction_subset formatI, formatII, formatIII, format_set[SUBSET_SZ];
-static operation_t o1[] = {add, sub, AND, OR, NOT, XOR, less, grand, eq, neq, leq, geq, shiftL, shiftR};
-static operation_t o2[] = {mvi, addi, subi, ANDi, ORi, NOTi, XORi, lessi, grandi, eqi, neqi, leqi, geqi, lup, ldown};
+static operation_t o1[] = {add, sub, mult, _div, AND, OR, NOT, XOR, less, grand, eq, neq, leq, geq, shiftL, shiftR};
+static operation_t o2[] = {mvi, addi, subi, multi, divi, ANDi, ORi, NOTi, XORi, lessi, grandi, eqi, neqi, leqi, geqi, lup, ldown};
 static operation_t o3[] = {mv, jump, jal, jc, branch, bal, bc, sw, lw, get, print, NOP, STOP};
 static char * mnemonic[] = {
 	"add\0",
@@ -54,6 +54,10 @@ static char * mnemonic[] = {
 	"bc\0",
 	"get\0",
 	"print\0",
+	"mult\0",
+	"div\0",
+	"multi\0",
+	"divi\0",
 	"NOP\0",
 	"STOP\0",
 	"UNKNOWN\0"
@@ -166,8 +170,10 @@ instruction* newInstruction(memmory* mem, operation_t operation, ...){
 	instr->operation = operation;
 	
 	// set META
-	if(setMeta(instr) == -1)
+	if(setMeta(instr) == -1){
 		printf("Error assigning META. (%s)\n", __func__);
+		printf("Last operation: (%d, %s)\n", operation, instruction2String(instr));
+	}
 
 	// Check format of instruction and assign attributes accordingly
 	switch(instr->formatID){
@@ -598,6 +604,26 @@ int setMeta(instruction* instr){
 
 	case STOP:
 		instr->opcode = 63;
+		break;
+
+	case mult:
+		instr->opcode = 1;
+		instr->funct = 5;
+		break;
+
+	case _div:
+		instr->opcode = 1;
+		instr->funct = 6;
+		break;
+
+	case multi:
+		instr->opcode = 1;
+		instr->funct = 7;
+		break;
+
+	case divi:
+		instr->opcode = 1;
+		instr->funct = 8;
 		break;
 
 	default:

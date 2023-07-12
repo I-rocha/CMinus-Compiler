@@ -151,12 +151,14 @@ void ldPrint(listDefinition* l){
 		for(int i = 0; i < l->len; i++){
 			printf("(%d, L%d) # ", l->itemId[i].line, l->itemId[i].id);
 		}
+		printf("\n");
 		return;
 		break;
 	case DEF_STR:
 		for(int i = 0; i < l->len; i++){
 			printf("%d # L(%s)", l->itemStr[i].line, l->itemStr[i].str);
 		}
+		printf("\n");
 		return;
 		break;
 	}
@@ -197,8 +199,10 @@ int ldAdd(listDefinition* l, void* def, int line, int* addr){
 		exit(0);
 		return -1;
 	}
+	/*
 	if(ldGet(l, def))
 		return 0;
+		*/
 
 	// Check type and alloc new item
 	switch(l->type){
