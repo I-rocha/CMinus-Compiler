@@ -235,10 +235,10 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 
 			cgen(code, tree->child[1], lastScope, NULL);
 
+			*code = addQuad(*code, END_WHILE_C, NULL, NULL, NULL);
 			*code = addQuad(*code, GOTO_C, slabel1, NULL, NULL);
 
 			*code = addQuad(*code, LABEL_C, slabel2, NULL, NULL);
-			*code = addQuad(*code, END_WHILE_C, NULL, NULL, NULL);
 
 			cgen(code, tree->sibling, lastScope, NULL);
 			return;
@@ -489,7 +489,8 @@ exp genOp(quad **code, astNo* tree){
 			(val.type == REGT) ? sprintf(sreg1, "$t%d", val.value) : sprintf(sreg1, "%d", val.value);
 
 			sprintf(v_arr, "%s[%s]", tree->instance, strdup(sreg1));
-			nnreg = getReg(v_arr);
+			// nnreg = getReg(v_arr);
+			nnreg = -1;
 
 			if(nnreg < 0){
 				nreg = linkReg(strdup(v_arr));

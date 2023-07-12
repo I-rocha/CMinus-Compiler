@@ -101,7 +101,7 @@ void printMem(memmory* mem){
 	char* str;
 	for(int i = 0; i < mem->len; i++){
 		str = instruction2StringPretty(&mem->instr[i]);
-		printf("%s\n", str);
+		printf("%d# %s\n", i, str);
 	}
 	return;
 }

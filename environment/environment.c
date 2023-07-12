@@ -30,6 +30,7 @@ static listVar* globals;	// Global var position in-memmory
 static dictVar* dict_lvar;
 static stack* params;
 static memmory* ram;
+static int regs[BIT_ARCH];
 
 void envInitGlobal(){
 	initGlobal();
@@ -119,7 +120,7 @@ int getN(char* str){
 }
 
 void processAritmetic(quad* fun, operation_t op, operation_t opi){
-	const int arg1 = getN(fun->arg1);
+	const int arg1 = getN(fun->arg1); // target
 	const int arg2 = getN(fun->arg2);
 	const int r = getN(fun->result);
 	const int isreg_arg2 = isReg(fun->arg2);
@@ -127,22 +128,27 @@ void processAritmetic(quad* fun, operation_t op, operation_t opi){
 
 	// Create instruction based on where arguments are register or immediate
 	if(!isreg_arg2 && !isreg_r){
-		newInstruction(ram, opi, arg1, arg2);
+		// Imm op imm
+		newInstruction(ram, mvi, arg1, arg2);
 		newInstruction(ram, opi, arg1, r);
 	}
 	else if(!isreg_arg2 && isreg_r){
-		newInstruction(ram, mvi, arg1, arg2);
-		newInstruction(ram, op, arg1, r, 0, 0);
+		// imm op reg
+		newInstruction(ram, mvi, oa, arg2);		// Store imm to reg aux
+		newInstruction(ram, op, oa, r, 0, 0);	// Op reg1 to reg aux
+		newInstruction(ram, mv, arg1, oa, 0);	// store to target reg
 	}
 	else if(isreg_arg2 && !isreg_r){
-		newInstruction(ram, mvi, arg1, r);
-		newInstruction(ram, op, arg1, arg2, 0, 0);
+		// reg op imm
+		newInstruction(ram, mv, oa, arg2, 0);	// Move reg1 to reg-aux
+		newInstruction(ram, opi, oa, r, 0, 0);	// Opi imm to reg-aux
+		newInstruction(ram, mv, arg1, oa, 0);	// Store to target reg
 	}
 	else{
-		newInstruction(ram, mv, oa, arg2, 0);
-		newInstruction(ram, op, arg2, r, 0, 0);
-		newInstruction(ram, op, arg1, arg2, 0, 0);
-		newInstruction(ram, mv, arg2, oa, 0);
+		//reg op reg
+		newInstruction(ram, mv, oa, arg2, 0);	// Move reg1 to aux
+		newInstruction(ram, op, oa, r, 0, 0);	// Op reg2 to aux
+		newInstruction(ram, mv, arg2, oa, 0);	// Store to reg target
 	}
 }
 
@@ -257,7 +263,7 @@ void loadVar(listVar* lv, char* var, int reg){
 	if(key >= 0){
 		// Reference definition
 		newInstruction(ram, mv, reg, fp, 0);
-		newInstruction(ram, addi, reg, -(key + 1));
+		newInstruction(ram, lw, reg, 0, -(key + 1));
 		return;
 	}
 
@@ -352,6 +358,7 @@ void loadVarArray(quad* fun, listVar* lv, char* var, int reg){
 void load(quad* fun, listVar* lv){
 	const int reg = getN(fun->arg1);
 
+	regs[reg] = 1;
 	if(fun->result[0] == '-'){
 		// Load simple variable
 		loadVar(lv, fun->arg2, reg);
@@ -436,9 +443,11 @@ void store(quad* fun, listVar* lv){
 }
 
 void start_decl(int** var_nested, int* deep){
-	*var_nested = (int*)realloc(*var_nested, sizeof(int) * (++*deep));
-	*var_nested[*deep-1] = 0;
-	allocateValidator((void**)var_nested, REALLOC_VALIDATE);
+
+	*var_nested = (int*)realloc(*var_nested, sizeof(int) * (*deep + 1));
+	(*deep)++;
+	*var_nested[(*deep)-1] = 0;
+	
 	return;
 }
 
@@ -446,7 +455,9 @@ void end_decl(int** var_nested, int* deep){
 	int nested_len;
 	if(*deep <= 0)
 		return;
-	
+	if(*var_nested == NULL)
+		return;
+
 	nested_len = *var_nested[*deep-1];
 	for(int i = 0; i < nested_len; i++){
 		newInstruction(ram, addi, sp, 1);
@@ -467,14 +478,49 @@ void end_decl(int** var_nested, int* deep){
 /* Convert to assembly a whole function, including address and control */
 void processFunction(quad* fun){
 	int deep = 0;
-	int* var_nested;
+	int** var_nested;
 	listVar* lv;
 
-	var_nested = NULL;
+	var_nested = (int**)malloc(sizeof(int*));
+	*var_nested = NULL;
 	lv = getListVar(dict_lvar, fun->arg2);
 
-	processFunctionRec(fun, lv, &var_nested, &deep);
+	for(int i = 0; i < BIT_ARCH; i++)
+		regs[i] = -1;
 
+	processFunctionRec(fun, lv, var_nested, &deep);
+
+	return;
+}
+
+void storeTemps(){
+	int desl = 0;
+
+	for(int i = 0; i < BIT_ARCH; i++){
+		if(regs[i] == 1){
+			newInstruction(ram, sw, sp, i, -(desl+1));
+			desl++;
+		}
+	}
+	if(desl > 0){
+		newInstruction(ram, addi, sp, -desl);
+	}
+	return;
+}
+
+void loadTemps(){
+	int desl = -1;
+
+	for(int i = BIT_ARCH-1; i >= 0; i--){
+		if(regs[i] == 1){
+			desl++;
+			newInstruction(ram, mv, i, sp, 0);
+			newInstruction(ram, lw, i, 0, desl);
+		}
+	}
+	if(desl >= 0){
+		newInstruction(ram, addi, sp, (desl+1));
+	}
 	return;
 }
 
@@ -508,17 +554,17 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 		break;
 	case ALLOC_C:
 		allocate(lv, fun->arg1, 0);
-		/*
+		
 		if(*deep > 0){
 			*var_nested[*deep-1] += 1;
-		}*/
+		}
 		break;
 	case ALLOC_ARRAY_C:
 		allocate(lv, fun->arg1, atoi(fun->result));
-		/*
+		
 		if(*deep > 0){
 			*var_nested[*deep-1] += atoi(fun->result);
-		}*/
+		}
 		break;
 	case BEGINCODE_C:
 		newInstruction(ram, NOP, 0, 0, 0);	// Does nothing
@@ -618,9 +664,10 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 	case RETURN_C:
 		// store return_data
 
-		if(fun->arg1){
+		if(fun->arg1[0] != '-'){
 			// save return data
-			newInstruction(ram, mv, rd, atoi(&fun->arg1[1]), 0);
+			printf("Return to %d\n", getN(fun->arg1));
+			newInstruction(ram, mv, rd, getN(fun->arg1), 0);
 		}
 		break;
 	case CALL_C:
@@ -628,6 +675,7 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 			reg = getN(fun->arg1);
 			newInstruction(ram, mvi, oa, 0);
 			newInstruction(ram, get, oa, 0, 0);
+			newInstruction(ram, lw, oa, 0, 0);
 			newInstruction(ram, mv, reg, oa, 0);
 			break;
 		}
@@ -639,33 +687,34 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 			break;
 		}
 
-		// Update next args
-		stackParam(atoi(fun->result)); // FIX POSITION OF ARGS
+		storeTemps();
+		stackParam(atoi(fun->result)); // Update next args
 
+		// Detour
 		instr = newInstruction(ram, bal,0, 0, -1);
 
 		// saving call to function to addr later
 		ldAdd(&calls_request, (void*)fun->arg2, getLine(), instr->desl);
 		
-		// armazenar retorno no resgitrador do CALL_C
-		newInstruction(ram, mv, getN(fun->arg1), rd, 0); 
+		loadTemps();
+		newInstruction(ram, mv, getN(fun->arg1), rd, 0); 	// Return data
 		break;
-	/*
+	
 	case START_WHILE_C:
 		start_decl(var_nested, deep);
-		break;*/
-	/*case END_WHILE_C:
+		break;
+	case END_WHILE_C:
 		end_decl(var_nested, deep);
-		break;*/
-	case START_IF_C:
+		break;
+	/*case START_IF_C:
 		start_decl(var_nested, deep);
-		break;/*
+		break;*//*
 	case END_IF_C:
 		end_decl(var_nested, deep);
 		break;*/
-	case START_ELSE_C:
+	/*case START_ELSE_C:
 		start_decl(var_nested, deep);
-		break;/*
+		break;*//*
 	case END_ELSE_C:
 		end_decl(var_nested, deep);
 		break;
@@ -696,7 +745,7 @@ void updateLabels(){
 			printf("ERROR: Missing label L%d\n", id_req);
 			return;
 		}
-		*desl_addr = (line_req - lb->line);
+		*desl_addr = (lb->line - line_req);
 	}
 	return;
 }
@@ -720,7 +769,7 @@ void updateCalls(){
 			printf("ERROR: missing def of function %s\n", str_req);
 			return;
 		}
-		*desl_addr = (line_req - called->line);
+		*desl_addr = (called->line - line_req);
 	}
 }
 
