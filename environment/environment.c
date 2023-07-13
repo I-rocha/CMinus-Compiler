@@ -199,7 +199,7 @@ void processRelational(quad* fun, operation_t op, operation_t opi){
 
 void saveReturn(){
 	newInstruction(ram, addi, sp, -1);
-	newInstruction(ram, sw, sp, dj, 0);
+	newInstruction(ram, sw, sp, rj, 0);
 }
 
 void saveBinding(){
@@ -585,8 +585,8 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 		// Update register pointer and return to function
 
 		// Restore jump_back address
-		newInstruction(ram, mv, dj, fp, 0);
-		newInstruction(ram, lw, dj, 0, 1);
+		newInstruction(ram, mv, rj, fp, 0);
+		newInstruction(ram, lw, rj, 0, 1);
 
 		// Update sp
 		newInstruction(ram, mv, sp, fp, 0);
@@ -596,7 +596,7 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 		newInstruction(ram, lw, fp, 0, 0);
 
 		// update pc
-		newInstruction(ram, jump, dj, 0, 0);
+		newInstruction(ram, jump, rj, 0, 0);
 
 		return;
 		break;

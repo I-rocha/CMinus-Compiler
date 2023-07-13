@@ -93,7 +93,7 @@ static char* register_name[] = {
 	"$oa\0",
 	"$fp\0",
 	"$sp\0",
-	"$dj\0",
+	"$rj\0",
 	"$rf\0",
 };
 
@@ -144,7 +144,7 @@ int saveMem(memmory* mem, const char* path){
 
 	for(int i = 0; i < mem->len; i++){
 		str = instruction2BinStr(&mem->instr[i]);
-		fprintf(fd, "%s\n", str);
+		fprintf(fd, "mem_i[%d] = 32\'b%s;\n", i, str);
 	}
 	fclose(fd);
 	return 1;

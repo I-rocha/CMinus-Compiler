@@ -1,10 +1,10 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
-#define MEM_SZ 1000	// size of memmory
+#define MEM_SZ 300	// size of memmory
 #define ntemps 26 // Number of temporary
-#define rf 31	// Register flag
-#define dj 30	// data jump
+#define rj 31	// Register jump
+#define rf 30	// register flag
 #define sp 29	// stack pointer
 #define fp 28	// frame pointer
 #define oa 27	// override aux
