@@ -144,6 +144,26 @@ int saveMem(memmory* mem, const char* path){
 
 	for(int i = 0; i < mem->len; i++){
 		str = instruction2BinStr(&mem->instr[i]);
+		fprintf(fd, "%s\n", str);
+	}
+	fclose(fd);
+	return 1;
+}
+
+int saveMemQuartusFormact(memmory* mem, const char* path){
+	FILE* fd;
+	char* str;
+
+	if(!mem || !path)
+		return -1;
+
+	if(!(fd = fopen(path, "w"))){
+		printf("Error saving assembly (%s)\n", __func__);
+		return -1;
+	}
+
+	for(int i = 0; i < mem->len; i++){
+		str = instruction2BinStr(&mem->instr[i]);
 		fprintf(fd, "mem_i[%d] = 32\'b%s;\n", i, str);
 	}
 	fclose(fd);

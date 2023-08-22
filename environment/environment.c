@@ -271,13 +271,19 @@ void loadVar(listVar* lv, char* var, int reg){
 	if(key >= 0){
 		// Global definition
 		if(isArray(globals, var)){
+			/*
 			newInstruction(ram, ldown, reg, (MEM_SZ-1));
 			newInstruction(ram, lup, reg, (MEM_SZ-1));
+			*/
+			newInstruction(ram, mvi, reg, (MEM_SZ-1));
 			newInstruction(ram, addi, reg, -(key+1));
 		}
 		else{
+			/*
 			newInstruction(ram, ldown, reg, (MEM_SZ-1));
 			newInstruction(ram, lup, reg, (MEM_SZ-1));
+			*/
+			newInstruction(ram, mvi, reg, (MEM_SZ-1));
 			newInstruction(ram, lw, reg, 0, -(key+1));	
 		}
 		return;
@@ -338,15 +344,21 @@ void loadVarArray(quad* fun, listVar* lv, char* var, int reg){
 		// Global definition
 		if(is_reg){
 			// Desl is register
+			/*
 			newInstruction(ram, ldown, reg, (MEM_SZ-1));
 			newInstruction(ram, lup, reg, (MEM_SZ-1));
+			*/
+			newInstruction(ram, mvi, reg, (MEM_SZ-1));
 			newInstruction(ram, sub, reg, arr_desl, 0, 0);
 			newInstruction(ram, lw, reg, 0, -(key+1));
 		}
 		else{
 			// Desl is immediate
+			/*
 			newInstruction(ram, ldown, reg, (MEM_SZ-1));
 			newInstruction(ram, lup, reg, (MEM_SZ-1));
+			*/
+			newInstruction(ram, mvi, reg, (MEM_SZ-1));
 			newInstruction(ram, lw, reg, 0, -(key + 1 + arr_desl));
 		}
 		return;
@@ -423,16 +435,22 @@ void store(quad* fun, listVar* lv){
 		// Save to global
 		if(is_reg){
 			// Desl is reg
+			/*
 			newInstruction(ram, ldown, oa, (MEM_SZ-1));
 			newInstruction(ram, lup, oa, (MEM_SZ-1));
+			*/
+			newInstruction(ram, mvi, oa, (MEM_SZ-1));
 			newInstruction(ram, sub, oa, arr_desl, 0, 0);
 			newInstruction(ram, sw, oa, reg, -(key + 1));
 			return;
 		}
 		else{
 			// Desl is immediate
+			/*
 			newInstruction(ram, ldown, oa, (MEM_SZ-1));
 			newInstruction(ram, lup, oa, (MEM_SZ-1));
+			*/
+			newInstruction(ram, mvi, oa, (MEM_SZ-1));
 			newInstruction(ram, sw, oa, reg, -(key + 1 + arr_desl));
 			return;
 		}
@@ -444,7 +462,7 @@ void store(quad* fun, listVar* lv){
 
 void start_decl(int** var_nested, int* deep){
 
-	*var_nested = (int*)realloc(*var_nested, sizeof(int) * (*deep + 1));
+	*var_nested = (int*)realloc(*var_nested, sizeof(int) * ((*deep) + 1));
 	(*deep)++;
 	*var_nested[(*deep)-1] = 0;
 	
@@ -462,12 +480,12 @@ void end_decl(int** var_nested, int* deep){
 	for(int i = 0; i < nested_len; i++){
 		newInstruction(ram, addi, sp, 1);
 	}
-
+	
 	if(*deep == 1)
 		freeNull((void**)var_nested);
 	
 	else{
-		*var_nested = (int*)realloc(*var_nested, sizeof(int) * (*deep - 1));
+		*var_nested = (int*)realloc(*var_nested, sizeof(int) * ((*deep) - 1));
 		allocateValidator((void**)var_nested, REALLOC_VALIDATE);
 	}
 
@@ -708,19 +726,6 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 	case END_WHILE_C:
 		end_decl(var_nested, deep);
 		break;
-	/*case START_IF_C:
-		start_decl(var_nested, deep);
-		break;*//*
-	case END_IF_C:
-		end_decl(var_nested, deep);
-		break;*/
-	/*case START_ELSE_C:
-		start_decl(var_nested, deep);
-		break;*//*
-	case END_ELSE_C:
-		end_decl(var_nested, deep);
-		break;
-	*/
 	default:
 		break;
 	}
@@ -803,8 +808,11 @@ void processGlobal(quad *head){
 
 void setInitial(){
 	newInstruction(ram, NOP, 0, 0, 0);			// First instruction should be NOP to avoid bug's at quartus
+	/*
 	newInstruction(ram, ldown, sp, MEM_SZ-1);
 	newInstruction(ram, lup, sp, MEM_SZ-1);
+	*/
+	newInstruction(ram, mvi, sp, (MEM_SZ-1));
 }
 
 void toAssembly(quad* head){
@@ -844,12 +852,17 @@ void toAssembly(quad* head){
 	*/
 }
 
-void saveAssembly(const char* path){
+void saveBin(const char* path){
 	saveMem(ram, path);
 	return;
 }
 
-void saveAssemblyPretty(const char* path){
+void saveAssembly(const char* path){
 	saveMemPretty(ram, path);
+	return;
+}
+
+void saveBinQuartus(const char* path){
+	saveMemQuartusFormact(ram, path);
 	return;
 }

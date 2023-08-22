@@ -104,6 +104,7 @@ char* operation2String(operation_t* operation);
 void printMem(memmory* mem);
 int saveMem(memmory* mem, const char* path);
 int saveMemPretty(memmory* mem, const char* path);
+int saveMemQuartusFormact(memmory* mem, const char* path);
 int getLine();
 
 #endif

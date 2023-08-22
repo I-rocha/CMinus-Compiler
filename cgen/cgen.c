@@ -138,8 +138,6 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 				cgen(code, tree->child[i], lastScope, lastType);
 
 
-			/* TODO: NEED TO CHANGE THIS - ONLY WORKS FOR VARIABLES WITH THE SAME NAME BUT DIFFERENTE FUNC SCOPE*/
-			/* THIS FUNC PREVENTS DIFFERENTs VARIABLEs WITH SAME NAME TO BE ASSOCIATED WITH THE SAME REG */
 			cleanFilled();
 			cgen(code, tree->sibling, lastScope, lastType);
 
@@ -190,15 +188,11 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 			retop = genOp(code, tree->child[0]);
 			(retop.type == REGT) ? sprintf(sreg, "$t%d", retop.value) : sprintf(sreg, "%d", retop.value);
 		
-			// TODO: LABEL MUST CREATE ITS OWN NAME WITHOUT CONFLICT
 			sprintf(slabel1, "L%d", labelid++);
 			sprintf(slabel2, "L%d", labelid++);
 
 			*code = addQuad(*code, IFF_C, sreg, slabel1, NULL);
 
-			// LEN_CHILD is at most 3
-			//TODO: IT NEEDS TO DEAL WITH THE CASE WHERE CHILD 1 SUPPOSED TO BE FIRST IFF STATEMENT DOESNT EXIST	RIGHT NOW IS WORKING ONLY IF STATEMENT RELATED TO IF IS NEVER NULL
-			//CALL CHILD 1 - statement related to if
 			*code = addQuad(*code, START_IF_C, NULL, NULL, NULL);
 			cgen(code, tree->child[1], lastScope, NULL);
 			*code = addQuad(*code, END_IF_C, NULL, NULL, NULL);
@@ -222,7 +216,6 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 			break;
 		case WHILE_K:
 			*code = addQuad(*code, START_WHILE_C, NULL, NULL, NULL);
-			// TODO: LABEL MUST CREATE ITS OWN NAME WITHOUT CONFLICT
 			sprintf(slabel1, "L%d", labelid++);
 			sprintf(slabel2, "L%d", labelid++);
 
@@ -265,7 +258,6 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 			return;
 			break;
 
-		// TODO: MAYBE CHANGE THIS
 		default:
 			genOp(code, tree);
 			return;

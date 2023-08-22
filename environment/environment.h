@@ -7,7 +7,8 @@ void envInitGlobal();
 void endEnv();
 
 void toAssembly(quad* head);
+void saveBin(const char* path);
 void saveAssembly(const char* path);
-void saveAssemblyPretty(const char* path);
+void saveBinQuartus(const char* path);
 
 #endif

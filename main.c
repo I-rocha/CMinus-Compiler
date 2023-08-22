@@ -58,8 +58,9 @@ int main(int argc, char** argv){
 	
 	envInitGlobal();
 	toAssembly(code);
+	saveBin("output/bin.txt");
 	saveAssembly("output/assembly.txt");
-	saveAssemblyPretty("output/assembly_pretty.txt");
+	saveBinQuartus("output/bin_quartus");
 	
 	// Close files
 	if(fp)
