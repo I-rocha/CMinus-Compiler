@@ -124,16 +124,11 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 
 	switch(tree->label){
 		case FUN_K:		
-			aux = symTLook(headEnv, tree->instance);
-			if(!aux){
-				printf("CGEN: Internal ERROR : Not finding function on symtable \n");
-				exit(0);
-			}
-
+			
 			lastScope = tree->instance;
 			*code = addQuad(*code, FUN_C, lastType, tree->instance, NULL);
 
-			// It's know that len_child is at most 2 in this case (but in some case is 1)
+			// It's know that len_child is at most 2 in this case (but in some case is 1 or even 0)
 			for(int i = 0; i < tree->len_child; i++)
 				cgen(code, tree->child[i], lastScope, lastType);
 
