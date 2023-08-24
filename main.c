@@ -45,9 +45,9 @@ int main(int argc, char** argv){
 
 	symTSave(headEnv, "output/symbolTable.txt");
 
+	// Intermediate Code
 	quad* code;
 	code = gen(astTree);
-	// Intermediate Code
 	printQuad(code);
 
 	saveCI(code, "output/cgen.txt");

@@ -31,12 +31,14 @@ extern astNo* astTree;
 
 %%
 
+// 1
 programa:			
 	decl_lista {
 	astTree = $1;
 	}
 	;
 
+// 2
 decl_lista:
 	decl_lista decl	{
 	astNo* aux[] = {$2};
@@ -53,12 +55,13 @@ decl_lista:
 	| decl	{$$ = $1;}
 	;
 
+// 3
 decl:
 	var_decl	{$$ = $1;}
 	| fun_decl	{$$ = $1;}
 	;
 
-
+// 4
 var_decl:
 	tipo_esp ID EPSLON_LINE ';'{
 
@@ -86,6 +89,7 @@ var_decl:
 
 EPSLON_LINE:{$$ = line_log;}
 
+// 5
 tipo_esp:
 	INT{
 	$$ = astCreateNo(INT_K, NULL, NULL, 0);
@@ -96,7 +100,8 @@ tipo_esp:
 	}
 	
 	;
-		
+
+// 6	
 fun_decl:
 	tipo_esp ID {$<val>$ = line_log;}'(' params ')' composto_decl	{
 	
@@ -114,11 +119,13 @@ fun_decl:
 	}
 	;
 
+// 7
 params:
 	  param_lista	{$$ = $1;}
 	| VOID	{$$ = NULL;}	
 	;
 
+// 8
 param_lista:
 	param_lista ',' param	{
 	astNo* aux[] = {$3};
@@ -127,7 +134,8 @@ param_lista:
 	}
 	| param	{$$ = $1;}
 	;
-		   
+
+// 9   
 param:
 	tipo_esp ID EPSLON_LINE	{
 	astNo* aux[] = {astCreateTerminal(ARG_K, $2, NULL, 0, $3)};
@@ -145,6 +153,7 @@ param:
 	}
 	;
 
+// 10
 composto_decl:
 	'{' local_decl statement_lista '}'	{
 	astNo* aux[] = {$3};
@@ -161,6 +170,7 @@ composto_decl:
 	}
 	;
 
+// 11
 local_decl:
 	local_decl var_decl	{
 	astNo* aux[] = {$2};
@@ -174,7 +184,7 @@ local_decl:
 	}
 	| /*epsilon*/{$$ = NULL;};
 	
-
+// 12
 statement_lista:
 	statement_lista statement	{
 	astNo* aux[] = {$2};
@@ -189,6 +199,7 @@ statement_lista:
 	| /*epsilon*/{$$ = NULL;}
 	;
 
+// 13
 statement:
 		 exp_decl	{$$ = $1;}
 		 | composto_decl	{$$ = $1;}
@@ -197,11 +208,13 @@ statement:
 		 | retorno_decl	{$$ = $1;}
 		;
 
+// 14
 exp_decl:
 	exp ';'	{$$ = $1;}
 	| ';'	{$$ = NULL;}
 	;
 
+// 15
 selecao_decl:
 	    IF '(' exp ')' statement else_stmt{
 		$$ = astCreateNo(IF_K, NULL, NULL, 0);
@@ -216,6 +229,7 @@ selecao_decl:
 	}
 	;
 
+// 16
 else_stmt:
 	%prec IFX {
 	$$ = NULL;
@@ -223,6 +237,7 @@ else_stmt:
 	| ELSE statement{$$ = $2;}
 	;
 
+// 17
 iteracao_decl:
 	WHILE '(' exp ')' statement	{
 	astNo* aux[] = {$3, $5};
@@ -232,6 +247,7 @@ iteracao_decl:
 	}
 	;
 
+// 18
 retorno_decl:
 	RETURN ';'	{$$ = astCreateNo(RETURN_K, NULL, NULL, 0);}
 	| RETURN exp ';'	{
@@ -240,6 +256,8 @@ retorno_decl:
 	astPutChild($$, aux, 1);
 	}
 	;
+
+// 19
 exp:	
 	var '=' exp	{
 	astNo* aux[] = {$1, $3};
@@ -249,6 +267,7 @@ exp:
 	| simple_exp	{$$ = $1;}
 	;
 	
+// 20
 var:
 	ID	EPSLON_LINE{
 	// AST
@@ -266,6 +285,7 @@ var:
 	}
 	;
 
+// 21
 simple_exp:
 	soma_exp rel soma_exp	{
 	astNo* aux[] = {$1, $3};
@@ -275,6 +295,7 @@ simple_exp:
 	| soma_exp	{$$ = $1;}
 	;
 
+// 22
 rel:
  	LE	{$$ = astCreateNo(LEQ_K, NULL, NULL, 0);}
 	|'<'	{$$ = astCreateNo(LESS_K, NULL, NULL, 0);}
@@ -284,6 +305,7 @@ rel:
 	|DIFF	{$$ = astCreateNo(DIFF_K, NULL, NULL, 0);}
 	;
 
+// 23
 soma_exp:
 		soma_exp soma termo {
 		astNo *aux[2] = {$1, $3};
@@ -292,10 +314,12 @@ soma_exp:
 		}
 	| termo	{$$ = $1;} ;
 
+// 24
 soma:
 	'+'	{$$ = astCreateNo(PLUS_K, NULL, NULL, 0);}
 	| '-'	{$$ = astCreateNo(MINUS_K, NULL, NULL, 0);};
 
+// 25
 termo:
 	termo mult fator {
 	astNo* aux[] = {$1, $3};
@@ -304,11 +328,13 @@ termo:
 	}
 	| fator {$$ = $1;} ;
 
-
+// 26
 mult:
 	'*'	{$$ = astCreateNo(MULT_K, NULL, NULL, 0);}
 	| '/'	{$$ = astCreateNo(DIV_K, NULL, NULL, 0);}
 	;
+
+// 27
 fator:
 	 '(' exp ')'  {$$ = $2;}
 	| var  {$$ = $1;}
@@ -319,6 +345,8 @@ fator:
 	$$ = astCreateTerminal(NUM_K, strdup(str), NULL, 0, $2);
 	}
 	;
+
+// 28
 act:
    ID EPSLON_LINE '(' args ')' {
 	// AST
@@ -331,11 +359,13 @@ act:
 	}
 	;
 
+// 29
 args:
 	arg_lista	{$$ = $1;}
 	| /*epsilon*/	{$$ = NULL;}	
 	;
 
+// 30
 arg_lista:
 	 arg_lista ',' exp	{
 	astNo* aux[] = {$3};
