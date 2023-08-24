@@ -243,16 +243,6 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 			cgen(code, tree->sibling, lastScope, NULL);
 			break;
 
-		case CALL_K:
-			genOp(code, tree);
-			return;
-		break;
-
-		case ASSIGN_K:
-			genOp(code, tree);
-			return;
-			break;
-
 		default:
 			genOp(code, tree);
 			return;
