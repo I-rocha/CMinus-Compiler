@@ -13,4 +13,8 @@
 #define BIT_ARCH 32
 #define N_OPERATIONS 46
 
+#define MAINF "main"
+#define INPUTF "input"
+#define OUTPUTF "output"
+
 #endif

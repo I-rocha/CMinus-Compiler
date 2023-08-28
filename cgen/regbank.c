@@ -1,162 +1,136 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include "regbank.h"
+#include "../GLOBALS.h"
 
-// First reg and last reg
-rprec *freg, *lreg;
-rlist *filled;
+rcell *first, *last;
 
-int putFilled(rprec* reg);
+static short bindEquals(rcell* reg, char* var, short isArray, int idx);
 
-// Inicializa prioridades com valor 0
-void regBankInit(){
-	rprec* aux;
+void initRegManager(){
+    rcell* aux;
 
-	freg = (rprec*)malloc(sizeof(rprec));
-	freg->idx = 0;
-	freg->var = NULL;
+    first = (rcell*)malloc(sizeof(rcell));
+    first->var = NULL;
+    first->reg = 0;
+    first->isArray = -1;
+    first->idx = -1;
+    first->prox = NULL;
+    aux = first;
 
-	aux = freg;
+    for(int i = 1; i < ntemps; i++){
+        aux->prox = (rcell*)malloc(sizeof(rcell));
+        aux = aux->prox;
 
-
-	for(int i = 1; i < NREG; i++){
-		aux->prox = (rprec*)malloc(sizeof(rprec));
-		
-		aux = aux->prox;
-
-		aux->idx = i;
-		aux->var = NULL;
-
-	}
-	lreg = aux;
-	aux->prox = NULL;
-	filled = NULL;
-	return;
+        aux->var = NULL;
+        aux->idx = -1;
+        aux->isArray = -1;
+        aux->reg = i;
+    }
+    aux->prox = NULL;
+    last = aux;
 }
 
-int putFilled(rprec* reg){
-	rlist* aux;
-	if(!filled){
-		filled = (rlist*)malloc(sizeof(rlist));
-		filled->prox = NULL;
-		filled->reg = reg;
-	}
-	else{
-		aux = (rlist*)malloc(sizeof(rlist));
-		aux->prox = filled;
-		aux->reg = reg;
-		filled = aux;
-	}
-	return 1;
+short linkRegister(char* var){
+    return linkReg_(var, 0, 0);
+}
+short getRegister(char* var){
+    return getReg_(var, 0, 0);
 }
 
-int linkReg(char* var){
-	rprec* aux;
+short linkReg_(char* var, short isArray, int idx){
+    rcell* aux;
 
-	aux = freg;
-	putFilled(aux);
+    first->var = var;
+    first->isArray = isArray;
+    first->idx = idx;
 
-	// Move first to last
-	lreg->prox = aux;
-	freg = freg->prox;
-	aux->prox = NULL;
-	lreg = lreg->prox;
-
-	// Assign variable linked
-	aux->var = var;
-
-	// Return reg idx
-	return aux->idx;
+    aux = first->prox;
+    first->prox = NULL;
+    last->prox = first; // first to last
+    last = last->prox;  // new last
+    first = aux;    // new first
+    return last->reg;
 }
 
-int getReg(char*var){
-	rlist* no;
+short getReg_(char* var, short isArray, int idx){
+    rcell* aux;
+    aux = first;
 
-	no = filled;
-
-	while(no){
-		if(!no->reg->var){
-			no = no->prox;
-			continue;
-		}
-			
-		if(strcmp(no->reg->var, var) == 0)
-			return no->reg->idx;
-		
-		no = no->prox;
-	}
-	return -1;
+    for(int i = 0; i < ntemps; i++){
+        if(bindEquals(aux, var, isArray, idx) > 0)
+            return aux->reg;
+       
+        aux = aux->prox;
+    }
+    return -1;
 }
 
-char* getVar(int reg){
-	rlist* no;
+void cleanFilled(){
+    rcell* aux;
+    aux = first;
 
-	no = filled;
-
-	while(no){
-		if((no->reg->idx == reg) && no->reg->var)
-			return no->reg->var;
-
-		no = no->prox;
-	}
-	return NULL;
+    for(int i = 0; i <ntemps; i++){
+        aux->var = NULL;
+        aux = aux->prox;
+    }
 }
 
-int cleanFilled(){
-	rlist *aux;
-	
-	if(!filled)
-		return 1;
+static short bindEquals(rcell* reg, char* var, short isArray, int idx){
+    if(!reg)
+        return -1;
 
-	else if(!filled->prox){
-		free(filled);
-		filled = NULL;
-		return 1;
-	}
+    if(reg->var == NULL || var == NULL)
+        return -1;
 
-	aux = filled->prox;
-
-	while(aux){
-		free(filled);
-		filled = aux;
-		aux = aux->prox;
-	}
-	filled = NULL;
-	return 1;
+    if( ((reg->isArray == 1) && (isArray != 1)) ||
+        ((reg->isArray != 1) && (isArray == 1))
+        )
+        return -1;
+    
+    if(strcmp(var, reg->var) == 0){
+        if(isArray){
+            if(reg->idx == idx)
+                return 1;
+        }
+        else
+            return 1;
+    }
+    return -1;
 }
 
-void printFilled(){
-	rlist *no;
+void printRegManager(){
+    rcell *aux;
+    char* var_str;
+    char* array_str;
 
-	no = filled;
+    aux = first;
+    for(int i = 0; i < ntemps; i++){
+        var_str = (aux->var != NULL)? aux->var : strdup("nil");
 
-	while(no){
-		printf("Reg: %d", no->reg->idx);
-		
-		if(no->reg->var)
-			printf(" Var: %s", no->reg->var);
-		
-		printf("\n");
-		no = no->prox;
-	}
-
-	return;
+        if(aux->isArray == 1){
+            sprintf(array_str, "[%d]", aux->idx);
+        }
+        else
+            array_str = strdup("");           
+        
+        printf("[%d] -- %s%s\n", aux->reg, var_str, array_str);
+        aux = aux->prox;
+    }
 }
 
-/*
-int main(){
-	init();
-	
-	linkReg(strdup("v1"));
-	linkReg(strdup("v2"));
+// void main(){
+//     printf("working\n");
+//     initRegManager();
+//     printf("Before print\n");
+//     linkReg_(strdup("var1"), 1, 0);
+//     linkReg_(strdup("var2"), 1, 5);
+//     linkReg_(strdup("var3"), 0, 0);
+//     printRegManager();
+//     printf("Found %d\n", getReg_(strdup("var2"), 1, 0));
+//     printf("Found %d\n", getReg_(strdup("var2"), 1, 5));
+//     printRegManager();
 
-	printFilled();
-
-	cleanFilled();
-	printFilled();
-	return 1;
-
-}
-*/
+//     cleanFilled();
+// }

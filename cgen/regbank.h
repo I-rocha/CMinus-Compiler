@@ -1,25 +1,26 @@
 #ifndef REGBANK_H
 #define REGBANK_H
 
-#define NREG 26
+typedef struct RCell rcell;
 
-typedef struct rprec{
-	int idx;
-	char* var;
-	struct rprec* prox;
-}rprec;
+struct RCell{
+    char* var;
+    short reg;
+    short isArray;
+    int idx;
 
-typedef struct rlist{
-	rprec* reg;
-	struct rlist* prox;
-}rlist;
+    rcell* prox;
+};
 
-void regBankInit();
-int linkReg(char* var);
-int getReg(char*var);
-char* getVar(int reg);
-int cleanFilled();
-void printFilled();
 
+void initRegManager();
+
+short linkRegister(char* var);
+short getRegister(char* var);
+short linkReg_(char* var, short isArray, int idx);
+short getReg_(char* var, short isArray, int idx);
+
+void cleanFilled();
+void printRegManager();
 
 #endif

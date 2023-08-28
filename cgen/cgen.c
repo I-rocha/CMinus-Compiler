@@ -6,15 +6,19 @@
 #include "regbank.h"
 #include "cgen.h"
 #include "../lexical/symtab.h"
+#include "../GLOBALS.h"
 
 
 #define REGT 0
 #define LITT 1
 
-typedef struct{
+typedef struct Exp exp;
+
+struct Exp{
 	int type; // REGT or LITT
 	int value;
-}exp;
+	exp* desl;	// Only for array
+};
 
 int labelid = 0;
 extern int yylineno;
@@ -74,7 +78,7 @@ int saveCI(quad* head, char* path){
  * ########## PRIVATE ##########*/
 
 void CGenInit(){
-	regBankInit();
+	initRegManager();
 	return;
 }
 
@@ -116,7 +120,6 @@ quad* gen(astNo* astTree){
 void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 	char slabel1[10], slabel2[10];
 	char sreg[10];
-	symEntry* aux;
 	exp retop;
 
 	if(!tree)
@@ -124,7 +127,7 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 
 	switch(tree->label){
 		case FUN_K:		
-			
+			cleanFilled();
 			lastScope = tree->instance;
 			*code = addQuad(*code, FUN_C, lastType, tree->instance, NULL);
 
@@ -133,7 +136,8 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 				cgen(code, tree->child[i], lastScope, lastType);
 
 
-			cleanFilled();
+			// Maybe clean filled here 
+			
 			cgen(code, tree->sibling, lastScope, lastType);
 
 			*code = addQuad(*code, END_C, tree->instance, NULL, NULL);
@@ -153,7 +157,7 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 			break;
 
 		case ARG_K:
-			sprintf(sreg, "$t%d", linkReg(tree->instance)); // reg
+			sprintf(sreg, "$t%d", linkRegister(tree->instance)); // reg
 
 			*code = addQuad(*code, ARG_C, lastType, tree->instance, lastScope);
 			*code = addQuad(*code, LOAD_C, sreg, tree->instance, NULL);
@@ -252,7 +256,7 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 
 exp genOp(quad **code, astNo* tree){
 	int nreg, nnreg, sz;
-	char sreg[10], sreg1[10], sreg2[10], v_arr[11], name_arr[11], *tname_arr, *tsize_arr;
+	char sreg[10], sreg1[10], sreg2[10], v_arr[11], tsize_arr[11];
 	exp lval, rval, ret, err, val;
 	astNo* aux;
 
@@ -269,7 +273,7 @@ exp genOp(quad **code, astNo* tree){
 			lval = genOp(code, tree->child[0]);
 			rval = genOp(code, tree->child[1]);
 
-			nreg = linkReg(NULL);
+			nreg = linkRegister(NULL);
 			sprintf(sreg, "$t%d", nreg);
 			(lval.type == REGT) ? sprintf(sreg1, "$t%d", lval.value) : sprintf(sreg1, "%d", lval.value);
 			(rval.type == REGT) ? sprintf(sreg2, "$t%d", rval.value) : sprintf(sreg2, "%d", rval.value);
@@ -283,7 +287,7 @@ exp genOp(quad **code, astNo* tree){
 			lval = genOp(code, tree->child[0]);
 			rval = genOp(code, tree->child[1]);
 
-			nreg = linkReg(NULL);
+			nreg = linkRegister(NULL);
 			sprintf(sreg, "$t%d", nreg);
 			(lval.type == REGT) ? sprintf(sreg1, "$t%d", lval.value) : sprintf(sreg1, "%d", lval.value);
 			(rval.type == REGT) ? sprintf(sreg2, "$t%d", rval.value) : sprintf(sreg2, "%d", rval.value);
@@ -298,7 +302,7 @@ exp genOp(quad **code, astNo* tree){
 			lval = genOp(code, tree->child[0]);
 			rval = genOp(code, tree->child[1]);
 
-			nreg = linkReg(NULL);
+			nreg = linkRegister(NULL);
 			sprintf(sreg, "$t%d", nreg);
 			(lval.type == REGT) ? sprintf(sreg1, "$t%d", lval.value) : sprintf(sreg1, "%d", lval.value);
 			(rval.type == REGT) ? sprintf(sreg2, "$t%d", rval.value) : sprintf(sreg2, "%d", rval.value);
@@ -312,7 +316,7 @@ exp genOp(quad **code, astNo* tree){
 			lval = genOp(code, tree->child[0]);
 			rval = genOp(code, tree->child[1]);
 
-			nreg = linkReg(NULL);
+			nreg = linkRegister(NULL);
 			sprintf(sreg, "$t%d", nreg);
 			(lval.type == REGT) ? sprintf(sreg1, "$t%d", lval.value) : sprintf(sreg1, "%d", lval.value);
 			(rval.type == REGT) ? sprintf(sreg2, "$t%d", rval.value) : sprintf(sreg2, "%d", rval.value);
@@ -330,7 +334,7 @@ exp genOp(quad **code, astNo* tree){
 			(rval.type == REGT) ? sprintf(sreg2, "$t%d", rval.value) : sprintf(sreg2, "%d", rval.value);
 			
 			/*OP*/
-			nreg = linkReg(NULL);
+			nreg = linkRegister(NULL);
 			sprintf(sreg, "$t%d", nreg);
 
 			*code = addQuad(*code, LE_C, sreg, sreg1, sreg2);
@@ -347,7 +351,7 @@ exp genOp(quad **code, astNo* tree){
 			(rval.type == REGT) ? sprintf(sreg2, "$t%d", rval.value) : sprintf(sreg2, "%d", rval.value);
 			
 			/*OP*/
-			nreg = linkReg(NULL);
+			nreg = linkRegister(NULL);
 			sprintf(sreg, "$t%d", nreg);
 			*code = addQuad(*code, LESS_C, sreg, sreg1, sreg2);
 			
@@ -362,7 +366,7 @@ exp genOp(quad **code, astNo* tree){
 			(rval.type == REGT) ? sprintf(sreg2, "$t%d", rval.value) : sprintf(sreg2, "%d", rval.value);
 		
 			/*OP*/
-			nreg = linkReg(NULL);
+			nreg = linkRegister(NULL);
 			sprintf(sreg, "$t%d", nreg);
 			*code = addQuad(*code, GRAND_C, sreg, sreg1, sreg2);
 			
@@ -377,7 +381,7 @@ exp genOp(quad **code, astNo* tree){
 			(rval.type == REGT) ? sprintf(sreg2, "$t%d", rval.value) : sprintf(sreg2, "%d", rval.value);
 		
 			/*OP*/
-			nreg = linkReg(NULL);
+			nreg = linkRegister(NULL);
 			sprintf(sreg, "$t%d", nreg);
 			*code = addQuad(*code, GE_C, sreg, sreg1, sreg2);
 			
@@ -392,7 +396,7 @@ exp genOp(quad **code, astNo* tree){
 			(rval.type == REGT) ? sprintf(sreg2, "$t%d", rval.value) : sprintf(sreg2, "%d", rval.value);
 		
 			/*OP*/
-			nreg = linkReg(NULL);
+			nreg = linkRegister(NULL);
 			sprintf(sreg, "$t%d", nreg);
 			*code = addQuad(*code, EQ_C, sreg, sreg1, sreg2);
 			
@@ -407,49 +411,45 @@ exp genOp(quad **code, astNo* tree){
 			(rval.type == REGT) ? sprintf(sreg2, "$t%d", rval.value) : sprintf(sreg2, "%d", rval.value);
 			
 			/*OP*/
-			nreg = linkReg(NULL);
+			nreg = linkRegister(NULL);
 			sprintf(sreg, "$t%d", nreg);
 
 			*code = addQuad(*code, DIFF_C, sreg, sreg1, sreg2);
 			
 			ret = (exp){.type = REGT, .value = nreg};
-//			return ret;
 			break;
 			
 		case ASSIGN_K:
 			lval = genOp(code, tree->child[0]);
 			rval = genOp(code, tree->child[1]);
-			strcpy(v_arr, getVar(lval.value));
+			strcpy(v_arr, tree->child[0]->instance);
 
 			sprintf(sreg1, "$t%d", lval.value);
 			(rval.type == REGT) ? sprintf(sreg2, "$t%d", rval.value) : sprintf(sreg2, "%d", rval.value);
 			*code = addQuad(*code, ASSIGN_C, sreg1, sreg2, NULL);
 
-			if(v_arr[strlen(v_arr)-1] != ']')
+			if(tree->child[0]->label == VAR_K)
 				*code = addQuad(*code, STORE_C, v_arr, sreg1, NULL);
 
-			else{
-				strcpy(name_arr, v_arr);
-				tname_arr = strtok(name_arr, "[");
-				tsize_arr = strtok(NULL, "]");
-				*code = addQuad(*code, STORE_C, tname_arr, sreg1, tsize_arr);
-			}
 
+			else{ // VAR_ARRAY_K
+				(lval.desl->type == REGT) ? sprintf(tsize_arr, "$t%d", lval.desl->value) : sprintf(tsize_arr, "%d", lval.desl->value);
+				*code = addQuad(*code, STORE_C, v_arr, sreg1, tsize_arr);
+			}
 			ret = (exp){.type = LITT, .value = 1};
-	//		return ret;
+
 			break;
 
 
 		case NUM_K:
 			ret = (exp){.type = LITT, .value = atoi(tree->instance)};
-	//		return ret;
 			break;
 		
 		case VAR_K:
-			nnreg = getReg(tree->instance);
+			nnreg = getRegister(tree->instance);
 
 			if(nnreg < 0){
-				nreg = linkReg(tree->instance);
+				nreg = linkRegister(tree->instance);
 				sprintf(sreg, "$t%d", nreg);
 				*code = addQuad(*code, LOAD_C, sreg, tree->instance, NULL);
 			}
@@ -463,21 +463,29 @@ exp genOp(quad **code, astNo* tree){
 		case VAR_ARRAY_K:
 			val = genOp(code, tree->child[0]);
 
+			// Index reg or lit
 			(val.type == REGT) ? sprintf(sreg1, "$t%d", val.value) : sprintf(sreg1, "%d", val.value);
 
-			sprintf(v_arr, "%s[%s]", tree->instance, strdup(sreg1));
-			// nnreg = getReg(v_arr);
 			nnreg = -1;
 
+			// If index is lit, look for reg binded
+			if(val.type == LITT){
+				nnreg = getReg_(tree->instance, 1, val.value);
+			}
+
 			if(nnreg < 0){
-				nreg = linkReg(strdup(v_arr));
+				// Bind new reg
+				nreg = (val.type == REGT)? linkRegister(NULL) : linkReg_(tree->instance, 1, val.value);
 				sprintf(sreg, "$t%d", nreg);
 				*code = addQuad(*code, LOAD_C, sreg, tree->instance, sreg1);
 			}
 			else
-				nreg = nnreg;
+				nreg = nnreg;	// Reg binded
 
-			ret = (exp){.type = REGT, .value = nreg};
+			ret.desl = (exp*)malloc(sizeof(exp));
+			ret.type = REGT;
+			ret.value = nreg;
+			*(ret.desl) = val;
 			return ret;
 			break;
 		case CALL_K:
@@ -485,6 +493,7 @@ exp genOp(quad **code, astNo* tree){
 
 			aux = (tree->child) ? tree->child[0] : NULL;
 
+			// Look each child
 			while(aux){
 				val = genOp(code, aux);
 				(val.type == REGT) ? sprintf(sreg, "$t%d", val.value) : sprintf(sreg, "%d", val.value);
@@ -494,14 +503,15 @@ exp genOp(quad **code, astNo* tree){
 				aux = aux->sibling;
 			}
 
-			nreg = linkReg(NULL);
+			nreg = linkRegister(NULL);
 			sprintf(sreg, "$t%d", nreg);
 			sprintf(sreg1, "%d", sz);
 			*code = addQuad(*code, CALL_C, sreg, tree->instance, sreg1);
-
+			
+			if(!(strcmp(tree->instance, INPUTF) == 0) && !(strcmp(tree->instance, OUTPUTF) == 0))
+				cleanFilled();
 
 			ret = (exp){.type = REGT, .value = nreg};
-	//		return ret;
 			break;
 		
 		default:

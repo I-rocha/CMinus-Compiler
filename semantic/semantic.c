@@ -6,10 +6,7 @@
 #include "../lexical/symtab.h"
 
 #include "../ast/ast.h"
-
-#define MAINF "main"
-#define INPUTF "input"
-#define OUTPUTF "output"
+#include "../GLOBALS.h"
 
 // Symbol table
 symTable *headEnv, *env;
