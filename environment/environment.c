@@ -86,7 +86,7 @@ quadList getFuncions(quad* head){
 
 		// Alloc every function in list
 		case FUN_C:
-			fun_list.code = (quad**)realloc(fun_list.code, fun_list.len + 1);
+			fun_list.code = (quad**)realloc(fun_list.code, (fun_list.len+1) * sizeof(quad*));
 			temp = curr;
 
 			// Alloc main at first position
