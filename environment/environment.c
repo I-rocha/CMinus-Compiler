@@ -33,23 +33,30 @@ static memmory* ram;
 static int regs[BIT_ARCH];
 
 void envInitGlobal(){
+	// Start operation format of processor
 	initGlobal();
+
+	// Store labels address
 	labels.itemId = NULL;
 	labels.len = 0;
 	labels.type = DEF_ID;
 
+	// Store Labels call address
 	labels_request.itemId = NULL;
 	labels_request.len = 0;
 	labels_request.type = DEF_ID;
 
+	// Function address
 	calls.itemStr = NULL;
 	calls.len = 0;
 	calls.type = DEF_STR;
 
+	// Functions call address
 	calls_request.itemStr = NULL;
 	calls_request.len = 0;
 	calls_request.type = DEF_STR;
 
+	// List of global variable
 	globals = newListVar();
 	dict_lvar = NULL;
 
@@ -726,6 +733,7 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 	case END_WHILE_C:
 		end_decl(var_nested, deep);
 		break;
+	// Add start IF start ELSE
 	default:
 		break;
 	}
@@ -827,6 +835,7 @@ void toAssembly(quad* head){
 	functions = (char**)malloc(sizeof(char*) * la.len);
 	allocateValidator((void**)&functions, MALLOC_VALIDATE);
 
+	// Extract function name
 	for(int i = 0; i < la.len; i++){
 		functions[i] = la.code[i]->arg2;
 	}
