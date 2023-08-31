@@ -471,7 +471,7 @@ void start_decl(int** var_nested, int* deep){
 
 	*var_nested = (int*)realloc(*var_nested, sizeof(int) * ((*deep) + 1));
 	(*deep)++;
-	*var_nested[(*deep)-1] = 0;
+	(*var_nested)[(*deep)-1] = 0;
 	
 	return;
 }
@@ -483,7 +483,7 @@ void end_decl(int** var_nested, int* deep){
 	if(*var_nested == NULL)
 		return;
 
-	nested_len = *var_nested[*deep-1];
+	nested_len = (*var_nested)[*deep-1];
 	for(int i = 0; i < nested_len; i++){
 		newInstruction(ram, addi, sp, 1);
 	}
