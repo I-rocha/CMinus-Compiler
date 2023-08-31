@@ -198,6 +198,7 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 
 			*code = addQuad(*code, GOTO_C, slabel2, NULL, NULL);
 			*code = addQuad(*code, LABEL_C, slabel1, NULL, NULL);
+			cleanFilled();
 			// CALL CHILD 2 - statement related to else
 			if(tree->len_child > 2) {
 				*code = addQuad(*code, START_ELSE_C, NULL, NULL, NULL);
@@ -219,7 +220,7 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 			sprintf(slabel2, "L%d", labelid++);
 
 			*code = addQuad(*code, LABEL_C, slabel1, NULL, NULL);
-
+			cleanFilled();
 			retop = genOp(code, tree->child[0]);
 			(retop.type == REGT) ? sprintf(sreg, "$t%d", retop.value) : sprintf(sreg, "%d", retop.value);
 		
@@ -231,7 +232,7 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 			*code = addQuad(*code, GOTO_C, slabel1, NULL, NULL);
 
 			*code = addQuad(*code, LABEL_C, slabel2, NULL, NULL);
-
+			cleanFilled();
 			cgen(code, tree->sibling, lastScope, NULL);
 			return;
 			break;
