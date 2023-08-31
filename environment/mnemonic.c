@@ -93,8 +93,8 @@ static char* register_name[] = {
 	"$oa\0",
 	"$fp\0",
 	"$sp\0",
-	"$rj\0",
 	"$rf\0",
+	"$rj\0",
 };
 
 static int getFormat(operation_t* op);
