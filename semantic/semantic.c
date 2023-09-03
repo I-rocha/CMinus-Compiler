@@ -384,7 +384,6 @@ void type_declaration_err(int line, char* err, char* type){
 	printf("%d| (%s) : Type declaration error, trying to declare variable %s with type %s", line, err, err, type);
 	printf("\n");
 	printf("\n");
-
 }
 
 void multiple_declaration_err(int line, char* err, unsigned short def_line){

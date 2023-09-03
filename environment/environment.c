@@ -630,8 +630,7 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 		break;
 	
 	case IFF_C:
-		// Trocar a condicao
-		newInstruction(ram, addi, rf, 1);
+		newInstruction(ram, addi, rf, 1);	// Troca a condicao
 		instr = newInstruction(ram, bc, 0, 0, -1);
 		label = getN(fun->arg2);
 		ldAdd(&labels_request, &label, getLine(), instr->desl);

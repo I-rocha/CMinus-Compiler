@@ -186,6 +186,10 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 		case IF_K:
 			retop = genOp(code, tree->child[0]);
 			(retop.type == REGT) ? sprintf(sreg, "$t%d", retop.value) : sprintf(sreg, "%d", retop.value);
+
+			if(tree->child[0])
+				if(tree->child[0]->len_child == 1)
+					*code = addQuad(*code, EQ_C, NULL, sreg, "1");
 		
 			sprintf(slabel1, "L%d", labelid++);
 			sprintf(slabel2, "L%d", labelid++);
