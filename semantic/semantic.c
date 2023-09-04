@@ -329,7 +329,9 @@ void semantic(astNo* root){
 	addIO();
 	handleTable(root);
 	checkMain();
-	semantic_err_check();
+
+	if(IGNORE_SEMANTIC_STOP != 1)
+		semantic_err_check();
 }
 
 void lrtype(astNo* t1, astNo* t2){

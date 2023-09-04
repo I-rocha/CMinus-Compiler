@@ -35,5 +35,6 @@
 // Options
 #define PRINT_MEM 0
 #define PRINT_CGEN 0
+#define IGNORE_SEMANTIC_STOP 1
 
 #endif
