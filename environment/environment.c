@@ -340,8 +340,8 @@ void loadVarArray(quad* fun, listVar* lv, char* var, int reg){
 		else{
 			// Desl is immediate
 			newInstruction(ram, mv, reg, fp, 0);
-			newInstruction(ram, lw, reg, 0, -(key + 1 + arr_desl));
-			newInstruction(ram, lw, reg, 0, 0);
+			newInstruction(ram, lw, reg, 0, -(key + 1));
+			newInstruction(ram, lw, reg, 0, -arr_desl);
 		}
 		return;
 	}
@@ -528,6 +528,8 @@ void storeTemps(){
 			desl++;
 		}
 	}
+	newInstruction(ram, sw, sp, ra1$, -(++desl));
+	newInstruction(ram, sw, sp, ra2$, -(++desl));
 	if(desl > 0){
 		newInstruction(ram, addi, sp, -desl);
 	}
@@ -537,6 +539,10 @@ void storeTemps(){
 void loadTemps(){
 	int desl = -1;
 
+	newInstruction(ram, mv, ra2$, sp, 0);
+	newInstruction(ram, lw, ra2$, 0, ++desl);
+	newInstruction(ram, mv, ra1$, sp, 0);
+	newInstruction(ram, lw, ra1$, 0, ++desl);
 	for(int i = BIT_ARCH-1; i >= 0; i--){
 		if(regs[i] == 1){
 			desl++;
@@ -547,6 +553,7 @@ void loadTemps(){
 	if(desl >= 0){
 		newInstruction(ram, addi, sp, (desl+1));
 	}
+	
 	return;
 }
 

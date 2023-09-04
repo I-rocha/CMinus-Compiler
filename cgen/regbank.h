@@ -14,6 +14,7 @@ struct RCell{
 
 
 void initRegManager();
+int getRa();
 
 short linkRegister(char* var);
 short getRegister(char* var);

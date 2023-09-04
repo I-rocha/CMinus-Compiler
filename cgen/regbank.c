@@ -5,6 +5,7 @@
 #include "../GLOBALS.h"
 
 rcell *first, *last;
+static int ramutex = 0;
 
 static short bindEquals(rcell* reg, char* var, short isArray, int idx);
 
@@ -118,6 +119,12 @@ void printRegManager(){
         printf("[%d] -- %s%s\n", aux->reg, var_str, array_str);
         aux = aux->prox;
     }
+}
+
+int getRa(){
+    ramutex++;
+    ramutex = (ramutex)%2;
+    return ((ramutex == 0)?(ra1$):(ra2$));
 }
 
 // void main(){

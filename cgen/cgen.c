@@ -516,7 +516,7 @@ exp genOp(quad **code, astNo* tree){
 				aux = aux->sibling;
 			}
 
-			nreg = linkRegister(NULL);
+			nreg = getRa();
 			sprintf(sreg, "$t%d", nreg);
 			sprintf(sreg1, "%d", sz);
 			*code = addQuad(*code, CALL_C, sreg, tree->instance, sreg1);
