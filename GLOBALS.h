@@ -32,6 +32,8 @@
 #define SYMT_F "symbolTable"
 #define ASSEMBLY_F "assembly"
 
-
+// Options
+#define PRINT_MEM 0
+#define PRINT_CGEN 0
 
 #endif

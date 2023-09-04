@@ -59,20 +59,19 @@ int main(int argc, char** argv){
 	// Intermediate Code
 	quad* code;
 	code = gen(astTree);
-	printQuad(code);
+	if(PRINT_CGEN)
+		printQuad(code);
 
 	strcpy(fpath, outpath);
 	strcat(fpath, CGEN_F);
 	saveCI(code, fpath);
-
-	printf("------ END CGEN --------\n");	
-	printf("------ BEGIN ENV --------\n");	
 	
 	/* ENVIRONMENT */
 	
 	envInitGlobal();
 	mem = toAssembly(code);
-	printMem(mem);
+	if(PRINT_MEM)
+		printMem(mem);
 
 	strcpy(fpath, outpath);
 	strcat(fpath, BIN_F);
