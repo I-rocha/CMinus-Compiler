@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "ast/ast.h"
 #include "parser.tab.h"
@@ -7,6 +8,7 @@
 #include "semantic/semantic.h"
 #include  "cgen/cgen.h"
 #include "environment/environment.h"
+#include "GLOBALS.h"
 
 extern FILE* yyin;
 FILE* fl;
@@ -15,7 +17,8 @@ astNo* astTree;
 extern symTable *headEnv;
 int main(int argc, char** argv){
 	FILE *fp;
-	
+	char fpath[100] = "";
+	char outpath[100] = "" ;
 	
 	if(argc <=1){
 		printf("Please follow pattern: <exe> <file>\n");
@@ -32,35 +35,53 @@ int main(int argc, char** argv){
 		return 0;
 	}
 
-	yyin = fp;
+	strcpy(outpath, OUTPUT_PATH);
+	// strcat(outpath, argv[1]);
+	strcat(outpath, "/");
 
+	yyin = fp;
 
 	// Parser + Lexical
 	yyparse();
-	astSave(astTree, "output/ast.txt");
-	//printf("End parser\n");
+	strcpy(fpath, outpath);
+	strcat(fpath, AST_F);
+	astSave(astTree, fpath);
 
 	/*	Symbol Table	*/
 	semantic(astTree);
 
-	symTSave(headEnv, "output/symbolTable.txt");
+	strcpy(fpath, outpath);
+	strcat(fpath, SYMT_F);
+	symTSave(headEnv, fpath);
 
 	// Intermediate Code
 	quad* code;
 	code = gen(astTree);
 	printQuad(code);
 
-	saveCI(code, "output/cgen.txt");
+	strcpy(fpath, outpath);
+	strcat(fpath, CGEN_F);
+	saveCI(code, fpath);
 
 	printf("------ END CGEN --------\n");	
 	printf("------ BEGIN ENV --------\n");	
+	
 	/* ENVIRONMENT */
 	
 	envInitGlobal();
 	toAssembly(code);
-	saveBin("output/bin.txt");
-	saveAssembly("output/assembly.txt");
-	saveBinQuartus("output/bin_quartus");
+
+	strcpy(fpath, outpath);
+	strcat(fpath, BIN_F);
+	saveBin(fpath);
+
+	strcpy(fpath, outpath);
+	strcat(fpath, ASSEMBLY_F);
+	saveAssembly(fpath);
+
+	strcpy(fpath, outpath);
+	strcat(fpath, BIN_QUARTUS_F);
+	saveBinQuartus(fpath);
 	
 	// Close files
 	if(fp)

@@ -211,8 +211,8 @@ void saveReturn(){
 
 void saveBinding(){
 	newInstruction(ram, addi, sp, -1);
-	newInstruction(ram, sw, sp, fp, 0);	
-	newInstruction(ram, mv, fp, sp, 0);
+	newInstruction(ram, sw, sp, fp$, 0);	
+	newInstruction(ram, mv, fp$, sp, 0);
 }
 
 void allocate(listVar* lv, char* str, int len){
@@ -257,11 +257,11 @@ void loadVar(listVar* lv, char* var, int reg){
 	if(key >= 0){
 		// Local definition
 		if(isArray(lv, var)){
-			newInstruction(ram, mv, reg, fp, 0);
+			newInstruction(ram, mv, reg, fp$, 0);
 			newInstruction(ram, addi, reg, -(key+1));
 		}
 		else{
-			newInstruction(ram, mv, reg, fp, 0);
+			newInstruction(ram, mv, reg, fp$, 0);
 			newInstruction(ram, lw, reg, 0, -(key+1));
 		}
 		return;
@@ -269,7 +269,7 @@ void loadVar(listVar* lv, char* var, int reg){
 	key = getKeyListVar(lv, str_aux);
 	if(key >= 0){
 		// Reference definition
-		newInstruction(ram, mv, reg, fp, 0);
+		newInstruction(ram, mv, reg, fp$, 0);
 		newInstruction(ram, lw, reg, 0, -(key + 1));
 		return;
 	}
@@ -314,13 +314,13 @@ void loadVarArray(quad* fun, listVar* lv, char* var, int reg){
 		// Local definition
 		if(is_reg){
 			// Desl is register
-			newInstruction(ram, mv, reg, fp, 0);
+			newInstruction(ram, mv, reg, fp$, 0);
 			newInstruction(ram, sub, reg, arr_desl, 0, 0);
 			newInstruction(ram, lw, reg, 0, -(key + 1));
 		}
 		else{
 			// Desl is immediate
-			newInstruction(ram, mv, reg, fp, 0);
+			newInstruction(ram, mv, reg, fp$, 0);
 			newInstruction(ram, lw, reg, 0, -(key + 1 + arr_desl));
 		}
 		return;
@@ -332,14 +332,14 @@ void loadVarArray(quad* fun, listVar* lv, char* var, int reg){
 		// Reference definition
 		if(is_reg){
 			// Desl is register
-			newInstruction(ram, mv, reg, fp, 0);
+			newInstruction(ram, mv, reg, fp$, 0);
 			newInstruction(ram, lw, reg, 0, -(key + 1));
 			newInstruction(ram, sub, reg, arr_desl, 0, 0);
 			newInstruction(ram, lw, reg, 0, 0);
 		}
 		else{
 			// Desl is immediate
-			newInstruction(ram, mv, reg, fp, 0);
+			newInstruction(ram, mv, reg, fp$, 0);
 			newInstruction(ram, lw, reg, 0, -(key + 1));
 			newInstruction(ram, lw, reg, 0, -arr_desl);
 		}
@@ -404,14 +404,14 @@ void store(quad* fun, listVar* lv){
 		// Save to local
 		if(is_reg){
 			// Desl is register
-			newInstruction(ram, mv, oa, fp, 0);
+			newInstruction(ram, mv, oa, fp$, 0);
 			newInstruction(ram, sub, oa, arr_desl, 0, 0);
 			newInstruction(ram, sw, oa, reg, -(key+1));
 			return;
 		}
 		else{
 			// Desl is immediate
-			newInstruction(ram, sw, fp, reg, -(key + 1 + arr_desl));
+			newInstruction(ram, sw, fp$, reg, -(key + 1 + arr_desl));
 			return;
 		}
 	}
@@ -423,7 +423,7 @@ void store(quad* fun, listVar* lv){
 
 		if(is_reg){
 			// Desl is register
-			newInstruction(ram, mv, oa, fp, 0);
+			newInstruction(ram, mv, oa, fp$, 0);
 			newInstruction(ram, lw, oa, 0, -(key + 1));
 			newInstruction(ram, sub, oa, arr_desl, 0, 0);
 			newInstruction(ram, sw, oa, reg, 0);
@@ -431,7 +431,7 @@ void store(quad* fun, listVar* lv){
 		}
 		else{
 			// Desl is immediate
-			newInstruction(ram, mv, oa, fp, 0);
+			newInstruction(ram, mv, oa, fp$, 0);
 			newInstruction(ram, lw, oa, 0, -(key + 1));
 			newInstruction(ram, sw, oa, reg, -arr_desl);
 			return;
@@ -618,15 +618,15 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 		// Update register pointer and return to function
 
 		// Restore jump_back address
-		newInstruction(ram, mv, rj, fp, 0);
+		newInstruction(ram, mv, rj, fp$, 0);
 		newInstruction(ram, lw, rj, 0, 1);
 
 		// Update sp
-		newInstruction(ram, mv, sp, fp, 0);
+		newInstruction(ram, mv, sp, fp$, 0);
 		newInstruction(ram, addi, sp, 2);
 
-		// update fp
-		newInstruction(ram, lw, fp, 0, 0);
+		// update fp$
+		newInstruction(ram, lw, fp$, 0, 0);
 
 		// update pc
 		newInstruction(ram, jump, rj, 0, 0);
