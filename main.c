@@ -20,12 +20,29 @@ FILE* fl;
 astNo* astTree;
 extern symTable *headEnv;
 
+void preparePaths(char* outpath, char* inputPath){
+	char* tok;
+	// Get file name
+	tok = strtok(inputPath, "/");
+	tok = strtok(NULL, "/");
+
+	// Prepare output path
+	strcpy(outpath, OUTPUT_PATH);
+	strcat(outpath, tok);
+
+	if(!createDir(outpath))
+		return;
+		
+	strcat(outpath, "/");
+
+	return;
+}
+
 int main(int argc, char** argv){
 	FILE *fp;
 	memmory* mem;
 	char fpath[100] = "";
 	char outpath[100] = "" ;
-	char* tok;
 	
 	if(argc <=1){
 		printf("Please follow pattern: <exe> <file>\n");
@@ -37,23 +54,17 @@ int main(int argc, char** argv){
 		return 0;
 	}
 	
-	if(!(fl = fopen("output/lexical.txt", "w"))){
+	preparePaths(outpath, argv[1]);
+
+	// Lex File
+	strcpy(fpath, outpath);
+	strcat(fpath, LEXICAL_F);
+
+	if(!(fl = fopen(fpath, "w"))){
 		printf("Error oppening file of lexical output\n");
 		return 0;
 	}
 
-	// Get file name
-	tok = strtok(argv[1], "/");
-	tok = strtok(NULL, "/");
-
-	// Prepare output path
-	strcpy(outpath, OUTPUT_PATH);
-	strcat(outpath, tok);
-
-	if(!createDir(outpath))
-		return 0;
-		
-	strcat(outpath, "/");
 
 	yyin = fp;
 
