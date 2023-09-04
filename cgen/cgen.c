@@ -19,7 +19,7 @@ struct Exp{
 	int value;
 	exp* desl;	// Only for array
 };
-
+int flabel = 0;
 int labelid = 0;
 extern int yylineno;
 extern symTable* headEnv;
@@ -130,6 +130,7 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 			cleanFilled();
 			lastScope = tree->instance;
 			*code = addQuad(*code, FUN_C, lastType, tree->instance, NULL);
+			flabel = labelid++;
 
 			// It's know that len_child is at most 2 in this case (but in some case is 1 or even 0)
 			for(int i = 0; i < tree->len_child; i++)
@@ -139,7 +140,10 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 			// Maybe clean filled here 
 			
 			cgen(code, tree->sibling, lastScope, lastType);
-
+			
+			// Label to finish function
+			sprintf(slabel1, "L%d", flabel);
+			*code = addQuad(*code, LABEL_C, slabel1, NULL, NULL);
 			*code = addQuad(*code, END_C, tree->instance, NULL, NULL);
 			return;
 			break;
@@ -184,6 +188,7 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 			return;
 			break;
 		case IF_K:
+			cleanFilled();
 			retop = genOp(code, tree->child[0]);
 			(retop.type == REGT) ? sprintf(sreg, "$t%d", retop.value) : sprintf(sreg, "%d", retop.value);
 
@@ -202,10 +207,11 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 
 			*code = addQuad(*code, GOTO_C, slabel2, NULL, NULL);
 			*code = addQuad(*code, LABEL_C, slabel1, NULL, NULL);
-			cleanFilled();
+			
 			// CALL CHILD 2 - statement related to else
 			if(tree->len_child > 2) {
 				*code = addQuad(*code, START_ELSE_C, NULL, NULL, NULL);
+				cleanFilled();
 				cgen(code, tree->child[2], lastScope, NULL);
 				*code = addQuad(*code, END_ELSE_C, NULL, NULL, NULL);
 
@@ -213,7 +219,7 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 
 			*code = addQuad(*code, LABEL_C, slabel2, NULL, NULL);
 
-
+			cleanFilled();
 			cgen(code, tree->sibling, lastScope, NULL);
 
 			return;
@@ -248,7 +254,9 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 			}
 			else
 				*code = addQuad(*code, RETURN_C, NULL, NULL, NULL);
-
+			
+			sprintf(slabel1, "L%d", flabel);
+			*code = addQuad(*code, GOTO_C, slabel1, NULL, NULL);
 			cgen(code, tree->sibling, lastScope, NULL);
 			break;
 

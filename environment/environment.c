@@ -341,6 +341,7 @@ void loadVarArray(quad* fun, listVar* lv, char* var, int reg){
 			// Desl is immediate
 			newInstruction(ram, mv, reg, fp, 0);
 			newInstruction(ram, lw, reg, 0, -(key + 1 + arr_desl));
+			newInstruction(ram, lw, reg, 0, 0);
 		}
 		return;
 	}
