@@ -8,6 +8,8 @@
 #include "../ast/ast.h"
 #include "../GLOBALS.h"
 
+int n_err = 0;
+
 // Symbol table
 symTable *headEnv, *env;
 
@@ -31,6 +33,9 @@ static void main_err(int line);
 static void param_err(int line, char* err, int n_expected, int n_giving);
 static void declaration_err(int line, char* call);
 static void type_declaration_err(int line, char* err, char* type);
+
+// Error Finishing
+static void semantic_err_check();
 
 /*	Definition	*/
 
@@ -324,6 +329,7 @@ void semantic(astNo* root){
 	addIO();
 	handleTable(root);
 	checkMain();
+	semantic_err_check();
 }
 
 void lrtype(astNo* t1, astNo* t2){
@@ -378,6 +384,7 @@ void COLOR_RESET(){
 }
 
 void type_declaration_err(int line, char* err, char* type){
+	n_err++;
 	COLOR_RED();
 	printf("Erro semantico\n");
 	COLOR_RESET();
@@ -387,6 +394,7 @@ void type_declaration_err(int line, char* err, char* type){
 }
 
 void multiple_declaration_err(int line, char* err, unsigned short def_line){
+	n_err++;
 	COLOR_RED();
 	printf("Erro semantico\n");
 	COLOR_RESET();
@@ -395,6 +403,7 @@ void multiple_declaration_err(int line, char* err, unsigned short def_line){
 	printf("\n");
 }
 void op_type_err(char* op1, char* type1, char* op2, char* type2, int line){
+	n_err++;
 	COLOR_RED();
 	printf("Erro semantico\n");
 	COLOR_RESET();
@@ -403,6 +412,7 @@ void op_type_err(char* op1, char* type1, char* op2, char* type2, int line){
 	printf("\n");
 }
 void main_err(int line){
+	n_err++;
 	COLOR_RED();
 	printf("Erro semantico\n");
 	COLOR_RESET();
@@ -411,6 +421,7 @@ void main_err(int line){
 	printf("\n");
 }
 void param_err(int line, char* err, int n_expected, int n_giving){
+	n_err++;
 	COLOR_RED();
 	printf("Erro semantico\n");
 	COLOR_RESET();
@@ -419,10 +430,21 @@ void param_err(int line, char* err, int n_expected, int n_giving){
 	printf("\n");
 }
 void declaration_err(int line, char* call){
+	n_err++;
 	COLOR_RED();
 	printf("Erro semantico\n");
 	COLOR_RESET();
 	printf("%d| (%s): Calling name %s which is not declared", line, call, call);
 	printf("\n");
 	printf("\n");
+}
+
+void semantic_err_check(){
+	if(n_err == 0)
+		return;
+	COLOR_RED();
+	printf("COMPILE FAILED");
+	COLOR_RESET();
+	printf(" due to %d semantic errors\n", n_err);
+	exit(0);
 }
