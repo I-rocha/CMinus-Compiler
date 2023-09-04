@@ -98,14 +98,17 @@ int main(int argc, char** argv){
 	if(PRINT_MEM)
 		printMem(mem);
 
+	// Bin
 	strcpy(fpath, outpath);
 	strcat(fpath, BIN_F);
 	saveBin(fpath);
 
+	// Assembly
 	strcpy(fpath, outpath);
 	strcat(fpath, ASSEMBLY_F);
 	saveAssembly(fpath);
 
+	// BinQuartus
 	strcpy(fpath, outpath);
 	strcat(fpath, BIN_QUARTUS_F);
 	saveBinQuartus(fpath);
