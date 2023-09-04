@@ -2,25 +2,30 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "GLOBALS.h"
+#include "utils.h"
+
+// Main Files
 #include "ast/ast.h"
 #include "parser.tab.h"
 #include "lexical/symtab.h"
 #include "semantic/semantic.h"
-#include  "cgen/cgen.h"
+#include "cgen/cgen.h"
 #include "environment/environment.h"
 #include "environment/mnemonic.h"
-#include "GLOBALS.h"
 
 extern FILE* yyin;
 FILE* fl;
 
 astNo* astTree;
 extern symTable *headEnv;
+
 int main(int argc, char** argv){
 	FILE *fp;
 	memmory* mem;
 	char fpath[100] = "";
 	char outpath[100] = "" ;
+	char* tok;
 	
 	if(argc <=1){
 		printf("Please follow pattern: <exe> <file>\n");
@@ -37,8 +42,17 @@ int main(int argc, char** argv){
 		return 0;
 	}
 
+	// Get file name
+	tok = strtok(argv[1], "/");
+	tok = strtok(NULL, "/");
+
+	// Prepare output path
 	strcpy(outpath, OUTPUT_PATH);
-	// strcat(outpath, argv[1]);
+	strcat(outpath, tok);
+
+	if(!createDir(outpath))
+		return 0;
+		
 	strcat(outpath, "/");
 
 	yyin = fp;

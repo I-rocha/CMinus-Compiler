@@ -4,7 +4,15 @@
 
 #include "utils.h"
 
+// Directory
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+
 #define LPADDING 10
+
+struct stat st = {0};
 
 char* lexformat(char* tok, char* lex){
 	int sz;
@@ -76,4 +84,17 @@ char* popStack(stack** ptr){
 
 	freeNull((void**)&toRemove);
 	return ret;
+}
+
+
+int createDir(char* pathName){
+	if(stat(pathName, &st) != -1)
+		return 1;
+
+	if(mkdir(pathName, 0700) == -1){
+		printf("Error creating dir (%s)\n", pathName);
+		return -1;
+	}
+
+	return 1;
 }

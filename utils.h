@@ -21,6 +21,7 @@ void allocateValidator(void** ptr, const char* msg, const char* func);
 /* Free pointer and set null */
 void freeNull(void** ptr);
 
+int createDir(char* pathName);
 
 
 #endif
