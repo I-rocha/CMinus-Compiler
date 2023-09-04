@@ -830,7 +830,7 @@ void setInitial(){
 	newInstruction(ram, mvi, sp, (MEM_SZ-1));
 }
 
-void toAssembly(quad* head){
+memmory* toAssembly(quad* head){
 	quadList la;
 	char** functions;
 
@@ -856,7 +856,8 @@ void toAssembly(quad* head){
 	
 	updateLabels();
 	updateCalls();
-	printMem(ram);
+	
+	return ram;
 	/*
 	freeNull((void**)&functions);
 	*/

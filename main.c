@@ -8,6 +8,7 @@
 #include "semantic/semantic.h"
 #include  "cgen/cgen.h"
 #include "environment/environment.h"
+#include "environment/mnemonic.h"
 #include "GLOBALS.h"
 
 extern FILE* yyin;
@@ -17,6 +18,7 @@ astNo* astTree;
 extern symTable *headEnv;
 int main(int argc, char** argv){
 	FILE *fp;
+	memmory* mem;
 	char fpath[100] = "";
 	char outpath[100] = "" ;
 	
@@ -69,7 +71,8 @@ int main(int argc, char** argv){
 	/* ENVIRONMENT */
 	
 	envInitGlobal();
-	toAssembly(code);
+	mem = toAssembly(code);
+	printMem(mem);
 
 	strcpy(fpath, outpath);
 	strcat(fpath, BIN_F);
