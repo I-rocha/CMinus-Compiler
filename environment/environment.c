@@ -519,41 +519,25 @@ void processFunction(quad* fun){
 	return;
 }
 
-void storeTemps(){
+void storeRegArgs(){
 	int desl = 0;
 
-	for(int i = 0; i < BIT_ARCH; i++){
-		if(regs[i] == 1){
-			newInstruction(ram, sw, sp, i, -(desl+1));
-			desl++;
-		}
-	}
 	newInstruction(ram, sw, sp, ra1$, -(++desl));
 	newInstruction(ram, sw, sp, ra2$, -(++desl));
-	if(desl > 0){
-		newInstruction(ram, addi, sp, -desl);
-	}
+	newInstruction(ram, addi, sp, -desl);	// update sp
+	
 	return;
 }
 
-void loadTemps(){
+void loadRegArgs(){
 	int desl = -1;
 
 	newInstruction(ram, mv, ra2$, sp, 0);
 	newInstruction(ram, lw, ra2$, 0, ++desl);
 	newInstruction(ram, mv, ra1$, sp, 0);
 	newInstruction(ram, lw, ra1$, 0, ++desl);
-	for(int i = BIT_ARCH-1; i >= 0; i--){
-		if(regs[i] == 1){
-			desl++;
-			newInstruction(ram, mv, i, sp, 0);
-			newInstruction(ram, lw, i, 0, desl);
-		}
-	}
-	if(desl >= 0){
-		newInstruction(ram, addi, sp, (desl+1));
-	}
-	
+	newInstruction(ram, addi, sp, (desl+1));	// Update sp
+
 	return;
 }
 
@@ -721,7 +705,7 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 			break;
 		}
 
-		storeTemps();
+		storeRegArgs();
 		stackParam(atoi(fun->result)); // Update next args
 
 		// Detour
@@ -730,7 +714,7 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 		// saving call to function to addr later
 		ldAdd(&calls_request, (void*)fun->arg2, getLine(), instr->desl);
 		
-		loadTemps();
+		loadRegArgs();
 		newInstruction(ram, mv, getN(fun->arg1), rd, 0); 	// Return data
 		break;
 	
