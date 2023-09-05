@@ -30,6 +30,8 @@ typedef enum {
 	DIFF_C,
 	ASSIGN_C,
 	STORE_C,
+	STOREREG_C,
+	LOADREG_C,
 	PARAM_C,
 	RETURN_C,
 	START_WHILE_C,
@@ -42,10 +44,7 @@ typedef enum {
 	NONE_C
 	
 }CToken;
-/*
-#define REGT 0
-#define LITT 1
-*/
+
 typedef struct quad{
 	CToken op;
 //	int a1, a2, r;
@@ -64,6 +63,10 @@ void printSingle(quad* code);
 int saveCI(quad* head, char* path);
 
 char* ctokenStr(CToken tok);
+
+void storeSafeReg(quad** code);
+
+void loadSafeReg(quad** code);
 
 
 #endif

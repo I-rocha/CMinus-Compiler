@@ -90,7 +90,6 @@ int main(int argc, char** argv){
 	strcpy(fpath, outpath);
 	strcat(fpath, CGEN_F);
 	saveCI(code, fpath);
-	
 	/* ENVIRONMENT */
 	
 	envInitGlobal();

@@ -30,7 +30,7 @@ static listVar* globals;	// Global var position in-memmory
 static dictVar* dict_lvar;
 static stack* params;
 static memmory* ram;
-static int regs[BIT_ARCH];
+static int regs[ntemps];
 
 void envInitGlobal(){
 	// Start operation format of processor
@@ -378,7 +378,6 @@ void loadVarArray(quad* fun, listVar* lv, char* var, int reg){
 void load(quad* fun, listVar* lv){
 	const int reg = getN(fun->arg1);
 
-	regs[reg] = 1;
 	if(fun->result[0] == '-'){
 		// Load simple variable
 		loadVar(lv, fun->arg2, reg);
@@ -511,7 +510,7 @@ void processFunction(quad* fun){
 	*var_nested = NULL;
 	lv = getListVar(dict_lvar, fun->arg2);
 
-	for(int i = 0; i < BIT_ARCH; i++)
+	for(int i = 0; i < ntemps; i++)
 		regs[i] = -1;
 
 	processFunctionRec(fun, lv, var_nested, &deep);
@@ -521,6 +520,11 @@ void processFunction(quad* fun){
 
 void storeRegArgs(){
 	int desl = 0;
+
+	for(int i = 0 ; i < ntemps; i++){
+		if(regs[i] == 1)
+			newInstruction(ram, sw, sp, i, -(++desl));	
+	}
 
 	newInstruction(ram, sw, sp, ra1$, -(++desl));
 	newInstruction(ram, sw, sp, ra2$, -(++desl));
@@ -536,6 +540,14 @@ void loadRegArgs(){
 	newInstruction(ram, lw, ra2$, 0, ++desl);
 	newInstruction(ram, mv, ra1$, sp, 0);
 	newInstruction(ram, lw, ra1$, 0, ++desl);
+
+	for(int i = (ntemps-1) ; i >= 0; i--){
+		if(regs[i] == 1){
+			newInstruction(ram, mv, i, sp, 0);
+			newInstruction(ram, lw, i, 0, ++desl);
+		}
+	}
+
 	newInstruction(ram, addi, sp, (desl+1));	// Update sp
 
 	return;
@@ -635,6 +647,14 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 		instr = newInstruction(ram, branch, 0, 0, -1);
 		label = getN(fun->arg1);
 		ldAdd(&labels_request, &label, getLine(), instr->desl);
+		break;
+	case STOREREG_C:
+		reg = getN(fun->arg1);
+		regs[reg] = 1;
+		break;
+	case LOADREG_C:
+		reg = getN(fun->arg1);
+		regs[reg] = -1;
 		break;
 	case ADD_C:
 		processAritmetic(fun, add, addi);

@@ -19,8 +19,11 @@ struct Exp{
 	int value;
 	exp* desl;	// Only for array
 };
+
+int toSafe = 0;		// Where must save temps
 int flabel = 0;
 int labelid = 0;
+int safe_regs[ntemps];
 extern int yylineno;
 extern symTable* headEnv;
 
@@ -29,6 +32,31 @@ static void cgen(quad **code, astNo* tree, char* lastScope, char* lastType);
 static quad* addQuad(quad* code, Token op, char* arg1, char* arg2, char* result);
 static exp genOp(quad **code, astNo* tree);
 static void save(quad *head, FILE *fd);
+void startSafeRegs();
+void sub_safeRegs();
+
+void sub_safeRegs(){
+	int i = 0;
+	if(--toSafe > 0)
+		return;
+
+	if(i > ntemps)
+		printf("Acessing safe_regs outside array\n");
+
+	while(i < ntemps){
+		safe_regs[i] = 0;
+		i++;
+	}
+	return;
+}
+
+void startSafeRegs(){
+	int i = 0;
+	while(i < ntemps){
+		safe_regs[i] = 0;
+		i++;
+	}
+}
 
 void printSingle(quad* code){
 	if(!code){
@@ -78,6 +106,7 @@ int saveCI(quad* head, char* path){
  * ########## PRIVATE ##########*/
 
 void CGenInit(){
+	startSafeRegs();
 	initRegManager();
 	return;
 }
@@ -283,7 +312,14 @@ exp genOp(quad **code, astNo* tree){
 	switch(tree->label){
 		case PLUS_K:
 			
+			
 			lval = genOp(code, tree->child[0]);
+			if((lval.type == REGT) && (lval.value < ntemps)){
+				safe_regs[lval.value] = 1;
+				toSafe++;
+			}
+
+			sub_safeRegs();
 			rval = genOp(code, tree->child[1]);
 
 			nreg = linkRegister(NULL);
@@ -298,8 +334,13 @@ exp genOp(quad **code, astNo* tree){
 	
 		case MINUS_K:
 			lval = genOp(code, tree->child[0]);
-			rval = genOp(code, tree->child[1]);
+			if((lval.type == REGT) && (lval.value < ntemps)){
+				safe_regs[lval.value] = 1;
+				toSafe++;
+			}
 
+			rval = genOp(code, tree->child[1]);
+			sub_safeRegs();;
 			nreg = linkRegister(NULL);
 			sprintf(sreg, "$t%d", nreg);
 			(lval.type == REGT) ? sprintf(sreg1, "$t%d", lval.value) : sprintf(sreg1, "%d", lval.value);
@@ -313,7 +354,12 @@ exp genOp(quad **code, astNo* tree){
 	
 		case MULT_K:
 			lval = genOp(code, tree->child[0]);
+			if((lval.type == REGT) && (lval.value < ntemps)){
+				safe_regs[lval.value] = 1;
+				toSafe++;
+			}
 			rval = genOp(code, tree->child[1]);
+			sub_safeRegs();
 
 			nreg = linkRegister(NULL);
 			sprintf(sreg, "$t%d", nreg);
@@ -322,12 +368,17 @@ exp genOp(quad **code, astNo* tree){
 			
 			*code = addQuad(*code, MULT_C, sreg, sreg1, sreg2);
 			ret = (exp){.type = REGT, .value = nreg};
-//			return ret;
 			break;
 	
 		case DIV_K:
 			lval = genOp(code, tree->child[0]);
+			if((lval.type == REGT) && (lval.value < ntemps)){
+				safe_regs[lval.value] = 1;
+				toSafe++;
+			}
+			
 			rval = genOp(code, tree->child[1]);
+			sub_safeRegs();
 
 			nreg = linkRegister(NULL);
 			sprintf(sreg, "$t%d", nreg);
@@ -516,6 +567,10 @@ exp genOp(quad **code, astNo* tree){
 				aux = aux->sibling;
 			}
 
+			if(toSafe > 0){
+				storeSafeReg(code);
+			}
+
 			nreg = getRa();
 			sprintf(sreg, "$t%d", nreg);
 			sprintf(sreg1, "%d", sz);
@@ -523,6 +578,10 @@ exp genOp(quad **code, astNo* tree){
 			
 			if(!(strcmp(tree->instance, INPUTF) == 0) && !(strcmp(tree->instance, OUTPUTF) == 0))
 				cleanFilled();
+
+			if(toSafe){
+				loadSafeReg(code);
+			}
 
 			ret = (exp){.type = REGT, .value = nreg};
 			break;
@@ -631,6 +690,12 @@ char* ctokenStr(CToken tok){
 	case STORE_C:
 		return "STORE";
 		break;
+	case STOREREG_C:
+		return "STOREREG";
+		break;
+	case LOADREG_C:
+		return "LOADREG";
+		break;
 	case PARAM_C:
 		return "PARAM";
 		break;
@@ -665,6 +730,26 @@ char* ctokenStr(CToken tok){
 		return "UNKNOWN";
 	}
 	return "";
+}
+
+void storeSafeReg(quad** code){
+	char sreg[10];
+	for(int i = 0; i < ntemps; i++){
+		if(safe_regs[i] == 1){
+			sprintf(sreg, "$t%d", i);
+			*code = addQuad(*code, STOREREG_C, sreg, NULL, NULL);	
+		}
+	}
+}
+
+void loadSafeReg(quad** code){
+	char sreg[10];
+	for(int i = 0; i < ntemps; i++){
+		if(safe_regs[i] == 1){
+			sprintf(sreg, "$t%d", i);
+			*code = addQuad(*code, LOADREG_C, sreg, NULL, NULL);	
+		}
+	}
 }
 
 /*
