@@ -20,3 +20,6 @@ output/*
 
 # Inputs
 input/*
+
+# Vs Code
+.vscode
