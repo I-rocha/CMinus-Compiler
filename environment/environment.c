@@ -562,7 +562,7 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 	char str_aux[100], ref[100] = "&";
 	int label;
 	int arg1, arg2;
-	int reg;
+	int reg, reg2, reg3, fp;
 	instruction* instr;
 
 	if(!fun)
@@ -718,6 +718,122 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 			newInstruction(ram, mvi, oa, 1);
 			newInstruction(ram, sw, oa, reg, 0);
 			newInstruction(ram, print, oa, 0, 0);
+			break;
+		}
+		else if(strcmp(fun->arg2, "isDir") == 0){
+			fp = getN(popStack(&params));
+			reg = getN(fun->arg1);
+			newInstruction(ram, mv, oa, fp, 0);
+			newInstruction(ram, lwHD, oa, oa, 0);
+			newInstruction(ram, shiftR, oa, 0, 0, 7);
+			newInstruction(ram, ANDi, oa, 1);
+			newInstruction(ram, mv, reg, oa, 0);
+			break;
+		}
+		else if(strcmp(fun->arg2, "isActive") == 0){
+			fp = getN(popStack(&params));
+			reg = getN(fun->arg1);
+			newInstruction(ram, mv, oa, fp, 0);
+			newInstruction(ram, lwHD, oa, oa, 0);
+			newInstruction(ram, shiftR, oa, 0, 0, 6);
+			newInstruction(ram, ANDi, oa, 1);
+			newInstruction(ram, mv, reg, oa, 0);
+			break;
+		}
+		else if(strcmp(fun->arg2, "getByte") == 0){
+			fp = getN(popStack(&params));		// addr
+			reg = getN(popStack(&params));		// target
+			reg2 = getN(fun->arg1);				// return
+
+			newInstruction(ram, lwHD, reg, fp, 0);
+			newInstruction(ram, mv, reg2, reg, 0);
+			break;
+		}
+		else if(strcmp(fun->arg2, "getNFiles") == 0){
+			fp = getN(popStack(&params));		// fp
+			reg = getN(fun->arg1);
+			newInstruction(ram, mv, oa, fp, 0);
+			newInstruction(ram, lwHD, oa, oa, 2);
+			newInstruction(ram, ANDi, oa, 255);
+			newInstruction(ram, mv, reg, oa, 0);
+			break;
+		}
+		else if(strcmp(fun->arg2, "shiftLByte") == 0){
+			reg = getN(popStack(&params));		//val
+			reg2 = getN(fun->arg1);
+			newInstruction(ram, mv, oa, reg, 0);
+			newInstruction(ram, shiftL, oa, 0, 0, 8);
+			newInstruction(ram, mv, reg2, oa, 0);
+			break;
+		}
+		else if(strcmp(fun->arg2, "shiftRByte") == 0){
+			reg = getN(popStack(&params));		//val
+			reg2 = getN(fun->arg1);
+			newInstruction(ram, mv, oa, reg, 0);
+			newInstruction(ram, shiftR, oa, 0, 0, 8);
+			newInstruction(ram, mv, reg2, oa);
+			break;
+		}
+		else if(strcmp(fun->arg2, "getAddr") == 0){
+			reg = getN(popStack(&params));		// addr begin
+			reg2 = getN(fun->arg1);
+
+			newInstruction(ram, mv, ra1$, reg, 0);
+			newInstruction(ram, lwHD, oa, ra1$, 0); 	// hd to reg[24:36]
+			newInstruction(ram, shiftL, oa, 0, 0, 8);	// shift left
+			newInstruction(ram, lwHD, oa, ra1$, 1); 	// hd to reg
+			newInstruction(ram, shiftL, oa, 0, 0, 8);	// shift left
+			newInstruction(ram, lwHD, oa, ra1$, 2); 	// hd to reg
+			newInstruction(ram, shiftL, oa, 0, 0, 8);	// shift left
+			newInstruction(ram, lwHD, oa, ra1$, 3); 	// hd to reg
+
+			newInstruction(ram, mv, reg2, reg, 0);
+			break;
+		}
+		else if(strcmp(fun->arg2, "getSizeName") == 0){
+			fp = getN(popStack(&params));		// fp
+			reg = getN(fun->arg1);
+
+			newInstruction(ram, mv, ra1$, fp, 0);
+			newInstruction(ram, mvi, oa, 0);
+			newInstruction(ram, lwHD, oa, ra1$, 1); 	// hd to reg[24:36]
+
+			newInstruction(ram, mv, reg, oa, 0);
+			break;
+		}
+		else if(strcmp(fun->arg2, "getSizePayload") == 0){
+			fp = getN(popStack(&params));		// fp
+			reg = getN(fun->arg1);
+
+			newInstruction(ram, mv, ra1$, fp, 0);
+			newInstruction(ram, mvi, oa, 0);
+			newInstruction(ram, lwHD, oa, ra1$, 2); 	// hd to reg[24:36]
+			newInstruction(ram, shiftL, oa, 0, 0, 8);
+			newInstruction(ram, lwHD, oa, ra1$, 3);
+
+			newInstruction(ram, mv, reg, oa, 0);
+			break;
+		}
+		else if(strcmp(fun->arg2, "displayByte") == 0){
+			reg = getN(popStack(&params));
+
+			newInstruction(ram, display, reg, 0, 0);
+
+			break;
+		}
+		else if(strcmp(fun->arg2, "writeInstruction") == 0){
+			reg = getN(popStack(&params));		// MI addr
+			reg2 = getN(popStack(&params));		// instruction
+
+			newInstruction(ram, swMI, reg, reg2, 0);	// write here to MI
+			break;
+		}
+
+		else if(strcmp(fun->arg2, "run") == 0){
+			// Jump addres to specific pc
+			reg = getN(popStack(&params));
+
+			newInstruction(ram, jump, reg, 0, 0);
 			break;
 		}
 

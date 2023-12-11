@@ -12,7 +12,7 @@ static int lineno = -1;
 static instruction_subset formatI, formatII, formatIII, format_set[SUBSET_SZ];
 static operation_t o1[] = {add, sub, mult, _div, AND, OR, NOT, XOR, less, grand, eq, neq, leq, geq, shiftL, shiftR};
 static operation_t o2[] = {mvi, addi, subi, multi, divi, ANDi, ORi, NOTi, XORi, lessi, grandi, eqi, neqi, leqi, geqi, lup, ldown};
-static operation_t o3[] = {mv, jump, jal, jc, branch, bal, bc, sw, lw, get, print, NOP, STOP};
+static operation_t o3[] = {mv, jump, jal, jc, branch, bal, bc, sw, lw, get, print, lwHD, display, swMI, NOP, STOP};
 static char * mnemonic[] = {
 	"add\0",
 	"sub\0",
@@ -58,6 +58,9 @@ static char * mnemonic[] = {
 	"div\0",
 	"multi\0",
 	"divi\0",
+	"lwHD\0",
+	"display\0",
+	"swMI\0",
 	"NOP\0",
 	"STOP\0",
 	"UNKNOWN\0"
@@ -452,7 +455,7 @@ int getFormat(operation_t* op){
 
 
 char* operation2String(operation_t* operation){
-	if(*operation >= N_OPERATIONS){
+	if((*operation >= N_OPERATIONS) && (*operation != 63)){
 		return "UNKNOWN";
 	}
 	else
@@ -684,6 +687,18 @@ int setMeta(instruction* instr){
 	case divi:
 		instr->opcode = 1;
 		instr->funct = 8;
+		break;
+
+	case lwHD:
+		instr->opcode = 18;
+		break;
+
+	case display:
+		instr->opcode = 19;
+		break;
+
+	case swMI:
+		instr->opcode = 20;
 		break;
 
 	default:

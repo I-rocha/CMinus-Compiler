@@ -15,12 +15,24 @@
 
 // About Processor
 #define BIT_ARCH 32
-#define N_OPERATIONS 46
+#define N_OPERATIONS 49
 
 // Pre-defined Functions
 #define MAINF "main"
 #define INPUTF "input"
 #define OUTPUTF "output"
+#define	ISDIRF "isDir"
+#define ISACTIVEF "isActive"
+#define GETBYTEF "getByte"
+#define GETNFILESF "getNFiles"
+#define SHIFTLBYTEF "shiftLByte"
+#define SHIFTRBYTEF "shiftRByte"
+#define GETADDRF "getAddr"
+#define DISPLAYBYTEF "displayByte"
+#define GETSIZENAMEF "getSizeName"
+#define GETSIZEPAYLOADF "getSizePayload"
+#define WRITEINSTRUCTIONF "writeInstruction"
+#define RUNF "run"
 
 // Paths/Files
 #define OUTPUT_PATH "output/"

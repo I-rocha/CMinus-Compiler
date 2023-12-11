@@ -19,7 +19,7 @@ static void handleItem(astNo* root);
 static astNo* handleTable(astNo* root);
 static astNo* handleOp(astNo* no);
 static int checkMain();
-static void addIO();
+static void addPreFunctions();
 
 static symEntry* declared(astNo* no, symTable* target_env);
 static void param(astNo* no, symEntry* target);
@@ -47,7 +47,7 @@ int checkMain(){
 	return 0;
 }
 
-void addIO(){
+void addPreFunctions(){
 	symEntry* entry;
 
 	// Input
@@ -69,6 +69,148 @@ void addIO(){
 		_DECLARATION);
 
 	symTSetParam(entry, 1, INT_K);
+
+
+	// isDir
+	entry = symTPut(headEnv,
+		FUN_K,
+		ISDIRF,
+		INT_K,
+		0,
+		0,
+		_DECLARATION);
+
+	symTSetParam(entry, 1, INT_K);
+
+
+	// isActive
+	entry = symTPut(headEnv,
+		FUN_K,
+		ISACTIVEF,
+		INT_K,
+		0,
+		0,
+		_DECLARATION);
+
+	symTSetParam(entry, 1, INT_K);
+
+
+	// getByte
+	entry = symTPut(headEnv,
+		FUN_K,
+		GETBYTEF,
+		INT_K,
+		0,
+		0,
+		_DECLARATION);
+
+	symTSetParam(entry, 2, INT_K, INT_K);
+
+
+	// getNFiles
+	entry = symTPut(headEnv,
+		FUN_K,
+		GETNFILESF,
+		INT_K,
+		0,
+		0,
+		_DECLARATION);
+
+	symTSetParam(entry, 1, INT_K);
+
+
+	// shiftLByte
+	entry = symTPut(headEnv,
+		FUN_K,
+		SHIFTLBYTEF,
+		INT_K,
+		0,
+		0,
+		_DECLARATION);
+
+	symTSetParam(entry, 1, INT_K);
+
+
+	// shiftRByte
+	entry = symTPut(headEnv,
+		FUN_K,
+		SHIFTRBYTEF,
+		INT_K,
+		0,
+		0,
+		_DECLARATION);
+
+	symTSetParam(entry, 1, INT_K);
+
+
+	// getAddr
+	entry = symTPut(headEnv,
+		FUN_K,
+		GETADDRF,
+		INT_K,
+		0,
+		0,
+		_DECLARATION);
+
+	symTSetParam(entry, 1, INT_K);
+
+
+	// DisplayByte
+	entry = symTPut(headEnv,
+		FUN_K,
+		DISPLAYBYTEF,
+		INT_K,
+		0,
+		0,
+		_DECLARATION);
+
+	symTSetParam(entry, 1, INT_K);
+
+	// GetSizeName
+	entry = symTPut(headEnv,
+		FUN_K,
+		GETSIZENAMEF,
+		INT_K,
+		0,
+		0,
+		_DECLARATION);
+
+	symTSetParam(entry, 1, INT_K);
+
+	// GetSizePayload
+	entry = symTPut(headEnv,
+		FUN_K,
+		GETSIZEPAYLOADF,
+		INT_K,
+		0,
+		0,
+		_DECLARATION);
+
+	symTSetParam(entry, 1, INT_K);
+	
+	// writeInstruction
+	entry = symTPut(headEnv,
+		FUN_K,
+		WRITEINSTRUCTIONF,
+		VOID_K,
+		0,
+		0,
+		_DECLARATION);
+
+	symTSetParam(entry, 2, INT_K, INT_K);
+
+
+	// run
+	entry = symTPut(headEnv,
+		FUN_K,
+		RUNF,
+		VOID_K,
+		0,
+		0,
+		_DECLARATION);
+
+	symTSetParam(entry, 1, INT_K);
+
 	return;
 }
 
@@ -326,7 +468,7 @@ astNo* handleOp(astNo* no){
 
 void semantic(astNo* root){
 	semanticStart();
-	addIO();
+	addPreFunctions();
 	handleTable(root);
 	checkMain();
 	semantic_err_check();
