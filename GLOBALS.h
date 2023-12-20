@@ -15,7 +15,7 @@
 
 // About Processor
 #define BIT_ARCH 32
-#define N_OPERATIONS 49
+#define N_OPERATIONS 53
 
 // Pre-defined Functions
 #define MAINF "main"

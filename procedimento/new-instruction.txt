@@ -1,0 +1,13 @@
+Para adicionar uma nova instrução do processador é preciso:
+
+mnemonic.h:
+- Adicionar o mnemonico no arquivo mnemonic.h
+- Atualizar a quantidade de instruções de F3_LEN em mnemonic.h
+
+GLOBALS.h:
+- Atualizar o total de instruções em GLOBALS.h
+
+mnemonic.c:
+- Adicionar as novas instruções em mnemonic.c no formato de instrução correto
+- Adicionar o nome na lista de string de todos os mnemonicos em mnemonic.c
+- Criar case de cada instrução e colocar o valor de seus campos.

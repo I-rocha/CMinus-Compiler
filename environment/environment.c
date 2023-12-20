@@ -611,7 +611,19 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 		break;
 	case END_C:
 		if(strcmp(fun->arg1, "main") == 0){
-			newInstruction(ram, STOP, 0, 0, 0);
+			// STOP
+			// newInstruction(ram, STOP, 0, 0, 0);
+
+			// Restore jump_back address
+			newInstruction(ram, mv, rj, fp$, 0);
+			newInstruction(ram, lw, rj, 0, 1);
+			
+			// update fp$
+			newInstruction(ram, lw, fp$, 0, 0);
+
+			// update pc
+			newInstruction(ram, jump, rj, 0, 0);
+			// newInstruction(ram, STOP, 0, 0, 0);
 			return;
 			break;
 		}
@@ -832,8 +844,19 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 		else if(strcmp(fun->arg2, "run") == 0){
 			// Jump addres to specific pc
 			reg = getN(popStack(&params));
-
-			newInstruction(ram, jump, reg, 0, 0);
+			newInstruction(ram, jal, reg, 0, 0);
+			break;
+		}
+		else if(strcmp(fun->arg2, "setBase") == 0){
+			// new base val
+			reg = getN(popStack(&params));
+			newInstruction(ram, sb, reg, 0, 0);
+			break;
+		}
+		else if(strcmp(fun->arg2, "runChrono") == 0){
+			// addr
+			reg = getN(popStack(&params));
+			newInstruction(ram, jt, reg, 0, 0);
 			break;
 		}
 

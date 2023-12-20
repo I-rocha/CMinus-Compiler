@@ -9,7 +9,7 @@
 #define FORMAT_III 2
 #define F1_LEN 16
 #define F2_LEN 17
-#define F3_LEN 16
+#define F3_LEN 20
 
 typedef enum{
 	add = 0,
@@ -59,6 +59,10 @@ typedef enum{
 	lwHD,
 	display,
 	swMI,
+	jt,
+	jal2,
+	gcfl,
+	sb,
 	NOP,
 	STOP,
 	UNKNOWN
