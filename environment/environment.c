@@ -9,6 +9,9 @@
 #include "../GLOBALS.h"
 #include "environment.h"
 
+int stack_len = 0;
+int ftime = 1;
+
 /* List of function begin in ci */
 typedef struct{
 	quad** code;
@@ -21,6 +24,8 @@ void saveReturn();
 void saveBinding();
 void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep);
 void processFunction(quad* fun);
+void storeContext();
+void loadContext();
 
 
 // Mark definitions that needs to be adjusted (as addresses of instructions/variables/labels)
@@ -204,14 +209,28 @@ void processRelational(quad* fun, operation_t op, operation_t opi){
 }
 
 void saveReturn(){
-	newInstruction(ram, addi, sp, 1);
-	newInstruction(ram, sw, sp, rj, 0);
+	if(ftime == 1){
+		newInstruction(ram, addi, sp, 1);
+		newInstruction(ram, sw, sp, rj, 0);
+	}
+	else{
+		newInstruction(ram, sw, sp, rj, -(stack_len+1));
+	}
 }
 
 void saveBinding(){
-	newInstruction(ram, addi, sp, 1);
-	newInstruction(ram, sw, sp, fp$, 0);	
-	newInstruction(ram, mv, fp$, sp, 0);
+	if(ftime == 1){
+		ftime = 0;
+		newInstruction(ram, addi, sp, 1);
+		newInstruction(ram, sw, sp, fp$, 0);	
+		newInstruction(ram, mv, fp$, sp, 0);
+	}
+	else{
+		newInstruction(ram, sw, sp, fp$, -(stack_len));
+		newInstruction(ram, mv, fp$, sp, 0);
+		newInstruction(ram, subi, fp$, stack_len);		// correction of fp
+		stack_len = 0;
+	}
 }
 
 void allocate(listVar* lv, char* str, int len){
@@ -232,16 +251,24 @@ void stackParam(int len){
 	const int const_desl = 2;
 	int n_param;
 	char* param;
+	int desl;
+	desl = 0;
+	stack_len = len;
+
+	if (len > 0)
+		newInstruction(ram, addi, sp, (len + const_desl));
+
 	while(len > 0){
 		param = popStack(&params);
 		n_param = getN(param);
 		if(isReg(param)){
-			newInstruction(ram, sw, sp, n_param, (len + const_desl));
+			newInstruction(ram, sw, sp, n_param, desl);
 		}
 		else{
 			newInstruction(ram, mvi, oa, n_param);
-			newInstruction(ram, sw, sp, oa, (len + const_desl));
+			newInstruction(ram, sw, sp, oa, desl);
 		}
+		desl--;
 		len--;
 	}
 }
@@ -519,19 +546,28 @@ void processFunction(quad* fun){
 }
 
 void storeTemps(){
-	int desl = 0;
+	int ntemps_used = 0;
+	int desl;
 
 	for(int i = 0; i < BIT_ARCH; i++){
 		if(regs[i] == 1){
-			newInstruction(ram, sw, sp, i, (desl+1));
-			desl++;
+			ntemps_used++;
 		}
 	}
-	newInstruction(ram, sw, sp, ra1$, (++desl));
-	newInstruction(ram, sw, sp, ra2$, (++desl));
-	if(desl > 0){
-		newInstruction(ram, addi, sp, desl);
+
+	newInstruction(ram, addi, sp, (ntemps_used + 2));
+
+	desl = ntemps_used - 1;
+	for(int i = 0; i < BIT_ARCH; i++){
+		if(regs[i] == 1){
+			newInstruction(ram, sw, sp, i, -(2 + desl));
+			desl--;
+		}
 	}
+
+	newInstruction(ram, sw, sp, ra1$, -1);
+	newInstruction(ram, sw, sp, ra2$, 0);
+
 	return;
 }
 
@@ -576,13 +612,13 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 		break;
 	case ARG_C:
 		addListVar(lv, fun->arg2, 0);
-		newInstruction(ram, addi, sp, 1);
+		// newInstruction(ram, addi, sp, 1);
 		break;
 	case ARG_ARRAY_C:
 		strcpy(str_aux, ref);
 		strcat(str_aux, fun->arg2);
 		addListVar(lv, str_aux, 0);
-		newInstruction(ram, addi, sp, 1);
+		// newInstruction(ram, addi, sp, 1);
 		break;
 	case ALLOC_C:
 		allocate(lv, fun->arg1, 0);
@@ -858,36 +894,83 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 			newInstruction(ram, sb, oa, 0, 0);
 			break;
 		}
-		/*
+		
 		else if(strcmp(fun->arg2, "runChrono") == 0){
 			// addr
 			nlit = getN(popStack(&params));		// basis literal
 			reg = getN(popStack(&params));		// Addr
 			reg2 = getN(fun->arg1);
 
-			// get first data
-			newInstruction(ram, mvi, oa, nlit);
-			newInstruction(ram, lw, oa, 0, 0);	// First position
+			// Addr saved to rr$
+			newInstruction(ram, mv, rr$, reg, 0);
 
-			newInstruction(ram, neqi, oa, 1);
-			newInstruction(ram, bc, 0, 0, );	// IF
+			// Store SO context
+			storeContext();
 
-			newInstruction(ram, eqi, oa, 2);	
-			newInstruction(ram, bc, 0, 0, );	// ELSE IF
-
-			newInstruction(ram, branch, 0, 0, );	// ELSE
-
-			// Load-context
-			newInstruction();
-
+			// Update basis
 			newInstruction(ram, mvi, oa, nlit);
 			newInstruction(ram, sb, oa, 0, 0);
-			newInstruction(ram, jt, rt$, reg, 0);	// goes to rt$ and when back save to rr$
+
+			// get first data
+			newInstruction(ram, mvi, oa, 0);
+			newInstruction(ram, lw, oa, 0, 0);	// First position
+
+			// output
+			newInstruction(ram, mvi, ra1$, OUTPUT_ADDR);
+			newInstruction(ram, sw, ra1$, oa, 0);
+			newInstruction(ram, print, ra1$, 0, 0);
+			newInstruction(ram, get, ra1$, 0, 0);	// input
+
+
+			newInstruction(ram, eqi, oa, 1);
+			newInstruction(ram, bc, 0, 0, 1);	// IF is first time it doesn't need to load context
+			
+
+			/*
+			newInstruction(ram, eqi, oa, 2);	
+			newInstruction(ram, bc, 0, 0, );	// ELSE IF
+			*/
+
+			newInstruction(ram, branch, 0, 0, 61);	// ELSE
+
+			// IF CONTENT
+			// Load-context
+			loadContext();
+
+			// salva oa em sp+1
+			newInstruction(ram, sw, sp, oa, 1);
+			
+			//salva ra1 em sp+2
+			newInstruction(ram, sw, sp, ra1$, 2);
+
+			newInstruction(ram, mvi, oa, 0);
+			newInstruction(ram, mvi, ra1$, 1);
+			newInstruction(ram, sw, oa, ra1$, 0);
+
+			//load oa em sp+1
+			newInstruction(ram, mv, oa, sp, 0);
+			newInstruction(ram, lw, oa, 0, 1);
+
+			//load ra1 em sp+2
+			newInstruction(ram, mv, ra1$, sp, 0);
+			newInstruction(ram, lw, ra1$, 0, 2);
+
+			newInstruction(ram, jt, rt$, rr$, 0);	// goes to rr$ and back to rt$. When back, saves to rr$
 			newInstruction(ram, subi, rr$, 1);		// correction of jt
+
+			// Store Context
+			storeContext();
+
+			// Update basis
+			newInstruction(ram, mvi, oa, 0);
+			newInstruction(ram, sb, oa, 0, 0);
+
+			// load SO Context
+			loadContext();
 
 			newInstruction(ram, mv, reg2, rr$, 0);
 			break;
-		}*/
+		}
 
 		storeTemps();
 		stackParam(atoi(fun->result)); // Update next args
@@ -1051,13 +1134,64 @@ void saveBinQuartus(const char* path){
 	saveMemQuartusFormact(ram, path);
 	return;
 }
-/*
-void loadContext(int nregs){
-	for (int reg = 0; reg < rt$; reg++){
-		newInstruction(ram, mvi, reg, fp$, 0);
-		newInstruction(ram, lw, reg, 0, (key+1));
-	}
-	for (int reg = rr$ + 1; reg < 32; reg++){
+void storeContext(){
+	int desl;
+	desl = 0;
+	
+	newInstruction(ram, addi, sp, ntemps);
 
+	for (int reg = (ntemps - 1); reg >= 0; reg--){
+		newInstruction(ram, sw, sp, reg, -(desl));
+		desl++;
 	}
-}*/
+	newInstruction(ram, addi, sp, 7);
+	newInstruction(ram, sw, sp, ra2$, -6);
+	newInstruction(ram, sw, sp, ra1$, -5);
+	newInstruction(ram, sw, sp, rd, -4);
+	newInstruction(ram, sw, sp, oa, -3);
+	newInstruction(ram, sw, sp, fp$, -2);
+	newInstruction(ram, sw, sp, rf, -1);
+	newInstruction(ram, sw, sp, rj, 0);
+
+	newInstruction(ram, mvi, oa, 1);
+	newInstruction(ram, sw, oa, sp, 0);		// Store sp
+}
+
+void loadContext(){
+	int desl;
+	desl = 0;
+	
+	newInstruction(ram, mvi, sp, 1);
+	newInstruction(ram, lw, sp, 0, 0);		// Load sp
+
+	newInstruction(ram, mv, rj, sp, 0);
+	newInstruction(ram, lw, rj, 0, 0);
+
+	newInstruction(ram, mv, rf, sp, 0);
+	newInstruction(ram, lw, rf, 0, -1);
+
+	newInstruction(ram, mv, fp$, sp, 0);
+	newInstruction(ram, lw, fp$, 0, -2);
+
+	newInstruction(ram, mv, oa, sp, 0);
+	newInstruction(ram, lw, oa, 0, -3);
+
+	newInstruction(ram, mv, rd, sp, 0);
+	newInstruction(ram, lw, rd, 0, -4);
+
+	newInstruction(ram, mv, ra1$, sp, 0);
+	newInstruction(ram, lw, ra1$, 0, -5);
+
+	newInstruction(ram, mv, ra2$, sp, 0);
+	newInstruction(ram, lw, ra2$, 0, -6);
+
+	desl = 7;
+
+	for (int reg = (ntemps - 1); reg >= 0; reg--){
+		newInstruction(ram, mv, reg, sp, 0);
+		newInstruction(ram, lw, reg, 0, -(desl));
+		desl++;
+	}
+
+	newInstruction(ram, subi, sp, (ntemps + 7));
+}
