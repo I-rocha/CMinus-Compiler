@@ -199,7 +199,6 @@ void addPreFunctions(){
 
 	symTSetParam(entry, 2, INT_K, INT_K);
 
-
 	// run
 	entry = symTPut(headEnv,
 		FUN_K,
@@ -209,8 +208,32 @@ void addPreFunctions(){
 		0,
 		_DECLARATION);
 
+	symTSetParam(entry, 2, INT_K, INT_K);
+
+	
+	// setBasis
+	entry = symTPut(headEnv,
+		FUN_K,
+		SETBASISF,
+		VOID_K,
+		0,
+		0,
+		_DECLARATION);
+	
+
 	symTSetParam(entry, 1, INT_K);
 
+	// runChrono
+	entry = symTPut(headEnv,
+		FUN_K,
+		RUNCHRONOF,
+		INT_K,
+		0,
+		0,
+		_DECLARATION);
+
+	symTSetParam(entry, 2, INT_K, INT_K);
+	
 	return;
 }
 

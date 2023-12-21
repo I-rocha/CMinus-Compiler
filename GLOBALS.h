@@ -2,8 +2,11 @@
 #define GLOBALS_H
 
 // Registers
+#define INPUT_ADDR 220
+#define OUTPUT_ADDR 221
+#define MEM_BASIS 0 // Basis of mem
 #define MEM_SZ 300	// size of memmory
-#define ntemps 24 // Number of temporary
+#define ntemps 22 // Number of temporary
 #define rj 31	// Register jump
 #define rf 30	// register flag
 #define sp 29	// stack pointer
@@ -12,6 +15,8 @@
 #define rd 26	// return data
 #define ra1$ 25   // Arg1 register
 #define ra2$ 24   // Arg2 register
+#define rr$ 23    // jt first reg
+#define rt$ 22    // jr second reg
 
 // About Processor
 #define BIT_ARCH 32
@@ -33,6 +38,8 @@
 #define GETSIZEPAYLOADF "getSizePayload"
 #define WRITEINSTRUCTIONF "writeInstruction"
 #define RUNF "run"
+#define SETBASISF "setBasis"
+#define RUNCHRONOF "runChrono"
 
 // Paths/Files
 #define OUTPUT_PATH "output/"

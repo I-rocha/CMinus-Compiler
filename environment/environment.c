@@ -9,7 +9,6 @@
 #include "../GLOBALS.h"
 #include "environment.h"
 
-
 /* List of function begin in ci */
 typedef struct{
 	quad** code;
@@ -205,12 +204,12 @@ void processRelational(quad* fun, operation_t op, operation_t opi){
 }
 
 void saveReturn(){
-	newInstruction(ram, addi, sp, -1);
+	newInstruction(ram, addi, sp, 1);
 	newInstruction(ram, sw, sp, rj, 0);
 }
 
 void saveBinding(){
-	newInstruction(ram, addi, sp, -1);
+	newInstruction(ram, addi, sp, 1);
 	newInstruction(ram, sw, sp, fp$, 0);	
 	newInstruction(ram, mv, fp$, sp, 0);
 }
@@ -220,12 +219,12 @@ void allocate(listVar* lv, char* str, int len){
 
 	// Var
 	if(len == 0){
-		newInstruction(ram, addi, sp, -1);
+		newInstruction(ram, addi, sp, 1);
 		return;
 	}
 
 	// Array
-	newInstruction(ram, addi, sp, -len);
+	newInstruction(ram, addi, sp, len);
 	return;
 }
 
@@ -237,11 +236,11 @@ void stackParam(int len){
 		param = popStack(&params);
 		n_param = getN(param);
 		if(isReg(param)){
-			newInstruction(ram, sw, sp, n_param, -(len + const_desl));
+			newInstruction(ram, sw, sp, n_param, (len + const_desl));
 		}
 		else{
 			newInstruction(ram, mvi, oa, n_param);
-			newInstruction(ram, sw, sp, oa, -(len + const_desl));
+			newInstruction(ram, sw, sp, oa, (len + const_desl));
 		}
 		len--;
 	}
@@ -258,11 +257,11 @@ void loadVar(listVar* lv, char* var, int reg){
 		// Local definition
 		if(isArray(lv, var)){
 			newInstruction(ram, mv, reg, fp$, 0);
-			newInstruction(ram, addi, reg, -(key+1));
+			newInstruction(ram, addi, reg, (key+1));
 		}
 		else{
 			newInstruction(ram, mv, reg, fp$, 0);
-			newInstruction(ram, lw, reg, 0, -(key+1));
+			newInstruction(ram, lw, reg, 0, (key+1));
 		}
 		return;
 	}
@@ -270,7 +269,7 @@ void loadVar(listVar* lv, char* var, int reg){
 	if(key >= 0){
 		// Reference definition
 		newInstruction(ram, mv, reg, fp$, 0);
-		newInstruction(ram, lw, reg, 0, -(key + 1));
+		newInstruction(ram, lw, reg, 0, (key + 1));
 		return;
 	}
 
@@ -282,16 +281,16 @@ void loadVar(listVar* lv, char* var, int reg){
 			newInstruction(ram, ldown, reg, (MEM_SZ-1));
 			newInstruction(ram, lup, reg, (MEM_SZ-1));
 			*/
-			newInstruction(ram, mvi, reg, (MEM_SZ-1));
-			newInstruction(ram, addi, reg, -(key+1));
+			newInstruction(ram, mvi, reg, (MEM_BASIS+1));
+			newInstruction(ram, addi, reg, (key+1));
 		}
 		else{
 			/*
 			newInstruction(ram, ldown, reg, (MEM_SZ-1));
 			newInstruction(ram, lup, reg, (MEM_SZ-1));
 			*/
-			newInstruction(ram, mvi, reg, (MEM_SZ-1));
-			newInstruction(ram, lw, reg, 0, -(key+1));	
+			newInstruction(ram, mvi, reg, (MEM_BASIS+1));
+			newInstruction(ram, lw, reg, 0, (key+1));	
 		}
 		return;
 	}
@@ -315,13 +314,13 @@ void loadVarArray(quad* fun, listVar* lv, char* var, int reg){
 		if(is_reg){
 			// Desl is register
 			newInstruction(ram, mv, reg, fp$, 0);
-			newInstruction(ram, sub, reg, arr_desl, 0, 0);
-			newInstruction(ram, lw, reg, 0, -(key + 1));
+			newInstruction(ram, add, reg, arr_desl, 0, 0);
+			newInstruction(ram, lw, reg, 0, (key + 1));
 		}
 		else{
 			// Desl is immediate
 			newInstruction(ram, mv, reg, fp$, 0);
-			newInstruction(ram, lw, reg, 0, -(key + 1 + arr_desl));
+			newInstruction(ram, lw, reg, 0, (key + 1 + arr_desl));
 		}
 		return;
 	}
@@ -333,15 +332,15 @@ void loadVarArray(quad* fun, listVar* lv, char* var, int reg){
 		if(is_reg){
 			// Desl is register
 			newInstruction(ram, mv, reg, fp$, 0);
-			newInstruction(ram, lw, reg, 0, -(key + 1));
-			newInstruction(ram, sub, reg, arr_desl, 0, 0);
+			newInstruction(ram, lw, reg, 0, (key + 1));
+			newInstruction(ram, add, reg, arr_desl, 0, 0);
 			newInstruction(ram, lw, reg, 0, 0);
 		}
 		else{
 			// Desl is immediate
 			newInstruction(ram, mv, reg, fp$, 0);
-			newInstruction(ram, lw, reg, 0, -(key + 1));
-			newInstruction(ram, lw, reg, 0, -arr_desl);
+			newInstruction(ram, lw, reg, 0, (key + 1));
+			newInstruction(ram, lw, reg, 0, arr_desl);
 		}
 		return;
 	}
@@ -356,9 +355,9 @@ void loadVarArray(quad* fun, listVar* lv, char* var, int reg){
 			newInstruction(ram, ldown, reg, (MEM_SZ-1));
 			newInstruction(ram, lup, reg, (MEM_SZ-1));
 			*/
-			newInstruction(ram, mvi, reg, (MEM_SZ-1));
-			newInstruction(ram, sub, reg, arr_desl, 0, 0);
-			newInstruction(ram, lw, reg, 0, -(key+1));
+			newInstruction(ram, mvi, reg, (MEM_BASIS+1));
+			newInstruction(ram, add, reg, arr_desl, 0, 0);
+			newInstruction(ram, lw, reg, 0, (key+1));
 		}
 		else{
 			// Desl is immediate
@@ -366,8 +365,8 @@ void loadVarArray(quad* fun, listVar* lv, char* var, int reg){
 			newInstruction(ram, ldown, reg, (MEM_SZ-1));
 			newInstruction(ram, lup, reg, (MEM_SZ-1));
 			*/
-			newInstruction(ram, mvi, reg, (MEM_SZ-1));
-			newInstruction(ram, lw, reg, 0, -(key + 1 + arr_desl));
+			newInstruction(ram, mvi, reg, (MEM_BASIS+1));
+			newInstruction(ram, lw, reg, 0, (key + 1 + arr_desl));
 		}
 		return;
 	}
@@ -405,13 +404,13 @@ void store(quad* fun, listVar* lv){
 		if(is_reg){
 			// Desl is register
 			newInstruction(ram, mv, oa, fp$, 0);
-			newInstruction(ram, sub, oa, arr_desl, 0, 0);
-			newInstruction(ram, sw, oa, reg, -(key+1));
+			newInstruction(ram, add, oa, arr_desl, 0, 0);
+			newInstruction(ram, sw, oa, reg, (key+1));
 			return;
 		}
 		else{
 			// Desl is immediate
-			newInstruction(ram, sw, fp$, reg, -(key + 1 + arr_desl));
+			newInstruction(ram, sw, fp$, reg, (key + 1 + arr_desl));
 			return;
 		}
 	}
@@ -424,16 +423,16 @@ void store(quad* fun, listVar* lv){
 		if(is_reg){
 			// Desl is register
 			newInstruction(ram, mv, oa, fp$, 0);
-			newInstruction(ram, lw, oa, 0, -(key + 1));
-			newInstruction(ram, sub, oa, arr_desl, 0, 0);
+			newInstruction(ram, lw, oa, 0, (key + 1));
+			newInstruction(ram, add, oa, arr_desl, 0, 0);
 			newInstruction(ram, sw, oa, reg, 0);
 			return;
 		}
 		else{
 			// Desl is immediate
 			newInstruction(ram, mv, oa, fp$, 0);
-			newInstruction(ram, lw, oa, 0, -(key + 1));
-			newInstruction(ram, sw, oa, reg, -arr_desl);
+			newInstruction(ram, lw, oa, 0, (key + 1));
+			newInstruction(ram, sw, oa, reg, arr_desl);
 			return;
 		}
 	}
@@ -447,9 +446,9 @@ void store(quad* fun, listVar* lv){
 			newInstruction(ram, ldown, oa, (MEM_SZ-1));
 			newInstruction(ram, lup, oa, (MEM_SZ-1));
 			*/
-			newInstruction(ram, mvi, oa, (MEM_SZ-1));
-			newInstruction(ram, sub, oa, arr_desl, 0, 0);
-			newInstruction(ram, sw, oa, reg, -(key + 1));
+			newInstruction(ram, mvi, oa, (MEM_BASIS+1));
+			newInstruction(ram, add, oa, arr_desl, 0, 0);
+			newInstruction(ram, sw, oa, reg, (key + 1));
 			return;
 		}
 		else{
@@ -458,8 +457,8 @@ void store(quad* fun, listVar* lv){
 			newInstruction(ram, ldown, oa, (MEM_SZ-1));
 			newInstruction(ram, lup, oa, (MEM_SZ-1));
 			*/
-			newInstruction(ram, mvi, oa, (MEM_SZ-1));
-			newInstruction(ram, sw, oa, reg, -(key + 1 + arr_desl));
+			newInstruction(ram, mvi, oa, (MEM_BASIS+1));
+			newInstruction(ram, sw, oa, reg, (key + 1 + arr_desl));
 			return;
 		}
 	}
@@ -486,7 +485,7 @@ void end_decl(int** var_nested, int* deep){
 
 	nested_len = (*var_nested)[*deep-1];
 	for(int i = 0; i < nested_len; i++){
-		newInstruction(ram, addi, sp, 1);
+		newInstruction(ram, addi, sp, -1);
 	}
 	
 	if(*deep == 1)
@@ -524,14 +523,14 @@ void storeTemps(){
 
 	for(int i = 0; i < BIT_ARCH; i++){
 		if(regs[i] == 1){
-			newInstruction(ram, sw, sp, i, -(desl+1));
+			newInstruction(ram, sw, sp, i, (desl+1));
 			desl++;
 		}
 	}
-	newInstruction(ram, sw, sp, ra1$, -(++desl));
-	newInstruction(ram, sw, sp, ra2$, -(++desl));
+	newInstruction(ram, sw, sp, ra1$, (++desl));
+	newInstruction(ram, sw, sp, ra2$, (++desl));
 	if(desl > 0){
-		newInstruction(ram, addi, sp, -desl);
+		newInstruction(ram, addi, sp, desl);
 	}
 	return;
 }
@@ -540,18 +539,18 @@ void loadTemps(){
 	int desl = -1;
 
 	newInstruction(ram, mv, ra2$, sp, 0);
-	newInstruction(ram, lw, ra2$, 0, ++desl);
+	newInstruction(ram, lw, ra2$, 0, -(++desl));
 	newInstruction(ram, mv, ra1$, sp, 0);
-	newInstruction(ram, lw, ra1$, 0, ++desl);
+	newInstruction(ram, lw, ra1$, 0, -(++desl));
 	for(int i = BIT_ARCH-1; i >= 0; i--){
 		if(regs[i] == 1){
 			desl++;
 			newInstruction(ram, mv, i, sp, 0);
-			newInstruction(ram, lw, i, 0, desl);
+			newInstruction(ram, lw, i, 0, -desl);
 		}
 	}
 	if(desl >= 0){
-		newInstruction(ram, addi, sp, (desl+1));
+		newInstruction(ram, addi, sp, -(desl+1));
 	}
 	
 	return;
@@ -562,7 +561,7 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 	char str_aux[100], ref[100] = "&";
 	int label;
 	int arg1, arg2;
-	int reg, reg2, reg3, fp;
+	int reg, reg2, nlit, fp;
 	instruction* instr;
 
 	if(!fun)
@@ -577,13 +576,13 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 		break;
 	case ARG_C:
 		addListVar(lv, fun->arg2, 0);
-		newInstruction(ram, addi, sp, -1);
+		newInstruction(ram, addi, sp, 1);
 		break;
 	case ARG_ARRAY_C:
 		strcpy(str_aux, ref);
 		strcat(str_aux, fun->arg2);
 		addListVar(lv, str_aux, 0);
-		newInstruction(ram, addi, sp, -1);
+		newInstruction(ram, addi, sp, 1);
 		break;
 	case ALLOC_C:
 		allocate(lv, fun->arg1, 0);
@@ -616,7 +615,7 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 
 			// Restore jump_back address
 			newInstruction(ram, mv, rj, fp$, 0);
-			newInstruction(ram, lw, rj, 0, 1);
+			newInstruction(ram, lw, rj, 0, -1);
 			
 			// update fp$
 			newInstruction(ram, lw, fp$, 0, 0);
@@ -631,11 +630,11 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 
 		// Restore jump_back address
 		newInstruction(ram, mv, rj, fp$, 0);
-		newInstruction(ram, lw, rj, 0, 1);
+		newInstruction(ram, lw, rj, 0, -1);
 
 		// Update sp
 		newInstruction(ram, mv, sp, fp$, 0);
-		newInstruction(ram, addi, sp, 2);
+		newInstruction(ram, addi, sp, -2);
 
 		// update fp$
 		newInstruction(ram, lw, fp$, 0, 0);
@@ -719,7 +718,7 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 	case CALL_C:
 		if(strcmp(fun->arg2, "input") == 0){
 			reg = getN(fun->arg1);
-			newInstruction(ram, mvi, oa, 0);
+			newInstruction(ram, mvi, oa, INPUT_ADDR);
 			newInstruction(ram, get, oa, 0, 0);
 			newInstruction(ram, lw, oa, 0, 0);
 			newInstruction(ram, mv, reg, oa, 0);
@@ -727,7 +726,7 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 		}
 		else if(strcmp(fun->arg2, "output") == 0){
 			reg = getN(popStack(&params));
-			newInstruction(ram, mvi, oa, 1);
+			newInstruction(ram, mvi, oa, OUTPUT_ADDR);
 			newInstruction(ram, sw, oa, reg, 0);
 			newInstruction(ram, print, oa, 0, 0);
 			break;
@@ -843,22 +842,52 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 
 		else if(strcmp(fun->arg2, "run") == 0){
 			// Jump addres to specific pc
+			nlit = getN(popStack(&params));
 			reg = getN(popStack(&params));
+			
+			newInstruction(ram, mvi, oa, nlit);
+			newInstruction(ram, sb, oa, 0, 0);
 			newInstruction(ram, jal, reg, 0, 0);
 			break;
 		}
-		else if(strcmp(fun->arg2, "setBase") == 0){
+		
+		else if(strcmp(fun->arg2, "setBasis") == 0){
 			// new base val
-			reg = getN(popStack(&params));
-			newInstruction(ram, sb, reg, 0, 0);
+			nlit = getN(popStack(&params));
+			newInstruction(ram, mvi, oa, nlit);
+			newInstruction(ram, sb, oa, 0, 0);
 			break;
 		}
+		/*
 		else if(strcmp(fun->arg2, "runChrono") == 0){
 			// addr
-			reg = getN(popStack(&params));
-			newInstruction(ram, jt, reg, 0, 0);
+			nlit = getN(popStack(&params));		// basis literal
+			reg = getN(popStack(&params));		// Addr
+			reg2 = getN(fun->arg1);
+
+			// get first data
+			newInstruction(ram, mvi, oa, nlit);
+			newInstruction(ram, lw, oa, 0, 0);	// First position
+
+			newInstruction(ram, neqi, oa, 1);
+			newInstruction(ram, bc, 0, 0, );	// IF
+
+			newInstruction(ram, eqi, oa, 2);	
+			newInstruction(ram, bc, 0, 0, );	// ELSE IF
+
+			newInstruction(ram, branch, 0, 0, );	// ELSE
+
+			// Load-context
+			newInstruction();
+
+			newInstruction(ram, mvi, oa, nlit);
+			newInstruction(ram, sb, oa, 0, 0);
+			newInstruction(ram, jt, rt$, reg, 0);	// goes to rt$ and when back save to rr$
+			newInstruction(ram, subi, rr$, 1);		// correction of jt
+
+			newInstruction(ram, mv, reg2, rr$, 0);
 			break;
-		}
+		}*/
 
 		storeTemps();
 		stackParam(atoi(fun->result)); // Update next args
@@ -945,11 +974,11 @@ void processGlobal(quad *head){
 	}
 	switch(head->op){
 	case ALLOC_C:
-		newInstruction(ram, addi, sp, -1);
+		newInstruction(ram, addi, sp, 1);
 		break;
 	case ALLOC_ARRAY_C:
 		len = atoi(head->result);
-		newInstruction(ram, addi, sp, -(len));
+		newInstruction(ram, addi, sp, (len));
 		break;
 	default:
 		printf("Unexpected symbol at (%s)\n", __func__);
@@ -966,7 +995,7 @@ void setInitial(){
 	newInstruction(ram, ldown, sp, MEM_SZ-1);
 	newInstruction(ram, lup, sp, MEM_SZ-1);
 	*/
-	newInstruction(ram, mvi, sp, (MEM_SZ-1));
+	newInstruction(ram, mvi, sp, (MEM_BASIS+1));
 }
 
 memmory* toAssembly(quad* head){
@@ -1022,3 +1051,13 @@ void saveBinQuartus(const char* path){
 	saveMemQuartusFormact(ram, path);
 	return;
 }
+/*
+void loadContext(int nregs){
+	for (int reg = 0; reg < rt$; reg++){
+		newInstruction(ram, mvi, reg, fp$, 0);
+		newInstruction(ram, lw, reg, 0, (key+1));
+	}
+	for (int reg = rr$ + 1; reg < 32; reg++){
+
+	}
+}*/
