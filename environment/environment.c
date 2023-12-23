@@ -915,27 +915,25 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 			newInstruction(ram, mvi, oa, 0);
 			newInstruction(ram, lw, oa, 0, 0);	// First position
 
-			// output
-			newInstruction(ram, mvi, ra1$, OUTPUT_ADDR);
-			newInstruction(ram, sw, ra1$, oa, 0);
-			newInstruction(ram, print, ra1$, 0, 0);
-			newInstruction(ram, get, ra1$, 0, 0);	// input
-
-
 			newInstruction(ram, eqi, oa, 1);
-			newInstruction(ram, bc, 0, 0, 1);	// IF is first time it doesn't need to load context
-			
+			newInstruction(ram, bc, 0, 0, 2);	// IF is not first time
+
+			newInstruction(ram, eqi, oa, 0);
+			newInstruction(ram, bc, 0, 0, 62);	// Else IF 
 
 			/*
 			newInstruction(ram, eqi, oa, 2);	
 			newInstruction(ram, bc, 0, 0, );	// ELSE IF
 			*/
 
-			newInstruction(ram, branch, 0, 0, 61);	// ELSE
-
 			// IF CONTENT
-			// Load-context
 			loadContext();
+			newInstruction(ram, branch, 0, 0, 1);
+
+			// ELSE IF content
+			newInstruction(ram, mvi, sp, 0);
+
+			// AFTER 
 
 			// salva oa em sp+1
 			newInstruction(ram, sw, sp, oa, 1);
