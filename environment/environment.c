@@ -668,12 +668,16 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 		newInstruction(ram, mv, rj, fp$, 0);
 		newInstruction(ram, lw, rj, 0, -1);
 
-		// Update sp
+		// Move fp addr to sp
 		newInstruction(ram, mv, sp, fp$, 0);
-		newInstruction(ram, addi, sp, -2);
 
 		// update fp$
 		newInstruction(ram, lw, fp$, 0, 0);
+
+		// Update sp to last frame
+		newInstruction(ram, addi, sp, -2);
+
+
 
 		// update pc
 		newInstruction(ram, jump, rj, 0, 0);
