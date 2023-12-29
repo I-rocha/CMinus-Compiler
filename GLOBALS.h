@@ -46,6 +46,7 @@
 #define RUNF "run"
 #define SETBASISF "setBasis"
 #define RUNCHRONOF "runChrono"
+#define HASFINISHEDF "hasFinished"
 
 // Paths/Files
 #define OUTPUT_PATH "output/"

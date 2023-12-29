@@ -649,6 +649,14 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 			// STOP
 			// newInstruction(ram, STOP, 0, 0, 0);
 
+			// Signals the end and wait for return
+			newInstruction(ram, mvi, oa, FINISH_FLAG_ADDR);	
+			newInstruction(ram, mvi, ra1$, 1);
+			newInstruction(ram, sw, oa, ra1$, 0);
+
+			newInstruction(ram, branch, 0, 0, -1);
+			
+			/*
 			// Restore jump_back address
 			newInstruction(ram, mv, rj, fp$, 0);
 			newInstruction(ram, lw, rj, 0, -1);
@@ -658,6 +666,7 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 
 			// update pc
 			newInstruction(ram, jump, rj, 0, 0);
+			*/
 			// newInstruction(ram, STOP, 0, 0, 0);
 			return;
 			break;
@@ -974,6 +983,18 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 			break;
 		}
 
+		else if(strcmp(fun->arg2, "hasFinished") == 0){
+			reg2 = getN(popStack(&params));
+			reg = getN(fun->arg1);
+
+			newInstruction(ram, sb, reg2, 0, 0);
+			newInstruction(ram, mvi, reg, FINISH_FLAG_ADDR);
+			newInstruction(ram, lw, reg, 0, 0);
+			newInstruction(ram, mvi, oa, 0);
+			newInstruction(ram, sb, oa, 0, 0);
+			break;
+		}
+
 		storeTemps();
 		stackParam(atoi(fun->result)); // Update next args
 
@@ -1080,7 +1101,11 @@ void setInitial(){
 	newInstruction(ram, ldown, sp, MEM_SZ-1);
 	newInstruction(ram, lup, sp, MEM_SZ-1);
 	*/
+
 	newInstruction(ram, mvi, sp, (MEM_BASIS+1));
+	newInstruction(ram, mvi, oa, FINISH_FLAG_ADDR);
+	newInstruction(ram, mvi, ra1$, 0);
+	newInstruction(ram, sw, oa, ra1$, 0);
 }
 
 memmory* toAssembly(quad* head){

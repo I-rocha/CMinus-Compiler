@@ -234,6 +234,16 @@ void addPreFunctions(){
 
 	symTSetParam(entry, 2, INT_K, INT_K);
 	
+	// hasFinished
+	entry = symTPut(headEnv,
+		FUN_K,
+		HASFINISHEDF,
+		INT_K,
+		0,
+		0,
+		_DECLARATION);
+
+	symTSetParam(entry, 1, INT_K);
 	return;
 }
 
