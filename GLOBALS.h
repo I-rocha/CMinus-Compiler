@@ -1,11 +1,17 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
-// Registers
-#define INPUT_ADDR 2
-#define OUTPUT_ADDR 3
-#define MEM_BASIS 3 // Basis of mem
+
+// Addresses to md
 #define MEM_SZ 300	// size of memmory
+#define MEM_BASIS 4 // Basis of mem
+#define VISITOR_FLAG_ADDR 0
+#define FINISH_FLAG_ADDR 1
+#define SP_ADDR 2
+#define INPUT_ADDR 3
+#define OUTPUT_ADDR 4
+
+// Registers
 #define ntemps 22 // Number of temporary
 #define rj 31	// Register jump
 #define rf 30	// register flag

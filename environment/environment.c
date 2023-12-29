@@ -916,7 +916,7 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 			newInstruction(ram, sb, oa, 0, 0);
 
 			// get first data
-			newInstruction(ram, mvi, oa, 0);
+			newInstruction(ram, mvi, oa, VISITOR_FLAG_ADDR);
 			newInstruction(ram, lw, oa, 0, 0);	// First position
 
 			newInstruction(ram, eqi, oa, 1);
@@ -945,7 +945,7 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 			//salva ra1 em sp+2
 			newInstruction(ram, sw, sp, ra1$, 2);
 
-			newInstruction(ram, mvi, oa, 0);
+			newInstruction(ram, mvi, oa, VISITOR_FLAG_ADDR);
 			newInstruction(ram, mvi, ra1$, 1);
 			newInstruction(ram, sw, oa, ra1$, 0);
 
@@ -1155,7 +1155,7 @@ void storeContext(){
 	newInstruction(ram, sw, sp, rf, -1);
 	newInstruction(ram, sw, sp, rj, 0);
 
-	newInstruction(ram, mvi, oa, 1);
+	newInstruction(ram, mvi, oa, SP_ADDR);
 	newInstruction(ram, sw, oa, sp, 0);		// Store sp
 }
 
@@ -1163,7 +1163,7 @@ void loadContext(){
 	int desl;
 	desl = 0;
 	
-	newInstruction(ram, mvi, sp, 1);
+	newInstruction(ram, mvi, sp, SP_ADDR);
 	newInstruction(ram, lw, sp, 0, 0);		// Load sp
 
 	newInstruction(ram, mv, rj, sp, 0);
