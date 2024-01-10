@@ -34,7 +34,10 @@ enum token{
 	PLUS_K,
 	MINUS_K,
 	MULT_K,
-	DIV_K
+	DIV_K,
+
+	// Other
+	STRING_K
 };
 
 

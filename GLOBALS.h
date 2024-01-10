@@ -30,6 +30,7 @@
 
 // Pre-defined Functions
 #define MAINF "main"
+#define PRINTF "printf"
 #define INPUTF "input"
 #define OUTPUTF "output"
 #define	ISDIRF "isDir"

@@ -598,6 +598,8 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 	int label;
 	int arg1, arg2;
 	int reg, reg2, nlit, fp;
+	char c;
+	int idx;
 	instruction* instr;
 
 	if(!fun)
@@ -994,7 +996,19 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 			newInstruction(ram, sb, oa, 0, 0);
 			break;
 		}
+		else if(strcmp(fun->arg2, "printf") == 0){
+			idx = 0;
+			c = fun->arg1[idx];
+			while(c != '\0'){
+				newInstruction(ram, mvi, oa, (int)c);
+				newInstruction(ram, display, oa, 0, 0);
 
+				c = fun->arg1[++idx];
+			}
+			
+			break;
+		}
+	
 		storeTemps();
 		stackParam(atoi(fun->result)); // Update next args
 

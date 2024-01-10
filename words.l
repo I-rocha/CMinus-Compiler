@@ -18,6 +18,8 @@ DIGIT [0-9]
 ID {CHAR}+
 NUM {DIGIT}+
 
+STRING \"({ID}|{NUM}|{CSYMBOL})*\"
+
 COMMENT \/\*([^\/]|\n|\t)*\*\/
 
 %option yylineno noyywrap
@@ -98,6 +100,19 @@ while {
 	yylval.s = strdup(yytext);
 	return ID;
 	}
+
+{STRING} {
+	char a[255];
+	int sz;
+
+	strcpy(a, &yytext[1]);
+	sz = strlen(a);
+	a[sz-1] = '\0';
+
+	fprintf(fl, "STRING: %s\n", a);
+	yylval.s = strdup(a);
+	return STRING;
+}
 
 {NUM} {
 	fprintf(fl, "NUM: %s\n", yytext);

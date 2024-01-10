@@ -22,9 +22,9 @@ extern astNo* astTree;
 
 /**/
 // KEYWORDS
-%token <int>IF <int>ELSE INT RETURN VOID WHILE LE GE EQ DIFF <s>ID <val>NUM 
+%token <int>IF <int>ELSE INT RETURN VOID WHILE LE GE EQ DIFF <s>ID <val>NUM  <s>STRING
 
-%type <ast_no> programa decl_lista decl var_decl fun_decl tipo_esp params composto_decl param_lista param local_decl statement_lista statement exp_decl selecao_decl iteracao_decl retorno_decl exp var simple_exp soma_exp rel soma termo mult fator act args arg_lista else_stmt <val>EPSLON_LINE
+%type <ast_no> programa decl_lista decl var_decl fun_decl tipo_esp params composto_decl param_lista param local_decl statement_lista statement exp_decl selecao_decl iteracao_decl retorno_decl exp var string_lit simple_exp soma_exp rel soma termo mult fator act args arg_lista else_stmt <val>EPSLON_LINE
 
 %nonassoc IFX
 %nonassoc ELSE
@@ -271,7 +271,7 @@ exp:
 var:
 	ID	EPSLON_LINE{
 	// AST
-	$$ = astCreateTerminal(VAR_K, $1, NULL,0, $2);
+	$$ = astCreateTerminal(VAR_K, $1, NULL, 0, $2);
 
 	// Free
 	free($1);
@@ -286,6 +286,17 @@ var:
 	;
 
 // 21
+string_lit:
+	STRING EPSLON_LINE{
+		// AST
+		$$ = astCreateTerminal(STRING_K, $1, NULL, 0, $2);
+
+		// Free
+		free($1);
+	}
+	;
+
+// 22
 simple_exp:
 	soma_exp rel soma_exp	{
 	astNo* aux[] = {$1, $3};
@@ -295,7 +306,7 @@ simple_exp:
 	| soma_exp	{$$ = $1;}
 	;
 
-// 22
+// 23
 rel:
  	LE	{$$ = astCreateNo(LEQ_K, NULL, NULL, 0);}
 	|'<'	{$$ = astCreateNo(LESS_K, NULL, NULL, 0);}
@@ -305,7 +316,7 @@ rel:
 	|DIFF	{$$ = astCreateNo(DIFF_K, NULL, NULL, 0);}
 	;
 
-// 23
+// 24
 soma_exp:
 		soma_exp soma termo {
 		astNo *aux[2] = {$1, $3};
@@ -314,12 +325,12 @@ soma_exp:
 		}
 	| termo	{$$ = $1;} ;
 
-// 24
+// 25
 soma:
 	'+'	{$$ = astCreateNo(PLUS_K, NULL, NULL, 0);}
 	| '-'	{$$ = astCreateNo(MINUS_K, NULL, NULL, 0);};
 
-// 25
+// 26
 termo:
 	termo mult fator {
 	astNo* aux[] = {$1, $3};
@@ -328,16 +339,17 @@ termo:
 	}
 	| fator {$$ = $1;} ;
 
-// 26
+// 27
 mult:
 	'*'	{$$ = astCreateNo(MULT_K, NULL, NULL, 0);}
 	| '/'	{$$ = astCreateNo(DIV_K, NULL, NULL, 0);}
 	;
 
-// 27
+// 28
 fator:
 	 '(' exp ')'  {$$ = $2;}
 	| var  {$$ = $1;}
+	| string_lit {$$ = $1;}
 	| act	{$$ = $1;}
 	| NUM	EPSLON_LINE{
 	char str[I2A_SZ];
@@ -346,7 +358,7 @@ fator:
 	}
 	;
 
-// 28
+// 29
 act:
    ID EPSLON_LINE '(' args ')' {
 	// AST
@@ -359,13 +371,13 @@ act:
 	}
 	;
 
-// 29
+// 30
 args:
 	arg_lista	{$$ = $1;}
 	| /*epsilon*/	{$$ = NULL;}	
 	;
 
-// 30
+// 31
 arg_lista:
 	 arg_lista ',' exp	{
 	astNo* aux[] = {$3};

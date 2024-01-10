@@ -506,6 +506,14 @@ exp genOp(quad **code, astNo* tree){
 
 			aux = (tree->child) ? tree->child[0] : NULL;
 
+			if(strcmp(tree->instance, PRINTF) == 0){
+				*code = addQuad(*code, CALL_C, aux->instance, tree->instance, NULL);
+
+				ret = (exp){.type = LITT, .value = 1};
+				break;
+			}
+	
+
 			// Look each child
 			while(aux){
 				val = genOp(code, aux);
@@ -515,6 +523,7 @@ exp genOp(quad **code, astNo* tree){
 				sz++;
 				aux = aux->sibling;
 			}
+		
 
 			nreg = getRa();
 			sprintf(sreg, "$t%d", nreg);

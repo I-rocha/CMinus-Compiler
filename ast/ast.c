@@ -392,6 +392,10 @@ char* tokenStr(Token tok){
 			return "DIV";
 			break;
 
+		case STRING_K:
+			return "STRINGL";
+			break;
+
 		default:
 			return "UNKOWN";
 	}

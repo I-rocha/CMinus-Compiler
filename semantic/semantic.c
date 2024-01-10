@@ -242,8 +242,18 @@ void addPreFunctions(){
 		0,
 		0,
 		_DECLARATION);
+	
+	// printf
+	entry = symTPut(headEnv,
+		FUN_K,
+		PRINTF,
+		INT_K,
+		0,
+		0,
+		_DECLARATION);
 
-	symTSetParam(entry, 1, INT_K);
+	symTSetParam(entry, 1, STRING_K);
+
 	return;
 }
 
