@@ -98,3 +98,21 @@ int createDir(char* pathName){
 
 	return 1;
 }
+
+int isReg(char* str){
+	return (str[0] == '$')? 1 : 0;
+}
+
+int isLabel(char* str){
+	return (str[0] == 'L') ? 1 : 0;
+}
+
+int getN(char* str){
+	if(isReg(str))
+		return atoi(&str[2]);
+
+	if(isLabel(str))
+		return atoi(&str[1]);
+
+	return atoi(str);
+}

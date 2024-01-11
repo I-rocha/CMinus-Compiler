@@ -1,5 +1,5 @@
-main: parser.tab.o lex.yy.o ast.o main.o utils.o symtab.o semantic.o cgen.o regbank.o ld.o environment.o mnemonic.o
-	gcc parser.tab.o lex.yy.o ast.o main.o symtab.o semantic.o cgen.o regbank.o ld.o environment.o mnemonic.o utils.o -lm -o exe	
+main: parser.tab.o lex.yy.o ast.o main.o utils.o symtab.o semantic.o cgen.o regbank.o ld.o environment.o mnemonic.o coreos.o
+	gcc parser.tab.o lex.yy.o ast.o main.o symtab.o semantic.o cgen.o regbank.o ld.o environment.o mnemonic.o utils.o coreos.o -lm -o exe	
 
 lex.yy.o: lex.yy.c
 	gcc lex.yy.c -Wall -c
@@ -42,6 +42,9 @@ environment.o: environment/environment.c
 
 mnemonic.o: environment/mnemonic.c
 	gcc environment/mnemonic.c -Wall -c
+
+coreos.o: environment/coreos.c
+	gcc environment/coreos.c -Wall -c
 
 clean:
 	rm -f parser.tab.* lex.yy.c *.o

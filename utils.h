@@ -23,5 +23,16 @@ void freeNull(void** ptr);
 
 int createDir(char* pathName);
 
+/* 1: Reg, 0: Literal*/
+int isReg(char* str);
+
+/* 1: Label, 0: Not label*/
+int isLabel(char* str);
+
+/*
+	Get value of reg, label or literal string.
+	If str is anything else, the return is unknown
+*/
+int getN(char* str);
 
 #endif

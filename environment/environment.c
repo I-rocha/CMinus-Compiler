@@ -8,6 +8,7 @@
 #include "mnemonic.h"
 #include "../GLOBALS.h"
 #include "environment.h"
+#include "coreos.h"
 
 int stack_len = 0;
 int ftime = 1;
@@ -109,25 +110,6 @@ quadList getFuncions(quad* head){
 		curr = curr->next;
 	}
 	return fun_list;
-}
-
-int isReg(char* str){
-	return (str[0] == '$')? 1 : 0;
-}
-
-int isLabel(char* str){
-	return (str[0] == 'L') ? 1 : 0;
-}
-
-/* NOTE: str must be reg, label or literal string */
-int getN(char* str){
-	if(isReg(str))
-		return atoi(&str[2]);
-
-	if(isLabel(str))
-		return atoi(&str[1]);
-
-	return atoi(str);
 }
 
 void processAritmetic(quad* fun, operation_t op, operation_t opi){
@@ -597,9 +579,7 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 	char str_aux[100], ref[100] = "&";
 	int label;
 	int arg1, arg2;
-	int reg, reg2, nlit, fp;
-	char c;
-	int idx;
+	int isOS;
 	instruction* instr;
 
 	if(!fun)
@@ -767,247 +747,9 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 		}
 		break;
 	case CALL_C:
-		if(strcmp(fun->arg2, "input") == 0){
-			reg = getN(fun->arg1);
-			newInstruction(ram, mvi, oa, INPUT_ADDR);
-			newInstruction(ram, get, oa, 0, 0);
-			newInstruction(ram, lw, oa, 0, 0);
-			newInstruction(ram, mv, reg, oa, 0);
+		isOS = osCall(fun, ram, params);
+		if(isOS)
 			break;
-		}
-		else if(strcmp(fun->arg2, "output") == 0){
-			reg = getN(popStack(&params));
-			newInstruction(ram, mvi, oa, OUTPUT_ADDR);
-			newInstruction(ram, sw, oa, reg, 0);
-			newInstruction(ram, print, oa, 0, 0);
-			break;
-		}
-		else if(strcmp(fun->arg2, "isDir") == 0){
-			fp = getN(popStack(&params));
-			reg = getN(fun->arg1);
-			newInstruction(ram, mv, oa, fp, 0);
-			newInstruction(ram, lwHD, oa, oa, 0);
-			newInstruction(ram, shiftR, oa, 0, 0, 7);
-			newInstruction(ram, ANDi, oa, 1);
-			newInstruction(ram, mv, reg, oa, 0);
-			break;
-		}
-		else if(strcmp(fun->arg2, "isActive") == 0){
-			fp = getN(popStack(&params));
-			reg = getN(fun->arg1);
-			newInstruction(ram, mv, oa, fp, 0);
-			newInstruction(ram, lwHD, oa, oa, 0);
-			newInstruction(ram, shiftR, oa, 0, 0, 6);
-			newInstruction(ram, ANDi, oa, 1);
-			newInstruction(ram, mv, reg, oa, 0);
-			break;
-		}
-		else if(strcmp(fun->arg2, "getByte") == 0){
-			fp = getN(popStack(&params));		// addr
-			reg = getN(popStack(&params));		// target
-			reg2 = getN(fun->arg1);				// return
-
-			newInstruction(ram, lwHD, reg, fp, 0);
-			newInstruction(ram, mv, reg2, reg, 0);
-			break;
-		}
-		else if(strcmp(fun->arg2, "getNFiles") == 0){
-			fp = getN(popStack(&params));		// fp
-			reg = getN(fun->arg1);
-			newInstruction(ram, mv, oa, fp, 0);
-			newInstruction(ram, lwHD, oa, oa, 2);
-			newInstruction(ram, ANDi, oa, 255);
-			newInstruction(ram, mv, reg, oa, 0);
-			break;
-		}
-		else if(strcmp(fun->arg2, "shiftLByte") == 0){
-			reg = getN(popStack(&params));		//val
-			reg2 = getN(fun->arg1);
-			newInstruction(ram, mv, oa, reg, 0);
-			newInstruction(ram, shiftL, oa, 0, 0, 8);
-			newInstruction(ram, mv, reg2, oa, 0);
-			break;
-		}
-		else if(strcmp(fun->arg2, "shiftRByte") == 0){
-			reg = getN(popStack(&params));		//val
-			reg2 = getN(fun->arg1);
-			newInstruction(ram, mv, oa, reg, 0);
-			newInstruction(ram, shiftR, oa, 0, 0, 8);
-			newInstruction(ram, mv, reg2, oa);
-			break;
-		}
-		else if(strcmp(fun->arg2, "getAddr") == 0){
-			reg = getN(popStack(&params));		// addr begin
-			reg2 = getN(fun->arg1);
-
-			newInstruction(ram, mv, ra1$, reg, 0);
-			newInstruction(ram, lwHD, oa, ra1$, 0); 	// hd to reg[24:36]
-			newInstruction(ram, shiftL, oa, 0, 0, 8);	// shift left
-			newInstruction(ram, lwHD, oa, ra1$, 1); 	// hd to reg
-			newInstruction(ram, shiftL, oa, 0, 0, 8);	// shift left
-			newInstruction(ram, lwHD, oa, ra1$, 2); 	// hd to reg
-			newInstruction(ram, shiftL, oa, 0, 0, 8);	// shift left
-			newInstruction(ram, lwHD, oa, ra1$, 3); 	// hd to reg
-
-			newInstruction(ram, mv, reg2, reg, 0);
-			break;
-		}
-		else if(strcmp(fun->arg2, "getSizeName") == 0){
-			fp = getN(popStack(&params));		// fp
-			reg = getN(fun->arg1);
-
-			newInstruction(ram, mv, ra1$, fp, 0);
-			newInstruction(ram, mvi, oa, 0);
-			newInstruction(ram, lwHD, oa, ra1$, 1); 	// hd to reg[24:36]
-
-			newInstruction(ram, mv, reg, oa, 0);
-			break;
-		}
-		else if(strcmp(fun->arg2, "getSizePayload") == 0){
-			fp = getN(popStack(&params));		// fp
-			reg = getN(fun->arg1);
-
-			newInstruction(ram, mv, ra1$, fp, 0);
-			newInstruction(ram, mvi, oa, 0);
-			newInstruction(ram, lwHD, oa, ra1$, 2); 	// hd to reg[24:36]
-			newInstruction(ram, shiftL, oa, 0, 0, 8);
-			newInstruction(ram, lwHD, oa, ra1$, 3);
-
-			newInstruction(ram, mv, reg, oa, 0);
-			break;
-		}
-		else if(strcmp(fun->arg2, "displayByte") == 0){
-			reg = getN(popStack(&params));
-
-			newInstruction(ram, display, reg, 0, 0);
-
-			break;
-		}
-		else if(strcmp(fun->arg2, "writeInstruction") == 0){
-			reg = getN(popStack(&params));		// MI addr
-			reg2 = getN(popStack(&params));		// instruction
-
-			newInstruction(ram, swMI, reg, reg2, 0);	// write here to MI
-			break;
-		}
-
-		else if(strcmp(fun->arg2, "run") == 0){
-			// Jump addres to specific pc
-			nlit = getN(popStack(&params));
-			reg = getN(popStack(&params));
-			
-			newInstruction(ram, mvi, oa, nlit);
-			newInstruction(ram, sb, oa, 0, 0);
-			newInstruction(ram, jal, reg, 0, 0);
-			break;
-		}
-		
-		else if(strcmp(fun->arg2, "setBasis") == 0){
-			// new base val
-			nlit = getN(popStack(&params));
-			newInstruction(ram, mvi, oa, nlit);
-			newInstruction(ram, sb, oa, 0, 0);
-			break;
-		}
-		
-		else if(strcmp(fun->arg2, "runChrono") == 0){
-			// addr
-			nlit = getN(popStack(&params));		// basis literal
-			reg = getN(popStack(&params));		// Addr
-			reg2 = getN(fun->arg1);
-
-			// Addr saved to rr$
-			newInstruction(ram, mv, rr$, reg, 0);
-
-			// Store SO context
-			storeContext();
-
-			// Update basis
-			newInstruction(ram, mvi, oa, nlit);
-			newInstruction(ram, sb, oa, 0, 0);
-
-			// get first data
-			newInstruction(ram, mvi, oa, VISITOR_FLAG_ADDR);
-			newInstruction(ram, lw, oa, 0, 0);	// First position
-
-			newInstruction(ram, eqi, oa, 1);
-			newInstruction(ram, bc, 0, 0, 2);	// IF is not first time
-
-			newInstruction(ram, eqi, oa, 0);
-			newInstruction(ram, bc, 0, 0, 62);	// Else IF 
-
-			/*
-			newInstruction(ram, eqi, oa, 2);	
-			newInstruction(ram, bc, 0, 0, );	// ELSE IF
-			*/
-
-			// IF CONTENT
-			loadContext();
-			newInstruction(ram, branch, 0, 0, 1);
-
-			// ELSE IF content
-			newInstruction(ram, mvi, sp, 0);
-
-			// AFTER 
-
-			// salva oa em sp+1
-			newInstruction(ram, sw, sp, oa, 1);
-			
-			//salva ra1 em sp+2
-			newInstruction(ram, sw, sp, ra1$, 2);
-
-			newInstruction(ram, mvi, oa, VISITOR_FLAG_ADDR);
-			newInstruction(ram, mvi, ra1$, 1);
-			newInstruction(ram, sw, oa, ra1$, 0);
-
-			//load oa em sp+1
-			newInstruction(ram, mv, oa, sp, 0);
-			newInstruction(ram, lw, oa, 0, 1);
-
-			//load ra1 em sp+2
-			newInstruction(ram, mv, ra1$, sp, 0);
-			newInstruction(ram, lw, ra1$, 0, 2);
-
-			newInstruction(ram, jt, rt$, rr$, 0);	// goes to rr$ and back to rt$. When back, saves to rr$
-			newInstruction(ram, subi, rr$, 1);		// correction of jt
-
-			// Store Context
-			storeContext();
-
-			// Update basis
-			newInstruction(ram, mvi, oa, 0);
-			newInstruction(ram, sb, oa, 0, 0);
-
-			// load SO Context
-			loadContext();
-
-			newInstruction(ram, mv, reg2, rr$, 0);
-			break;
-		}
-
-		else if(strcmp(fun->arg2, "hasFinished") == 0){
-			reg2 = getN(popStack(&params));
-			reg = getN(fun->arg1);
-
-			newInstruction(ram, sb, reg2, 0, 0);
-			newInstruction(ram, mvi, reg, FINISH_FLAG_ADDR);
-			newInstruction(ram, lw, reg, 0, 0);
-			newInstruction(ram, mvi, oa, 0);
-			newInstruction(ram, sb, oa, 0, 0);
-			break;
-		}
-		else if(strcmp(fun->arg2, "printf") == 0){
-			idx = 0;
-			c = fun->arg1[idx];
-			while(c != '\0'){
-				newInstruction(ram, mvi, oa, (int)c);
-				newInstruction(ram, display, oa, 0, 0);
-
-				c = fun->arg1[++idx];
-			}
-			
-			break;
-		}
 	
 		storeTemps();
 		stackParam(atoi(fun->result)); // Update next args
@@ -1174,65 +916,4 @@ void saveAssembly(const char* path){
 void saveBinQuartus(const char* path){
 	saveMemQuartusFormact(ram, path);
 	return;
-}
-void storeContext(){
-	int desl;
-	desl = 0;
-	
-	newInstruction(ram, addi, sp, ntemps);
-
-	for (int reg = (ntemps - 1); reg >= 0; reg--){
-		newInstruction(ram, sw, sp, reg, -(desl));
-		desl++;
-	}
-	newInstruction(ram, addi, sp, 7);
-	newInstruction(ram, sw, sp, ra2$, -6);
-	newInstruction(ram, sw, sp, ra1$, -5);
-	newInstruction(ram, sw, sp, rd, -4);
-	newInstruction(ram, sw, sp, oa, -3);
-	newInstruction(ram, sw, sp, fp$, -2);
-	newInstruction(ram, sw, sp, rf, -1);
-	newInstruction(ram, sw, sp, rj, 0);
-
-	newInstruction(ram, mvi, oa, SP_ADDR);
-	newInstruction(ram, sw, oa, sp, 0);		// Store sp
-}
-
-void loadContext(){
-	int desl;
-	desl = 0;
-	
-	newInstruction(ram, mvi, sp, SP_ADDR);
-	newInstruction(ram, lw, sp, 0, 0);		// Load sp
-
-	newInstruction(ram, mv, rj, sp, 0);
-	newInstruction(ram, lw, rj, 0, 0);
-
-	newInstruction(ram, mv, rf, sp, 0);
-	newInstruction(ram, lw, rf, 0, -1);
-
-	newInstruction(ram, mv, fp$, sp, 0);
-	newInstruction(ram, lw, fp$, 0, -2);
-
-	newInstruction(ram, mv, oa, sp, 0);
-	newInstruction(ram, lw, oa, 0, -3);
-
-	newInstruction(ram, mv, rd, sp, 0);
-	newInstruction(ram, lw, rd, 0, -4);
-
-	newInstruction(ram, mv, ra1$, sp, 0);
-	newInstruction(ram, lw, ra1$, 0, -5);
-
-	newInstruction(ram, mv, ra2$, sp, 0);
-	newInstruction(ram, lw, ra2$, 0, -6);
-
-	desl = 7;
-
-	for (int reg = (ntemps - 1); reg >= 0; reg--){
-		newInstruction(ram, mv, reg, sp, 0);
-		newInstruction(ram, lw, reg, 0, -(desl));
-		desl++;
-	}
-
-	newInstruction(ram, subi, sp, (ntemps + 7));
 }
