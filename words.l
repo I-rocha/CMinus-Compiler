@@ -18,12 +18,11 @@ DIGIT [0-9]
 ID {CHAR}+
 NUM {DIGIT}+
 
-COMMENT \/\*([^\/]|\n|\t)*\*\/
+COMMENT \/\*(.|\n|\t)*\*\/
 
 %option yylineno noyywrap
 
 %%
-
 {COMMENT} {
 	fprintf(fl, "COMMENT: %s\n", yytext);
 	

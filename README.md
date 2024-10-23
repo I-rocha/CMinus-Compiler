@@ -12,7 +12,7 @@ Abaixo contém uma lista de símbolos reconhecidos pelo compilador. O nome antes
 - CSYMBOL: Qualquer um dos seguintes símbolos: \+ \- \* \/ \< \> \= \; \, \( \) \[ \] \{ \}
 - ID: Qualquer palavra formada por um ou mais CSYMBOL
 - NUM: Qualquer número formado por um ou mais DIGIT
-- COMMENT: Qualquer texto escrito entre os símbolos "/\*" e "\*/" (Com exceção do caractere "/")
+- COMMENT: Qualquer texto escrito entre os símbolos "/\*" e "\*/"
 - SYMBOL: Representa os simbolos "<=", ">=", "==", "!="
 
 A lista restante dos tokens representam palavras chaves e são identificados pelo próprio nome:
