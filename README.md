@@ -22,12 +22,13 @@ A lista restante dos tokens representam palavras chaves e são identificados pel
 Cada token reconhecido é disparado para o analisador sintático, antes mesmo do analisador léxico começar a analisar o próximo padrão.
 
 ## Análise sintática
-Nessa etapa, o programa combina tokens em sequência a fim de formar uma sentença válida. Caso a sentença não seja válida, um erro sintático é disparado e o programa é finalizado. 
+
+Nessa etapa, o programa combina tokens em sequência a fim de formar uma sentença válida. Caso a sentença não seja válida, um erro sintático é disparado e o programa é finalizado.
 
 Segue uma lista de regras sintáticas que definem a linguagem:
 
 1. programa &rarr; decl-lista
-2. decl_lista &rarr; declar_list decl | decl
+2. decl_lista &rarr; decl_lista decl | decl
 3. decl &rarr; var_decl | fun_decl
 4. var_decl &rarr; tipo_esp ID ; | tipo_esp ID [ NUM ] ;
 5. tipo_esp &rarr; int | void
@@ -51,7 +52,7 @@ Segue uma lista de regras sintáticas que definem a linguagem:
 23. soma_exp &rarr; soma_exp soma termo | termo
 24. soma &rarr; + | -
 25. termo &rarr; termo mult fator | fator
-26. mult &rarr; * | /
+26. mult &rarr; \* | /
 27. fator &rarr; ( exp ) | var | act | NUM
 28. act &rarr; ID ( args )
 29. args &rarr; arg_lista | empty
