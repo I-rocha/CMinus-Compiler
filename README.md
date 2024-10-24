@@ -23,26 +23,26 @@ Cada token reconhecido é disparado para o analisador sintático, antes mesmo do
 
 ## Análise sintática
 
-Nessa etapa, o programa combina tokens em sequência a fim de formar uma sentença válida. Caso a sentença não seja válida, um erro sintático é disparado e o programa é finalizado.
+Nessa etapa, o programa combina tokens em sequência a fim de formar uma sentença válida. Caso a sentença não seja válida, um erro sintático é disparado e o programa é finalizado. Uma sentença pode ser descrita por uma gramática livre de contexto. No caso desse projeto, a gramática utilizada é uma variante da BNF [saiba mais](https://www.dca.fee.unicamp.br/cursos/EA876/apostila/HTML/node44.html)
 
-Segue uma lista de regras sintáticas que definem a linguagem:
+Segue uma lista de regras sintáticas que definem a linguagem desse projeto:
 
 1. programa &rarr; decl-lista
 2. decl_lista &rarr; decl_lista decl | decl
 3. decl &rarr; var_decl | fun_decl
 4. var_decl &rarr; tipo_esp ID ; | tipo_esp ID [ NUM ] ;
 5. tipo_esp &rarr; int | void
-6. fun-decl &rarr; tipo_esp ID ( params ) composto_decl
+6. fun_decl &rarr; tipo_esp ID ( params ) composto_decl
 7. params &rarr; param_lista | void
-8. param-lista &rarr; param-lista , param | param
-9. param &rarr; tipo_esp ID | tipo-esp ID [ ]
-10. composto_decl &rarr; local_decl statement-lista
+8. param_lista &rarr; param_lista , param | param
+9. param &rarr; tipo_esp ID | tipo_esp ID [ ]
+10. composto_decl &rarr; { local_decl statement_lista }
 11. local_decl &rarr; local_decl var_decl | empty
 12. statement_lista &rarr; statement_lista statement | empty
 13. statement &rarr; exp_decl | composto_decl | selecao_decl | iteracao_decl | retorno_decl
 14. exp_decl &rarr; exp ;| ;
 15. selecao_decl &rarr; if ( exp ) statement else_stmt
-16. else_stmt &rarr; %prec if | else statement
+16. else_stmt &rarr; %prec IFX | else statement
 17. iteracao_decl &rarr; while ( exp ) statement
 18. retorno_decl &rarr; return ; | return exp ;
 19. exp &rarr; var = exp | simple_exp
@@ -57,3 +57,21 @@ Segue uma lista de regras sintáticas que definem a linguagem:
 28. act &rarr; ID ( args )
 29. args &rarr; arg_lista | empty
 30. arg_lista &rarr; arg_lista , exp | exp
+
+### Regra 1
+
+Essa é apenas a regra inicial que serve como gatilho para iniciar a análise
+
+### Regras 4, 5, 9, 22, 24, 26
+
+Essas regras envolvem declaração de uma variável, tipagem de dado, declaração de um único parâmetro, operadores relacionais e de soma e multiplicação. Esses casos têm garantia de sempre levarem a casos terminais. O restante têm a possibilidade de gerar loops de tamanho indefinido, permitindo que um programador crie um código de tamanho arbitrário.
+
+### Regras 11, 8, 7
+
+Cada uma dessas regras usam apenas um simples loop em sua composição. Elas envolvem uma sequência de declarações de variáveis tanto no início do corpo de uma função quanto como parâmetros de funções
+
+### Outras regras
+
+O restante das regras envolvem um ciclo vicioso de depêndencia, dificultando uma análise minuciosa. Dentre elas, a regra 19 (expressões), define uma expressão como sendo relacionada a qualquer operação matemática e relacional, ativação de função e atribuições de variáveis. Todas essas operações podem ter operandos que também são expressões.
+
+Ainda sobre essas sentenças, temos a regra 10 (declaração composta), que define todo o corpo de uma função e pode conter declarações de variáveis, saltos condicionais, laços iterativos e expressões
