@@ -15,7 +15,7 @@ CSYMBOL \+|\-|\*|\/|\<|\>|\=|\;|\,|\(|\)|\[|\]|\{|\}
 CHAR [a-zA-Z]
 DIGIT [0-9]
 
-ID {CHAR}+
+ID {CHAR}+(\_*{CHAR}*)*
 NUM {DIGIT}+
 
 COMMENT \/\*(.|\n|\t)*\*\/
