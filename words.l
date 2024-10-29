@@ -95,6 +95,12 @@ while {
 {ID} {
 	fprintf(fl, "ID: %s\n", yytext);
 	yylval.s = strdup(yytext);
+
+	if(yylval.s == NULL){
+		fprintf(fl, "Error, memory allocation went wrong\n");
+		lexError();
+	}
+	
 	return ID;
 	}
 
