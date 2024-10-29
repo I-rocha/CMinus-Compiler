@@ -75,3 +75,36 @@ Cada uma dessas regras usam apenas um simples loop em sua composição. Elas env
 O restante das regras envolvem um ciclo vicioso de depêndencia, dificultando uma análise minuciosa. Dentre elas, a regra 19 (expressões), define uma expressão como sendo relacionada a qualquer operação matemática e relacional, ativação de função e atribuições de variáveis. Todas essas operações podem ter operandos que também são expressões.
 
 Ainda sobre essas sentenças, temos a regra 10 (declaração composta), que define todo o corpo de uma função e pode conter declarações de variáveis, saltos condicionais, laços iterativos e expressões
+
+## Árvore sintática abstrata
+
+Juntamente com o processamento da análise sintática, o programa gera uma estrutura para futuras manipulações. Essa estrutura é conhecida como Árvore sintática abstrata (ou abstract syntax tree) e contém keywords em seus nós, essas keywords são descritas na lista abaixo
+
+| Keyword     | Descrição                                          | Valor                   |
+| ----------- | -------------------------------------------------- | ----------------------- |
+| ALLOC       | Declaração de uma variável                         | ID -> nome da variável  |
+| ALLOC_ARRAY | Declaração de um array                             | ID -> nome da variável  |
+| ARRAY_SIZE  | Representa o tamanho de um array em sua declaração | NUM -> tamanho do vetor |
+| INT         | Tipo especificador                                 | #                       |
+| VOID        | Tipos especificador                                | #                       |
+| FUN         | Declaração de função                               | ID -> nome da função    |
+| ARG         | Parâmetro de uma variável primitiva                | ID -> nome da variável  |
+| ARG_ARRAY   | Parâmetro de um vetor                              | ID -> nome do vetor     |
+| IF          | Condicional IF                                     | #                       |
+| WHILE       | Laço de repetição while                            | #                       |
+| RETURN      | Declaração de retorno                              | #                       |
+| ASSIGN      | Atribuição de valores                              | #                       |
+| VAR         | Acesso a uma variável                              | ID -> nome da variável  |
+| VAR_ARRAY   | Acesso a um vetor                                  | ID -> nome do vetor     |
+| NUM         | Valor numérico literal                             | NUM -> valor literal    |
+| CALL        | Ativação de função                                 | ID-> Nome da função     |
+| LEQ         | Relacional <=                                      | #                       |
+| LESS        | Relacional <                                       | #                       |
+| GEQ         | Relacional >=                                      | #                       |
+| GRAND       | Relacional >                                       | #                       |
+| EQ          | Relacional ==                                      | #                       |
+| DIFF        | Relacional !=                                      | #                       |
+| PLUS        | Operador aritmético +                              | #                       |
+| MINUS       | Operador aritmético -                              | #                       |
+| MULT        | Operador aritmético \*                             | #                       |
+| DIV         | Operador aritmético /                              | #                       |
