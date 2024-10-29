@@ -76,9 +76,9 @@ O restante das regras envolvem um ciclo vicioso de depêndencia, dificultando um
 
 Ainda sobre essas sentenças, temos a regra 10 (declaração composta), que define todo o corpo de uma função e pode conter declarações de variáveis, saltos condicionais, laços iterativos e expressões
 
-## Árvore sintática abstrata
+## Árvore sintática abstrata (ast)
 
-Juntamente com o processamento da análise sintática, o programa gera uma estrutura para futuras manipulações. Essa estrutura é conhecida como Árvore sintática abstrata (ou abstract syntax tree) e contém keywords em seus nós, essas keywords são descritas na lista abaixo
+Juntamente com o processamento da análise sintática, o programa gera uma estrutura para futuras manipulações. Essa estrutura é conhecida como Árvore sintática abstrata (ou _abstract syntax tree_) e contém _keywords_ em seus nós, essas _keywords_ são descritas na lista abaixo
 
 | Keyword     | Descrição                                          | Valor                   |
 | ----------- | -------------------------------------------------- | ----------------------- |
@@ -97,7 +97,7 @@ Juntamente com o processamento da análise sintática, o programa gera uma estru
 | VAR         | Acesso a uma variável                              | ID -> nome da variável  |
 | VAR_ARRAY   | Acesso a um vetor                                  | ID -> nome do vetor     |
 | NUM         | Valor numérico literal                             | NUM -> valor literal    |
-| CALL        | Ativação de função                                 | ID-> Nome da função     |
+| CALL        | Ativação de função                                 | ID-> nome da função     |
 | LEQ         | Relacional <=                                      | #                       |
 | LESS        | Relacional <                                       | #                       |
 | GEQ         | Relacional >=                                      | #                       |
@@ -108,3 +108,17 @@ Juntamente com o processamento da análise sintática, o programa gera uma estru
 | MINUS       | Operador aritmético -                              | #                       |
 | MULT        | Operador aritmético \*                             | #                       |
 | DIV         | Operador aritmético /                              | #                       |
+
+## Análise semântica
+
+A árvore ast gerada anteriormente serve como entrada para a próxima etapa de análise semântica. Nessa etapa, além da verificação de erros, as `funções internas (in-built)` são registradas e também é criado a estrutura de tabela de símbolos, responsável por armazenar o nome, escopo e valores literais das variáveis e funções.
+
+Os erros semânticos analisados nesse projeto são:
+
+1. Múltiplas declarações de uma mesma variável
+2. Operação entre dados de tipos incompativeis
+3. Função main não encontrada
+4. Número errado de argumentos de uma função
+5. Chamada de variável não declarada
+
+Diferente das etapas anteriores, quando um erro é disparado, o código continua sendo processado. Somente após o término da análise que o processo de compilação é interrompido e notifica os erros semânticos encontrados pelo caminho.
