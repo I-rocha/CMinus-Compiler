@@ -69,9 +69,6 @@ var_decl:
 	astNo* aux[] = {astCreateTerminal(ALLOC_K, $2, NULL, 0, $3)};
 	astPutChild($1, aux, 1);
 	$$ = $1;
-
-	// Free
-	free($2);
 	}
 	| tipo_esp ID EPSLON_LINE '[' NUM ']' ';'{
 	char str[I2A_SZ];
@@ -83,7 +80,6 @@ var_decl:
 	astPutChild($1->child[0], aux2, 1);
 	
 	$$ = $1;
-	free($2);
 	}
 	;
 
@@ -114,8 +110,6 @@ fun_decl:
 	astNo* aux2[] = {$5, $7};
 	astPutChild($1->child[0], aux2, 2);
 
-	// Free
-	free($2);
 	}
 	;
 
@@ -142,8 +136,6 @@ param:
 	astPutChild($1, aux, 1);
 	$$ = $1;
 
-	// Free
-	free($2);
 	}
 	| tipo_esp ID EPSLON_LINE '['']'	{
 
@@ -272,9 +264,6 @@ var:
 	ID	EPSLON_LINE{
 	// AST
 	$$ = astCreateTerminal(VAR_K, $1, NULL,0, $2);
-
-	// Free
-	free($1);
 	
 	}	
 	| ID EPSLON_LINE '[' exp ']'	{
@@ -354,8 +343,6 @@ act:
 	$$ = astCreateTerminal(CALL_K, $1, NULL, 0, $2);
 	astPutChild($$, aux, 1);
 
-	// Free
-	free($1);
 	}
 	;
 

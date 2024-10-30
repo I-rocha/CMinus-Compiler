@@ -3,6 +3,7 @@
 	#include<stdlib.h>
 	#include<string.h>
 	#include "ast/ast.h"
+	#include "lexical/nameManager.h"
 	#include "parser.tab.h"
 	
 	extern FILE* fl;
@@ -94,7 +95,7 @@ while {
 
 {ID} {
 	fprintf(fl, "ID: %s\n", yytext);
-	yylval.s = strdup(yytext);
+	yylval.s = nmAdd(yytext);
 
 	if(yylval.s == NULL){
 		fprintf(fl, "Error, memory allocation went wrong\n");
