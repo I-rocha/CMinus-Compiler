@@ -39,7 +39,7 @@ char* nmAdd(char *str){
 
 	// Store pointer
 	nameManager.names[nameManager.len++] = hold;
-	return str;
+	return hold;
 }
 
 
