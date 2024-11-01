@@ -119,8 +119,8 @@ title: Depêndencia de escopos
 ---
 flowchart BT
     B(Função 1) --> A[Global]
-    C(Função 1) --> A
-    D(Função 2) --> A
+    C(Função 2) --> A
+    D(Função 3) --> A
     E(....) --> A
 ```
 
