@@ -111,7 +111,18 @@ Juntamente com o processamento da análise sintática, o programa gera uma estru
 
 ## Análise semântica
 
-A árvore ast gerada anteriormente serve como entrada para a próxima etapa de análise semântica. Nessa etapa, além da verificação de erros, as `funções internas (in-built)` são registradas e também é criado a estrutura de tabela de símbolos, responsável por armazenar o nome, escopo e valores literais das variáveis e funções.
+A árvore ast gerada anteriormente serve como entrada para a próxima etapa de análise semântica. Nessa etapa, além da verificação de erros, as `funções internas (in-built)` são registradas e também é criado a estrutura de tabela de símbolos, responsável por armazenar o nome, escopo e valores literais das variáveis e funções. Por simplicidade, o escopo desse projeto se limita apenas ao escopo global e escopo de funções.
+
+```mermaid
+---
+title: Depêndencia de escopos
+---
+flowchart BT
+    B(Função 1) --> A[Global]
+    C(Função 1) --> A
+    D(Função 2) --> A
+    E(....) --> A
+```
 
 Os erros semânticos analisados nesse projeto são:
 
