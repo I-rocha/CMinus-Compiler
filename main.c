@@ -8,6 +8,7 @@
 // Main Files
 #include "ast/ast.h"
 #include "parser.tab.h"
+#include "lexical/nameManager.h"
 #include "lexical/symtab.h"
 #include "semantic/semantic.h"
 #include "cgen/cgen.h"
@@ -18,6 +19,7 @@ extern FILE* yyin;
 FILE* fl;
 
 astNo* astTree;
+ArrayString nameManager;
 extern symTable *headEnv;
 
 void preparePaths(char* outpath, char* inputPath){
@@ -69,14 +71,15 @@ int main(int argc, char** argv){
 	yyin = fp;
 
 	// Parser + Lexical
+	nmInit();
 	yyparse();
 	strcpy(fpath, outpath);
 	strcat(fpath, AST_F);
 	astSave(astTree, fpath);
 
 	/*	Symbol Table	*/
-	semantic(astTree);
 
+	semantic(astTree);
 	strcpy(fpath, outpath);
 	strcat(fpath, SYMT_F);
 	symTSave(headEnv, fpath);
@@ -119,8 +122,7 @@ int main(int argc, char** argv){
 	if(fl)
 		fclose(fl);
 
-	// Free pointers
-	astFree(astTree);
+	nmClean();
 
 	printf("------ END PROCESSING --------\n");	
 	return 1;
