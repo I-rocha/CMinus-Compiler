@@ -29,9 +29,9 @@ typedef union symbolEntry{
     struct{
         char* name;
         Token type;
-        char** args;
-        Token* argsType;
-        int nArgs;
+        char** params;
+        Token* paramsType;
+        int nParams;
         unsigned short* call;
         unsigned short ncall;
         
@@ -48,9 +48,17 @@ typedef union symbolEntry{
   
  typedef struct symbolTable{ 
          char* scope;
-         int len;        // Len of children 
+         int size;          // Len of children 
          union symbolEntry* env;
          struct symbolTable *child, *parent;
  } symbolTable;
+
+
+
+symbolTable* newScope(char* scopeName, symbolTable* parent);
+void addChild(symbolTable* parent, symbolTable* child);
+symbolEntry* lookUp(char* name);
+void addEntry(symbolTable* table, symbolEntry* entry);
+
 
 #endif
