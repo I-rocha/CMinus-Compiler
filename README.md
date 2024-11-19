@@ -141,6 +141,7 @@ Como dito anteriormente, a tabela de símbolos é uma estrutura preenchida duran
 A tabela de símbolos possui os seguintes dados:
 1. `scope` Nome do seu escopo
 2. `size` Quantidade de filhos
+3. `len` Quantidade de entradas do escopo atual
 3. `env` Lista de entrada dos dados (symbolEntry)
 4. `child` Lista de Escopos filhos
 5. `parent` Escopo pai
