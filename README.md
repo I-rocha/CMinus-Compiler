@@ -111,7 +111,8 @@ Juntamente com o processamento da análise sintática, o programa gera uma estru
 
 ## Análise semântica
 
-A árvore ast gerada anteriormente serve como entrada para a próxima etapa de análise semântica. Nessa etapa, além da verificação de erros, as `funções internas (in-built)` são registradas e também é criado a estrutura de tabela de símbolos, responsável por armazenar o nome, escopo e valores literais das variáveis e funções. Por simplicidade, o escopo desse projeto se limita apenas ao escopo global e escopo de funções.
+
+A árvore ast gerada anteriormente serve como entrada para a próxima etapa de análise semântica. Nessa etapa, além da verificação de erros, as `funções internas (in-built)` são registradas e também é criado a estrutura de `tabela de símbolos`, responsável por armazenar o nome, escopo e valores literais das variáveis e funções. Por simplicidade, o escopo desse projeto se limita apenas ao escopo global e escopo de funções.
 
 ```mermaid
 ---
@@ -133,3 +134,32 @@ Os erros semânticos analisados nesse projeto são:
 5. Chamada de variável não declarada
 
 Diferente das etapas anteriores, quando um erro é disparado, o código continua sendo processado. Somente após o término da análise que o processo de compilação é interrompido e notifica os erros semânticos encontrados pelo caminho.
+
+### Tabela de símbolos
+Como dito anteriormente, a tabela de símbolos é uma estrutura preenchida durante a análise semântica. Seu objetivo é gerenciar informações dos nomes e tipos de variáveis, funções e parâmetros. 
+
+A tabela de símbolos possui os seguintes dados:
+1. `scope` Nome do seu escopo
+2. `size` Quantidade de filhos
+3. `env` Lista de entrada dos dados (symbolEntry)
+4. `child` Lista de Escopos filhos
+5. `parent` Escopo pai
+
+Enquanto isso, cada entrada na tabela de símbolos pode ser do tipo variável:
+1. `name` Nome da variável
+2. `type` Tipo do dado
+3. `def*`Lista da linha de definição da variável
+4. `ndef` Quantidade de definições ao longo do arquivo
+5. `_typ`: Tipo interno (Função ou variável)
+
+ou função:
+1. `name` Nome da função
+2. `type` Tipo do dado
+3. `params` Lista do nome dos parâmetros
+4. `paramsType` Lista dos tipos de dados do parâmetro
+5. `nParams` Quantidade de parâmetros
+6. `call` Lista das linhas onde a função foi chamada
+7. `ncall` Quantidade de chamada da função
+8. `def` Lista da linha de definição da função
+9. `ndef` Quantidade de vezes que a função foi definida
+10. `_type` Tipo interno (Função ou variável)
