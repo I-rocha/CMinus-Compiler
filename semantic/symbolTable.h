@@ -18,7 +18,7 @@ typedef struct symbolEntry{
 
     // Sizes
     unsigned short ndef;
-    bool _type;
+    bool _isFunction;
 
     // Specific for Function
     struct{
