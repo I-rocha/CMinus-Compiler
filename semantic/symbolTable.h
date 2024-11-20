@@ -9,56 +9,57 @@
 #include "../ast/ast.h"
 
 
-typedef union symbolEntry{
+typedef struct symbolEntry{
+    char* name;
+    Token type;
+    
+    /* Semantic control */
+    unsigned short* def;		// Line of def
 
-    // Variable
-    struct {
-        char* name;
-        Token type;
-        
-        /* Semantic control */
-        unsigned short* def;		// Line of def
+    // Sizes
+    unsigned short ndef;
+    bool _type;
 
-        // Sizes
-        unsigned short ndef;
-        struct symTable* env;
-        bool _type;
-    };
-
-    // Function
+    // Specific for Function
     struct{
-        char* name;
-        Token type;
+        
         char** params;
         Token* paramsType;
         int nParams;
         unsigned short* call;
         unsigned short ncall;
-        
-        /* Semantic control */
-        unsigned short* def;		// Line of def
-
-	    // Sizes
-	    unsigned short ndef;
-        struct symTable* env;
-
-        bool _type;
     };
  } symbolEntry; 
   
  typedef struct symbolTable{ 
          char* scope;
-         int size;          // Len of children 
-         union symbolEntry* env;
+         int size;          // Len of children table
+         int len;           // len of env array
+         struct symbolEntry* env;
          struct symbolTable *child, *parent;
  } symbolTable;
 
 
-
+/**
+ * Create new scope reference with scopeName and plug to parent
+ */
 symbolTable* newScope(char* scopeName, symbolTable* parent);
-void addChild(symbolTable* parent, symbolTable* child);
-symbolEntry* lookUp(char* name);
-void addEntry(symbolTable* table, symbolEntry* entry);
+
+/**
+ * Plug child and parent
+ */
+void addChild(symbolTable* parent, symbolTable child);
+
+/**
+ *  Add new entry to current table
+ */
+void addEntry(symbolTable* table, symbolEntry entry);
+
+/**
+ * Look for definition starting from current scope up to parent's scopes
+ */
+symbolEntry* lookUp(symbolTable* st, char* name);
+
 
 
 #endif
