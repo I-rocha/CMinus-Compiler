@@ -20,6 +20,11 @@ typedef struct symbolEntry{
     unsigned short ndef;
     bool _isFunction;
 
+    // Arrays
+    struct {
+        int _sizeof;
+    };
+
     // Specific for Function
     struct{
         
@@ -60,6 +65,18 @@ void addEntry(symbolTable* table, symbolEntry entry);
  */
 symbolEntry* lookUp(symbolTable* st, char* name);
 
+/**
+ * Look for definition starting from current scope up to parent's scopes
+ */
+symbolEntry* look(symbolTable* st, char* name);
 
+/**
+ * Add another definition line to symbol entry data
+ */
+void addDefinition(symbolEntry* se, unsigned short defLine);
 
+/**
+ * Create a new entry with name, type, lineDefinition and size
+ */
+symbolEntry newEntry(char* name, Token type, unsigned short lineOfDefinition, int _sizeof);
 #endif

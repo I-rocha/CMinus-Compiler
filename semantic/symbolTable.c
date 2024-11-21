@@ -48,6 +48,34 @@ symbolEntry* lookUp(symbolTable* st, char* name){
     return NULL;
 }
 
+symbolEntry* look(symbolTable* st, char* name){
+    symbolTable* tab;
+    tab = st;
+    for(int i = 0; i < tab->len; i++){
+        if(strcmp(name, tab->env[i].name) == 0){
+            return &tab->env[i];
+        }
+    }
+    return NULL;
+}
+
+void addDefinition(symbolEntry* se, unsigned short defLine){
+    if(!se) return;
+    se->def = (unsigned short*)realloc(se->def, ++se->ndef * sizeof(unsigned short));
+    se->def[se->ndef-1] = defLine;
+}
+
+symbolEntry newEntry(char* name, Token type, unsigned short lineOfDefinition, int _sizeof){
+    symbolEntry entry;
+    entry.name = name;
+    entry.type = type;
+    entry.def = (unsigned short*) malloc(sizeof(unsigned short));
+    entry.def[0] = lineOfDefinition;
+    entry.ndef = 1;
+    entry._isFunction = false;
+    entry._sizeof = _sizeof;
+}
+
 // void main(){
 //     symbolTable* head;
 //     symbolTable* aux;
