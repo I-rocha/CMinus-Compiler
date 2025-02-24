@@ -606,6 +606,7 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 	switch(fun->op){
 	case FUN_C:
 		ldAdd(&calls, fun->arg2, getLine(), NULL);
+		stack_len = (fun->result) ? atoi(fun->result) : 0;
 		saveReturn();
 		saveBinding();
 		// 

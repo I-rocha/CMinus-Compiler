@@ -120,16 +120,31 @@ quad* gen(astNo* astTree){
 void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 	char slabel1[10], slabel2[10];
 	char sreg[10];
+	int aux;
+	astNo* noAux;
 	exp retop;
 
 	if(!tree)
 		return ;
 
 	switch(tree->label){
-		case FUN_K:		
+		case FUN_K:	
 			cleanFilled();
+			aux = 0;
 			lastScope = tree->instance;
-			*code = addQuad(*code, FUN_C, lastType, tree->instance, NULL);
+
+
+			// Number of params
+			if(tree->len_child > 1){
+				noAux = tree->child[0];
+				while(noAux){
+					noAux = noAux->sibling;
+					aux++;
+				}
+				sprintf(slabel1, "%d", aux);
+			}
+
+			*code = addQuad(*code, FUN_C, lastType, tree->instance, slabel1);
 			flabel = labelid++;
 
 			// It's know that len_child is at most 2 in this case (but in some case is 1 or even 0)
