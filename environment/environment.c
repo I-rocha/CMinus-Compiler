@@ -638,6 +638,20 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 		newInstruction(ram, NOP, 0, 0, 0);	// Does nothing
 		break;
 	case HALT_C:
+
+		// Armazena Finish flag = 1
+		newInstruction(ram, mvi, 1, FINISH_FLAG_ADDR);
+		newInstruction(ram, mvi, 2, 1);
+		newInstruction(ram, sw, 1, 2, 0);
+		
+		// GERA HALT INTERRUPT
+		newInstruction(ram, halt, 0, 0, 0);
+
+		// Time to interrupt
+		newInstruction(ram, NOP, 0, 0, 0);	// Does nothing
+		newInstruction(ram, NOP, 0, 0, 0);	// Does nothing
+
+		// This shouldn't be reach for any program unless SO
 		newInstruction(ram, STOP, 0, 0, 0);
 		break;
 	case ENDCODE_C:
@@ -646,15 +660,26 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 		break;
 	case END_C:
 		if(strcmp(fun->arg1, "main") == 0){
+
+			// Armazena Finish flag = 1
+			newInstruction(ram, mvi, 1, FINISH_FLAG_ADDR);
+			newInstruction(ram, mvi, 2, 1);
+			newInstruction(ram, sw, 1, 2, 0);
+			
+			// GERA HALT INTERRUPT
+			newInstruction(ram, halt, 0, 0, 0);
+
+			// Time to interrupt
+			newInstruction(ram, NOP, 0, 0, 0);	// Does nothing
+			newInstruction(ram, NOP, 0, 0, 0);	// Does nothing
+
+			// This shouldn't be reach for any program unless SO
+			newInstruction(ram, STOP, 0, 0, 0);
+
 			// STOP
 			// newInstruction(ram, STOP, 0, 0, 0);
 
 			// Signals the end and wait for return
-			newInstruction(ram, mvi, oa, FINISH_FLAG_ADDR);	
-			newInstruction(ram, mvi, ra1$, 1);
-			newInstruction(ram, sw, oa, ra1$, 0);
-
-			newInstruction(ram, branch, 0, 0, -1);
 			
 			/*
 			// Restore jump_back address

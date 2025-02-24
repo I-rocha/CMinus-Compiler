@@ -12,7 +12,7 @@ static int lineno = -1;
 static instruction_subset formatI, formatII, formatIII, format_set[SUBSET_SZ];
 static operation_t o1[] = {add, sub, mult, _div, AND, OR, NOT, XOR, less, grand, eq, neq, leq, geq, shiftL, shiftR};
 static operation_t o2[] = {mvi, addi, subi, multi, divi, ANDi, ORi, NOTi, XORi, lessi, grandi, eqi, neqi, leqi, geqi, lup, ldown};
-static operation_t o3[] = {mv, jump, jal, jc, branch, bal, bc, sw, lw, get, print, lwHD, display, swMI, jt, jal2, gcfl, sb, NOP, STOP};
+static operation_t o3[] = {mv, jump, jal, jc, branch, bal, bc, sw, lw, get, print, lwHD, display, swMI, jt, jal2, gcfl, sb, halt, NOP, STOP};
 static char * mnemonic[] = {
 	"add\0",
 	"sub\0",
@@ -65,6 +65,7 @@ static char * mnemonic[] = {
 	"jal2\0",
 	"gcfl\0",
 	"sb\0",
+	"halt\0",
 	"NOP\0",
 	"STOP\0",
 	"UNKNOWN\0"
@@ -719,6 +720,10 @@ int setMeta(instruction* instr){
 
 	case sb:
 		instr->opcode = 24;
+		break;
+
+	case halt:
+		instr->opcode = 26;
 		break;
 
 	default:
