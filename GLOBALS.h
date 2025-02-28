@@ -3,8 +3,8 @@
 
 
 // Addresses to md
-#define MEM_SZ 300	// size of memmory
-#define MEM_BASIS 4 // Basis of mem
+#define MEM_SZ 2000	// size of memmory
+#define MEM_BASIS 5 // Basis of mem
 #define VISITOR_FLAG_ADDR 0
 #define FINISH_FLAG_ADDR 1
 #define SP_ADDR 2
@@ -21,8 +21,8 @@
 #define rd 26	// return data
 #define ra1$ 25   // Arg1 register
 #define ra2$ 24   // Arg2 register
-#define rr$ 23    // jt first reg
-#define rt$ 22    // jr second reg
+#define osa$ 23    // jt first reg
+#define pa$ 22    // jr second reg
 
 // About Processor
 #define BIT_ARCH 32
@@ -47,6 +47,14 @@
 #define SETBASISF "setBasis"
 #define RUNCHRONOF "runChrono"
 #define HASFINISHEDF "hasFinished"
+#define ISFINISHEDF "isFinished"
+#define STARTF "start"
+#define RUNCODEF "runCode"
+
+#define PRINTPROGRAMF "printProgram"
+#define PRINTQTDF "printQtd"
+#define PRINTDIGITEIDF "printDigiteID"
+#define PRINTTURNOFFF "printTurnOff"
 
 // Paths/Files
 #define OUTPUT_PATH "output/"

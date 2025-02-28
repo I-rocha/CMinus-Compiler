@@ -941,7 +941,7 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 			reg2 = getN(fun->arg1);
 
 			// Addr saved to rr$
-			newInstruction(ram, mv, rr$, reg, 0);
+			newInstruction(ram, mv, pa$, reg, 0);
 
 			// Store SO context
 			storeContext();
@@ -992,8 +992,8 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 			newInstruction(ram, mv, ra1$, sp, 0);
 			newInstruction(ram, lw, ra1$, 0, 2);
 
-			newInstruction(ram, jt, rt$, rr$, 0);	// goes to rr$ and back to rt$. When back, saves to rr$
-			newInstruction(ram, subi, rr$, 1);		// correction of jt
+			newInstruction(ram, jt, osa$, pa$, 0);	// goes to rr$ and back to rt$. When back, saves to rr$
+			newInstruction(ram, subi, pa$, 1);		// correction of jt
 
 			// Store Context
 			storeContext();
@@ -1005,7 +1005,7 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 			// load SO Context
 			loadContext();
 
-			newInstruction(ram, mv, reg2, rr$, 0);
+			newInstruction(ram, mv, reg2, pa$, 0);
 			break;
 		}
 
@@ -1018,6 +1018,351 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 			newInstruction(ram, lw, reg, 0, 0);
 			newInstruction(ram, mvi, oa, 0);
 			newInstruction(ram, sb, oa, 0, 0);
+			break;
+		}
+
+		        // start(basis, addr)
+        // Inicia algoritmo
+        else if(strcmp(fun->arg2, "start") == 0){
+            reg2 = getN(popStack(&params));     // addr
+			reg = getN(popStack(&params));      // basis
+
+			newInstruction(ram, sb, reg, 0, 0);
+			newInstruction(ram, mvi, 3, 0);
+
+			newInstruction(ram, sw, 3, 3, 1);
+
+            newInstruction(ram, sw, 3, reg2, -1);
+
+            newInstruction(ram, sw, 3, 3, -2);
+            newInstruction(ram, sw, 3, 3, -3);
+            newInstruction(ram, sw, 3, 3, -4);
+            newInstruction(ram, sw, 3, 3, -5);
+            newInstruction(ram, sw, 3, 3, -6);
+            newInstruction(ram, sw, 3, 3, -7);
+            newInstruction(ram, sw, 3, 3, -8);
+            newInstruction(ram, sw, 3, 3, -9);
+            newInstruction(ram, sw, 3, 3, -10);
+            newInstruction(ram, sw, 3, 3, -11);
+            newInstruction(ram, sw, 3, 3, -12);
+            newInstruction(ram, sw, 3, 3, -13);
+            newInstruction(ram, sw, 3, 3, -14);
+            newInstruction(ram, sw, 3, 3, -15);
+            newInstruction(ram, sw, 3, 3, -16);
+            newInstruction(ram, sw, 3, 3, -17);
+            newInstruction(ram, sw, 3, 3, -18);
+            newInstruction(ram, sw, 3, 3, -19);
+            newInstruction(ram, sw, 3, 3, -20);
+            newInstruction(ram, sw, 3, 3, -21);
+            newInstruction(ram, sw, 3, 3, -22);
+            newInstruction(ram, sw, 3, 3, -23);
+            newInstruction(ram, sw, 3, 3, -24);
+            newInstruction(ram, sw, 3, 3, -25);
+            newInstruction(ram, sw, 3, 3, -26);
+            newInstruction(ram, sw, 3, 3, -27);
+            newInstruction(ram, sw, 3, 3, -28);
+            newInstruction(ram, sw, 3, 3, -29);
+            newInstruction(ram, sw, 3, 3, -30);
+            newInstruction(ram, sw, 3, 3, -31);
+			newInstruction(ram, sb, 3, 0, 0);
+			break;
+		}
+
+		       // runCode(addr, basis)
+        // Roda com preempção
+        else if(strcmp(fun->arg2, "runCode") == 0){
+            reg2 = getN(popStack(&params));     // basis
+			reg = getN(popStack(&params));      // addr
+
+			// Armazena sp
+            newInstruction(ram, mvi, 1, 2);
+            newInstruction(ram, sw, 1, sp, 0);
+
+			// Armazena fp
+			newInstruction(ram, mvi, 1, 0);
+            newInstruction(ram, sw, 1, fp$, 0);
+			
+            newInstruction(ram, mv, 1, sp, 0);
+            newInstruction(ram, sb, reg2, 0, 0);
+            newInstruction(ram, mvi, 0, 0);
+
+            newInstruction(ram, mvi, 0, 0);
+            newInstruction(ram, mvi, 1, 0);
+            newInstruction(ram, mvi, 2, 0);
+            newInstruction(ram, mvi, 3, 0);
+            newInstruction(ram, mvi, 4, 0);
+            newInstruction(ram, mvi, 5, 0);
+            newInstruction(ram, mvi, 6, 0);
+            newInstruction(ram, mvi, 7, 0);
+            newInstruction(ram, mvi, 8, 0);
+            newInstruction(ram, mvi, 9, 0);
+            newInstruction(ram, mvi, 10, 0);
+            newInstruction(ram, mvi, 11, 0);
+            newInstruction(ram, mvi, 12, 0);
+            newInstruction(ram, mvi, 13, 0);
+            newInstruction(ram, mvi, 14, 0);
+            newInstruction(ram, mvi, 15, 0);
+            newInstruction(ram, mvi, 16, 0);
+            newInstruction(ram, mvi, 17, 0);
+            newInstruction(ram, mvi, 18, 0);
+            newInstruction(ram, mvi, 19, 0);
+            newInstruction(ram, mvi, 20, 0);
+            newInstruction(ram, mvi, 21, 0);
+            newInstruction(ram, mvi, ra2$, 0);
+            newInstruction(ram, mvi, ra1$, 0);
+            newInstruction(ram, mvi, rd, 0);
+            newInstruction(ram, mvi, oa, 0);
+            newInstruction(ram, mvi, fp$, 0);
+            newInstruction(ram, mvi, sp, 0);
+            newInstruction(ram, mvi, rf, 0);
+            newInstruction(ram, mvi, rj, 0);
+            
+           
+            newInstruction(ram, lw, 0, 0, -2);
+            newInstruction(ram, lw, 1, 0, -3);
+            newInstruction(ram, lw, 2, 0, -4);
+            newInstruction(ram, lw, 3, 0, -5);
+            newInstruction(ram, lw, 4, 0, -6);
+            newInstruction(ram, lw, 5, 0, -7);
+            newInstruction(ram, lw, 6, 0, -8);
+            newInstruction(ram, lw, 7, 0, -9);
+            newInstruction(ram, lw, 8, 0, -10);
+            newInstruction(ram, lw, 9, 0, -11);
+            newInstruction(ram, lw, 10, 0, -12);
+            newInstruction(ram, lw, 11, 0, -13);
+            newInstruction(ram, lw, 12, 0, -14);
+            newInstruction(ram, lw, 13, 0, -15);
+            newInstruction(ram, lw, 14, 0, -16);
+            newInstruction(ram, lw, 15, 0, -17);
+            newInstruction(ram, lw, 16, 0, -18);
+            newInstruction(ram, lw, 17, 0, -19);
+            newInstruction(ram, lw, 18, 0, -20);
+            newInstruction(ram, lw, 19, 0, -21);
+            newInstruction(ram, lw, 20, 0, -22);
+            newInstruction(ram, lw, 21, 0, -23);
+            newInstruction(ram, lw, ra2$, 0, -24);
+            newInstruction(ram, lw, ra1$, 0, -25);
+            newInstruction(ram, lw, rd, 0, -26);
+            newInstruction(ram, lw, oa, 0, -27);
+            newInstruction(ram, lw, fp$, 0, -28);
+            newInstruction(ram, lw, sp, 0, -29);
+            newInstruction(ram, lw, rf, 0, -30);
+            newInstruction(ram, lw, rj, 0, -31);
+
+            newInstruction(ram, mvi, pa$, 0);
+            newInstruction(ram, lw, pa$, 0, -1);
+
+            newInstruction(ram, jt, osa$, pa$, 0);	// goes to pa$ and back to osa$. When back, saves to rr$
+            newInstruction(ram, addi, pa$, -1);
+            newInstruction(ram, mvi, osa$, 0);
+
+            newInstruction(ram, sw, osa$, pa$, -1);
+            newInstruction(ram, sw, osa$, 0, -2);
+
+            newInstruction(ram, sw, osa$, 1, -3);
+            newInstruction(ram, sw, osa$, 2, -4);
+            newInstruction(ram, sw, osa$, 3, -5);
+            newInstruction(ram, sw, osa$, 4, -6);
+            newInstruction(ram, sw, osa$, 5, -7);
+            newInstruction(ram, sw, osa$, 6, -8);
+            newInstruction(ram, sw, osa$, 7, -9);
+            newInstruction(ram, sw, osa$, 8, -10);
+            newInstruction(ram, sw, osa$, 9, -11);
+            newInstruction(ram, sw, osa$, 10, -12);
+            newInstruction(ram, sw, osa$, 11, -13);
+            newInstruction(ram, sw, osa$, 12, -14);
+            newInstruction(ram, sw, osa$, 13, -15);
+            newInstruction(ram, sw, osa$, 14, -16);
+            newInstruction(ram, sw, osa$, 15, -17);
+            newInstruction(ram, sw, osa$, 16, -18);
+            newInstruction(ram, sw, osa$, 17, -19);
+            newInstruction(ram, sw, osa$, 18, -20);
+            newInstruction(ram, sw, osa$, 19, -21);
+            newInstruction(ram, sw, osa$, 20, -22);
+            newInstruction(ram, sw, osa$, 21, -23);
+
+            newInstruction(ram, sw, osa$, ra2$, -24);
+            newInstruction(ram, sw, osa$, ra1$, -25);
+            newInstruction(ram, sw, osa$, rd, -26);
+            newInstruction(ram, sw, osa$, oa, -27);
+            newInstruction(ram, sw, osa$, fp$, -28);
+            newInstruction(ram, sw, osa$, sp, -29);
+            newInstruction(ram, sw, osa$, rf, -30);
+            newInstruction(ram, sw, osa$, rj, -31);
+
+            newInstruction(ram, mvi, 1, 0);
+            newInstruction(ram, sb, 1, 0, 0);
+
+			// recupera sp
+            newInstruction(ram, mvi, sp, 2);
+            newInstruction(ram, lw, sp, 0, 0);
+
+			// recupera fp
+			newInstruction(ram, mvi, fp$, 0);
+            newInstruction(ram, lw, fp$, 0, 0);
+
+			break;
+		}
+
+		// isFinished(basis)
+        // Retorna se um algoritmo já terminou o processamento
+        else if(strcmp(fun->arg2, "isFinished") == 0){
+			reg = getN(popStack(&params));      // basis
+            reg2 = getN(fun->arg1);				// return
+
+			newInstruction(ram, lw, reg, 0, 1);
+            newInstruction(ram, mv, reg2, reg, 0);
+			break;
+		}
+
+		else if(strcmp(fun->arg2, "printProgram") == 0){
+			reg = getN(popStack(&params));      // program
+
+			newInstruction(ram, dm, 0, 0, 1);		// Clear
+            newInstruction(ram, dm, 0, 0, 581);		// E
+            newInstruction(ram, dm, 0, 0, 632);		// x
+            newInstruction(ram, dm, 0, 0, 613);		// e
+            newInstruction(ram, dm, 0, 0, 611);		// c
+            newInstruction(ram, dm, 0, 0, 629);		// u
+            newInstruction(ram, dm, 0, 0, 628);		// t
+            newInstruction(ram, dm, 0, 0, 609);		// a
+            newInstruction(ram, dm, 0, 0, 622);		// n
+            newInstruction(ram, dm, 0, 0, 612);		// d
+            newInstruction(ram, dm, 0, 0, 623);		// o
+            newInstruction(ram, dm, 0, 0, 192);		// \n
+            newInstruction(ram, dm, 0, 0, 592);		// P
+            newInstruction(ram, dm, 0, 0, 626);		// r
+            newInstruction(ram, dm, 0, 0, 623);		// o
+			newInstruction(ram, dm, 0, 0, 615);		// g
+			newInstruction(ram, dm, 0, 0, 626);		// r
+			newInstruction(ram, dm, 0, 0, 609);		// a
+			newInstruction(ram, dm, 0, 0, 621);		// m
+			newInstruction(ram, dm, 0, 0, 609);		// a
+			newInstruction(ram, dm, 0, 0, 544);		// " "
+
+			newInstruction(ram, eqi, reg, 1);
+			newInstruction(ram, bc, 0, 0, 18);
+			
+			newInstruction(ram, eqi, reg, 2);
+			newInstruction(ram, bc, 0, 0, 18);
+
+			newInstruction(ram, eqi, reg, 3);
+			newInstruction(ram, bc, 0, 0, 18);
+
+			newInstruction(ram, eqi, reg, 4);
+			newInstruction(ram, bc, 0, 0, 18);
+
+			newInstruction(ram, eqi, reg, 5);
+			newInstruction(ram, bc, 0, 0, 18);
+
+			newInstruction(ram, eqi, reg, 6);
+			newInstruction(ram, bc, 0, 0, 18);
+
+			newInstruction(ram, eqi, reg, 7);
+			newInstruction(ram, bc, 0, 0, 18);
+
+			newInstruction(ram, eqi, reg, 8);
+			newInstruction(ram, bc, 0, 0, 18);
+
+			newInstruction(ram, eqi, reg, 9);
+			newInstruction(ram, bc, 0, 0, 18);
+
+			newInstruction(ram, eqi, reg, 10);
+			newInstruction(ram, bc, 0, 0, 18);
+
+			newInstruction(ram, dm, 0, 0, 561);	// 1
+			newInstruction(ram, branch, 0, 0, 18);
+			
+			newInstruction(ram, dm, 0, 0, 562);	// 2
+			newInstruction(ram, branch, 0, 0, 16);
+
+			newInstruction(ram, dm, 0, 0, 563);	// 3
+			newInstruction(ram, branch, 0, 0, 14);
+
+			newInstruction(ram, dm, 0, 0, 564);	// 4
+			newInstruction(ram, branch, 0, 0, 12);
+
+			newInstruction(ram, dm, 0, 0, 565);	// 5
+			newInstruction(ram, branch, 0, 0, 10);
+
+			newInstruction(ram, dm, 0, 0, 566);	// 6
+			newInstruction(ram, branch, 0, 0, 8);
+
+			newInstruction(ram, dm, 0, 0, 567);	// 7
+			newInstruction(ram, branch, 0, 0, 6);
+
+			newInstruction(ram, dm, 0, 0, 568);	// 8
+			newInstruction(ram, branch, 0, 0, 4);
+
+			newInstruction(ram, dm, 0, 0, 569);	// 9
+			newInstruction(ram, branch, 0, 0, 2);
+
+			newInstruction(ram, dm, 0, 0, 561);	// 1
+			newInstruction(ram, dm, 0, 0, 560);	// 0
+			
+			break;
+		}
+
+		else if(strcmp(fun->arg2, "printQtd") == 0){
+			newInstruction(ram, dm, 0, 0, 1);
+            newInstruction(ram, dm, 0, 0, 593);
+            newInstruction(ram, dm, 0, 0, 629);
+            newInstruction(ram, dm, 0, 0, 609);
+            newInstruction(ram, dm, 0, 0, 622);
+            newInstruction(ram, dm, 0, 0, 628);
+            newInstruction(ram, dm, 0, 0, 623);
+            newInstruction(ram, dm, 0, 0, 627);
+            newInstruction(ram, dm, 0, 0, 544);
+            newInstruction(ram, dm, 0, 0, 609);
+            newInstruction(ram, dm, 0, 0, 620);
+            newInstruction(ram, dm, 0, 0, 615);
+            newInstruction(ram, dm, 0, 0, 623);
+            newInstruction(ram, dm, 0, 0, 627);
+            newInstruction(ram, dm, 0, 0, 575);
+			break;
+		}
+
+		else if(strcmp(fun->arg2, "printDigiteID") == 0){
+			newInstruction(ram, dm, 0, 0, 1);
+            newInstruction(ram, dm, 0, 0, 580);
+            newInstruction(ram, dm, 0, 0, 617);
+            newInstruction(ram, dm, 0, 0, 615);
+            newInstruction(ram, dm, 0, 0, 617);
+            newInstruction(ram, dm, 0, 0, 628);
+            newInstruction(ram, dm, 0, 0, 613);
+            newInstruction(ram, dm, 0, 0, 544);
+            newInstruction(ram, dm, 0, 0, 623);
+            newInstruction(ram, dm, 0, 0, 544);
+            newInstruction(ram, dm, 0, 0, 585);
+            newInstruction(ram, dm, 0, 0, 580);
+			break;
+		}
+
+		else if(strcmp(fun->arg2, "printTurnOff") == 0){
+			newInstruction(ram, dm, 0, 0, 1);
+            newInstruction(ram, dm, 0, 0, 580);
+            newInstruction(ram, dm, 0, 0, 613);
+            newInstruction(ram, dm, 0, 0, 627);
+            newInstruction(ram, dm, 0, 0, 620);
+            newInstruction(ram, dm, 0, 0, 617);
+            newInstruction(ram, dm, 0, 0, 615);
+            newInstruction(ram, dm, 0, 0, 609);
+            newInstruction(ram, dm, 0, 0, 626);
+            newInstruction(ram, dm, 0, 0, 575);
+            newInstruction(ram, dm, 0, 0, 192);
+            newInstruction(ram, dm, 0, 0, 561);
+            newInstruction(ram, dm, 0, 0, 688);
+            newInstruction(ram, dm, 0, 0, 544);
+            newInstruction(ram, dm, 0, 0, 595);
+            newInstruction(ram, dm, 0, 0, 617);
+            newInstruction(ram, dm, 0, 0, 621);
+            newInstruction(ram, dm, 0, 0, 544);
+            newInstruction(ram, dm, 0, 0, 562);
+            newInstruction(ram, dm, 0, 0, 688);
+            newInstruction(ram, dm, 0, 0, 544);
+            newInstruction(ram, dm, 0, 0, 590);
+            newInstruction(ram, dm, 0, 0, 609);
+            newInstruction(ram, dm, 0, 0, 623);
 			break;
 		}
 

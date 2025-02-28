@@ -244,6 +244,78 @@ void addPreFunctions(){
 		_DECLARATION);
 
 	symTSetParam(entry, 1, INT_K);
+
+	// isFinished
+	entry = symTPut(headEnv,
+		FUN_K,
+		ISFINISHEDF,
+		INT_K,
+		0,
+		0,
+		_DECLARATION);
+	
+	symTSetParam(entry, 1, INT_K);
+
+	// start
+	entry = symTPut(headEnv,
+		FUN_K,
+		STARTF,
+		VOID_K,
+		0,
+		0,
+		_DECLARATION);
+	
+	symTSetParam(entry, 2, INT_K, INT_K);
+
+	// start
+	entry = symTPut(headEnv,
+		FUN_K,
+		RUNCODEF,
+		VOID_K,
+		0,
+		0,
+		_DECLARATION);
+	
+	symTSetParam(entry, 2, INT_K, INT_K);
+
+	// printProgram
+	entry = symTPut(headEnv,
+		FUN_K,
+		PRINTPROGRAMF,
+		VOID_K,
+		0,
+		0,
+		_DECLARATION);
+
+	symTSetParam(entry, 1, INT_K);
+
+	// printQtd
+	entry = symTPut(headEnv,
+		FUN_K,
+		PRINTQTDF,
+		VOID_K,
+		0,
+		0,
+		_DECLARATION);
+
+	// printDigiteID
+	entry = symTPut(headEnv,
+		FUN_K,
+		PRINTDIGITEIDF,
+		VOID_K,
+		0,
+		0,
+		_DECLARATION);
+
+	// printTurnOff
+	entry = symTPut(headEnv,
+		FUN_K,
+		PRINTTURNOFFF,
+		VOID_K,
+		0,
+		0,
+		_DECLARATION);
+
 	return;
 }
 
