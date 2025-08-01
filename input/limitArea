@@ -1,0 +1,42 @@
+// Tamanho das variaveis esta limitado a 10 char
+void main(void) {
+    // int zLPressed;
+    // int zPressed;
+    int pressed;
+    int paint;
+    int dumTrue;
+    int color;
+
+    int canvaArea;
+    int visibleA;
+    int mx;
+    int my;
+
+
+    visibleA = 0;
+    color = RGB(0, 0, 7);
+    dumTrue = 1;
+
+    while(dumTrue == 1){
+        mx = getMouseX();
+        my = getMouseY();
+        canvaArea = 0;
+
+        if(mx >= 19){
+            if(mx < 156){
+                canvaArea = 1;
+            }
+        }
+        
+        if(my < 115){
+            if(my >= 17){
+                canvaArea = canvaArea + 1;
+            }
+        }
+
+        if(canvaArea == 2){
+            drawMouse(color);
+        }
+        
+    }
+}

@@ -1,0 +1,18 @@
+void main(void){
+    int x;
+    int y;
+    int px;
+    int py;
+    int color;
+
+    color = RGB(7,0,0);
+    
+    x = 5;
+    y = 3;
+    px = 100;
+
+
+    if(((x > 2) + (y > 2)) == 2){
+        drawPoint(px, px, color);
+    }
+}

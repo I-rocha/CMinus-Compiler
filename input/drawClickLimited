@@ -1,0 +1,113 @@
+// Tamanho das variaveis esta limitado a 10 char
+void main(void) {
+    int zLPressed;
+    int zPressed;
+    int dumTrue;
+    int color;
+    int drawing;
+
+    int eraserArea;
+    int pencilArea;
+    int canvaArea;
+    int mx;
+    int my;
+    int click;
+
+    canvaArea = 0;
+    mx = 0;
+    my = 0;
+    eraserArea = 0;
+    pencilArea = 0;
+    click = 0;
+
+    zLPressed = 0;
+    zPressed = 0;
+    drawing = 0;
+    dumTrue = 1;
+
+    color = RGB(0,5,5);
+
+    while(dumTrue == 1){
+        zPressed = getClick();
+        mx = getMouseX();
+        my = getMouseY();
+        canvaArea = 0;
+        eraserArea = 0;
+        pencilArea = 0;
+        click = 0;
+
+        // Check draw area limit
+        if(mx >= 19){
+            if(mx < 156){
+                canvaArea = 1;
+            }
+        }
+        
+        if(my < 115){
+            if(my >= 17){
+                canvaArea = canvaArea + 1;
+            }
+        }
+
+        // Manage click pressed
+        if(zPressed == 1){
+            if(zLPressed == 0){
+                click = 1;
+                if(drawing == 0){
+                    drawing = 1;
+                }
+                else {
+                    drawing = 0;
+                }
+            }
+            else {
+                click = 0;
+            }
+            
+        }
+        else {
+            click = 0;
+        }
+
+        if(click == 1) {
+            // Check pencil area
+            if(mx >= 4){
+                if(mx < 14){
+                    pencilArea = 1;
+                }
+            }
+            if(my < 30){
+                if(my >= 19){
+                    pencilArea = pencilArea + 1;
+                }
+            }
+
+            // Check eraser area
+            if(mx >= 4){
+                if(mx < 14){
+                    eraserArea = 1;
+                }
+            }
+            if(my < 45){
+                if(my >= 35){
+                    eraserArea = eraserArea + 1;
+                }
+            }
+
+            if(eraserArea == 2){
+                color = RGB(7, 7, 7);
+            }
+
+            if(pencilArea == 2){
+                color = RGB(0,5,5);
+            }
+        }
+        zLPressed = zPressed;
+
+        // Paint
+        if((canvaArea + drawing) == 3){
+            drawMouse(color);
+        }
+        
+    }
+}

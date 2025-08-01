@@ -1,0 +1,16 @@
+// Tamanho das variaveis esta limitado a 10 char
+void main(void) {
+    int zLPressed;
+    int zPressed;
+    int pressed;
+    int paint;
+    int dumTrue;
+    int color;
+
+    color = 448; // vermelho em RGB Puro
+    dumTrue = 1;
+
+    while(dumTrue == 1){
+        drawMouse(color);
+    }
+}

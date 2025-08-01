@@ -1,0 +1,158 @@
+// Tamanho das variaveis esta limitado a 10 char
+
+
+
+// inclusivo
+int contain(int px, int py, int left, int top, int right, int bottom){
+    int hor;
+    int ver;
+    int ret;
+    
+    ret = 0;
+    hor = 0;
+    ver = 0;
+
+    if(px >= left){
+        if(px <= right){
+            hor = 1;
+        }
+    }
+    if(py <= bottom){
+        if(py >= top){
+            ver = 1;
+        }
+    }
+    if((hor + ver) == 2){
+        ret = 1;
+    }
+
+    return ret;
+}
+
+int isClick(int zPressed, int zLPressed){
+    int click;
+    click = 0;
+    if(zPressed == 1){
+        if(zLPressed == 0){
+            click = 1;
+        }
+        else {
+            click = 0;
+        }
+    }
+    return click;
+}
+
+void main(void) {
+    int zLPressed;
+    int zPressed;
+    int dumTrue;
+    int color;
+    int drawing;
+
+    int eraserArea[4];  // left, top, right, bottom
+    int pencilArea[4];
+    int canvaArea[4]; 
+    int inCanva;
+    int inErase;
+    int inPencil;
+    int mouse;
+    int mx;
+    int my;
+    int click;
+    int BASEC;
+    int MOUSEC;
+    int HOVERC;
+
+    HOVERC = RGB(7,5,1);
+    MOUSEC = RGB(7, 0, 0);
+    BASEC = RGB(0,5,5);
+
+    inCanva = 0;
+    canvaArea[0] = 18;  // left
+    canvaArea[1] = 17;  // top
+    canvaArea[2] = 156; // right
+    canvaArea[3] = 114; // bottom
+
+    inPencil = 0;
+    pencilArea[0] = 4;  // left
+    pencilArea[1] = 19;  // top
+    pencilArea[2] = 13; // right
+    pencilArea[3] = 28; // bottom
+
+    inErase = 0;
+    eraserArea[0] = 4;  // left
+    eraserArea[1] = 35;  // top
+    eraserArea[2] = 13; // right
+    eraserArea[3] = 44; // bottom
+
+
+
+    mx = 0;
+    my = 0;
+    click = 0;
+
+    zLPressed = 0;
+    zPressed = 0;
+    drawing = 0;
+    dumTrue = 1;
+
+    color = RGB(0,5,5);
+
+    while(dumTrue == 1){
+        zPressed = getClick();
+        mouse = getMouseXY();
+        mx = mouseToX(mouse);
+        my = mouseToY(mouse);
+
+        inCanva = 0;
+        inErase = 0;
+        inPencil = 0;
+        click = 0;
+
+        // Manage click pressed
+        click = isClick(zPressed, zLPressed);
+        if(click == 1){
+            if(drawing == 1){
+                drawing = 0;
+            }
+            else {
+                drawing = 1;
+            }
+        }
+
+        
+        inCanva = contain(mx, my, canvaArea[0], canvaArea[1], canvaArea[2], canvaArea[3]);
+        inErase = contain(mx, my, eraserArea[0], eraserArea[1], eraserArea[2], eraserArea[3]);
+        inPencil = contain(mx, my, pencilArea[0], pencilArea[1], pencilArea[2], pencilArea[3]);
+        
+        zLPressed = zPressed;
+
+        // Paint
+        if((inCanva + drawing) == 2){
+            drawPoint(mx, my, color);
+        }
+        
+        // Select eraser
+        if((inErase + click) == 2){
+            color = RGB(7, 7, 7);
+            drawing = 0;
+        }
+        
+        // Select Pencil
+        if((inPencil + click) == 2){
+            color =  RGB(0,5,5);
+            drawing = 0;
+        }
+
+        // Hover state
+        if((inErase + inPencil) >= 1){
+            mouseColor(HOVERC);
+        }
+        else {
+            mouseColor(MOUSEC);
+        }
+      
+    }
+    
+}

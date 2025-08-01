@@ -1,0 +1,43 @@
+// Tamanho das variaveis esta limitado a 10 char
+void main(void) {
+    int zLPressed;
+    int zPressed;
+    int pressed;
+    int paint;
+    int dumTrue;
+    int color;
+    int drawing;
+
+    zLPressed = 0;
+    zPressed = 0;
+    pressed = 0;
+
+    drawing = 0;
+    paint = 0;
+    dumTrue = 1;
+    color = RGB(5,5,0);
+
+    while(dumTrue == 1){
+        zPressed = getClick();
+        /*
+        if(zPressed == 1){
+            drawMouse(color);
+        }
+        */
+        
+        if(zPressed == 1){
+            if(zLPressed == 0){
+                if(drawing == 0){
+                    drawing = 1;
+                }
+                else {
+                    drawing = 0;
+                }
+            }
+        }
+        if(drawing == 1){
+            drawMouse(color);
+        }
+        zLPressed = zPressed;
+    }
+}
