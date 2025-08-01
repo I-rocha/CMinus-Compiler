@@ -1,9 +1,8 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
-
 // Addresses to md
-#define MEM_SZ 2000	// size of memmory
+#define MEM_SZ 300	// size of memmory
 #define MEM_BASIS 5 // Basis of mem
 #define VISITOR_FLAG_ADDR 0
 #define FINISH_FLAG_ADDR 1
@@ -26,7 +25,7 @@
 
 // About Processor
 #define BIT_ARCH 32
-#define N_OPERATIONS 53
+#define N_OPERATIONS 59
 
 // Pre-defined Functions
 #define MAINF "main"
@@ -55,6 +54,19 @@
 #define PRINTQTDF "printQtd"
 #define PRINTDIGITEIDF "printDigiteID"
 #define PRINTTURNOFFF "printTurnOff"
+
+#define MOUSECOLOR "mouseColor"
+#define GETMOUSEX "getMouseX"
+#define GETMOUSEY "getMouseY"
+#define GETCLICK "getClick"
+#define DRAWPOINT "drawPoint"
+#define DRAWMOUSE "drawMouse"
+#define RGB "RGB"
+
+#define GETMOUSEXY "getMouseXY"
+#define MOUSETOX "mouseToX"
+#define MOUSETOY "mouseToY"
+
 
 // Paths/Files
 #define OUTPUT_PATH "output/"

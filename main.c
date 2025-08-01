@@ -45,7 +45,8 @@ int main(int argc, char** argv){
 	char outpath[100] = "" ;
 	
 	if(argc <=1){
-		printf("Please follow pattern: <exe> <file>\n");
+		printf("Please, follow pattern: <exe> <file>\n");
+		printf("File must include the relative path, as follow 'input/code.c'\n");
 		return 0;
 	}
 

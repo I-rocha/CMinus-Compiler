@@ -597,7 +597,7 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
 	char str_aux[100], ref[100] = "&";
 	int label;
 	int arg1, arg2;
-	int reg, reg2, nlit, fp;
+	int reg, reg2, reg3, nlit, nlit2, nlit3, fp;
 	instruction* instr;
 
 	if(!fun)
@@ -1365,6 +1365,115 @@ void processFunctionRec(quad* fun, listVar* lv, int** var_nested, int* deep){
             newInstruction(ram, dm, 0, 0, 623);
 			break;
 		}
+
+		else if (strcmp(fun->arg2, "mouseColor") == 0){
+			reg = getN(popStack(&params));		// Color
+
+			newInstruction(ram, mouseColor, reg, 0, 0);
+			break;
+		}
+
+		// mouseToY(mouseXY);
+		else if (strcmp(fun->arg2, "mouseToY") == 0){
+			reg = getN(popStack(&params));		// mouseXY
+			reg2 = getN(fun->arg1);	// retorno
+
+			
+			newInstruction(ram, mv, reg2, reg, 0);
+			newInstruction(ram, mvi, oa, 1023);			// {22'd0, 1111111111}
+			newInstruction(ram, AND, reg2, oa, 0, 0);
+			break;
+		}
+
+		// mouseToX(mouseXY);
+		else if (strcmp(fun->arg2, "mouseToX") == 0){
+			reg = getN(popStack(&params));		// mouseXY
+			reg2 = getN(fun->arg1);	// retorno
+
+			newInstruction(ram, shiftR, reg, 0, 0, 10);
+			newInstruction(ram, mv, reg2, reg, 0);
+			break;
+		}
+
+		// getMouseXY();
+		else if (strcmp(fun->arg2, "getMouseXY") == 0){
+			reg2 = getN(fun->arg1);	// retorno
+
+			newInstruction(ram, vgaR, reg2, 0, 0);
+			break;
+		}
+
+		// getMouseX();
+		else if (strcmp(fun->arg2, "getMouseX") == 0){
+			reg2 = getN(fun->arg1);	// retorno
+
+			newInstruction(ram, vgaR, reg2, 0, 0);
+			newInstruction(ram, shiftR, reg2, 0, 0, 10);
+			break;
+		}
+		
+		// getMouseY();
+		else if (strcmp(fun->arg2, "getMouseY") == 0){
+			reg2 = getN(fun->arg1);	// retorno
+
+			newInstruction(ram, vgaR, reg2, 0, 0);
+			newInstruction(ram, mvi, oa, 1023);			// {22'd0, 1111111111}
+			newInstruction(ram, AND, reg2, oa, 0, 0);
+			break;
+		}
+		
+		// getClick();
+		else if (strcmp(fun->arg2, "getClick") == 0){
+			reg2 = getN(fun->arg1);	// retorno
+
+			newInstruction(ram, joyClick, reg2, 0, 0);		// Recebe clique invertido
+			newInstruction(ram, mvi, oa, 1);	// ....00001
+			newInstruction(ram, XOR, reg2, oa, 0, 0);
+
+			break;
+		}
+		
+		// drawPoint(mouseX, mouseY, RGB);
+		else if (strcmp(fun->arg2, "drawPoint") == 0){
+			reg = getN(popStack(&params));		// RGB
+			reg2 = getN(popStack(&params));		// mouseY
+			fp = getN(popStack(&params));		// mouseX
+
+			// Forma um registrador com {mousex[9:0], mousey[9:0]}
+			newInstruction(ram, shiftL, fp, 0, 0, 10);
+			newInstruction(ram, OR, fp, reg2, 0, 0);
+			
+			newInstruction(ram, vgaW, fp, reg, 0);
+			break;		
+		}
+
+		// drawMouse(RGB)
+		else if (strcmp(fun->arg2, "drawMouse") == 0){
+			reg = getN(popStack(&params));		// RGB
+			
+			newInstruction(ram, vgaR, oa, 0, 0);
+			newInstruction(ram, vgaW, oa, reg, 0);
+			break;		
+		}
+
+		// RGB(RRR, GGG, BBB)
+		else if (strcmp(fun->arg2, "RGB") == 0){
+			nlit = getN(popStack(&params));		// BBB
+			nlit2 = getN(popStack(&params));	// GGG
+			nlit3 = getN(popStack(&params));	// RRR 
+
+			reg = getN(fun->arg1);				// retorno
+			
+			newInstruction(ram, mvi, reg, nlit3);		//Load Red
+			newInstruction(ram, shiftL, reg, 0, 0, 3);	
+
+			newInstruction(ram, ORi, reg, nlit2);		//Load Green
+			newInstruction(ram, shiftL, reg, 0, 0, 3);	
+
+			newInstruction(ram, ORi, reg, nlit);		//Load Blue
+			break;		
+		}
+		
 
 		storeTemps();
 		stackParam(atoi(fun->result)); // Update next args

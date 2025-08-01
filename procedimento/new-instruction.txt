@@ -1,3 +1,4 @@
+# Nova Instrução
 Para adicionar uma nova instrução do processador é preciso:
 
 mnemonic.h:
@@ -5,9 +6,15 @@ mnemonic.h:
 - Atualizar a quantidade de instruções de F3_LEN em mnemonic.h
 
 GLOBALS.h:
-- Atualizar o total de instruções em GLOBALS.h
+- Atualizar o total de instruções em GLOBALS.h (N_OPERATIONS)
 
 mnemonic.c:
-- Adicionar as novas instruções em mnemonic.c no formato de instrução correto
+- Adicionar as novas instruções em mnemonic.c no formato de instrução correto (operation_t o1,o2,o3)
 - Adicionar o nome na lista de string de todos os mnemonicos em mnemonic.c
 - Criar case de cada instrução e colocar o valor de seus campos.
+
+# Nova Função
+- Programar o comportamento no "environment.c" dentro dos campos de else if
+- Registrar a assinatura dela no "semantic.c"
+- Registrar com "symTSetParam", seguido da assinatura, a quantidade de argumentos
+- Por consistência, definir o nome dela em GLOBALS

@@ -9,7 +9,7 @@
 #define FORMAT_III 2
 #define F1_LEN 16
 #define F2_LEN 17
-#define F3_LEN 22
+#define F3_LEN 26
 
 typedef enum{
 	add = 0,
@@ -65,6 +65,10 @@ typedef enum{
 	sb,
 	dm,
 	halt,
+	vgaW,
+	vgaR,
+	joyClick,
+	mouseColor,
 	NOP,
 	STOP,
 	UNKNOWN

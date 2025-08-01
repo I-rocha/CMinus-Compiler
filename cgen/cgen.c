@@ -118,8 +118,8 @@ quad* gen(astNo* astTree){
 }
 
 void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
-	char slabel1[10], slabel2[10];
-	char sreg[10];
+	char slabel1[11], slabel2[11];
+	char sreg[11];
 	int aux;
 	astNo* noAux;
 	exp retop;
@@ -284,7 +284,7 @@ void cgen(quad **code, astNo* tree, char* lastScope, char* lastType){
 
 exp genOp(quad **code, astNo* tree){
 	int nreg, nnreg, sz;
-	char sreg[10], sreg1[10], sreg2[10], v_arr[11], tsize_arr[11];
+	char sreg[11], sreg1[11], sreg2[11], v_arr[11], tsize_arr[11];
 	exp lval, rval, ret, err, val;
 	astNo* aux;
 

@@ -316,9 +316,110 @@ void addPreFunctions(){
 		0,
 		_DECLARATION);
 
+	// getMouseX
+	entry = symTPut(headEnv,
+		FUN_K,
+		GETMOUSEX,
+		INT_K,
+		0,
+		0,
+		_DECLARATION);
+
+	// getMouseY
+	entry = symTPut(headEnv,
+		FUN_K,
+		GETMOUSEY,
+		INT_K,
+		0,
+		0,
+		_DECLARATION);
+
+	// getClik
+	entry = symTPut(headEnv,
+		FUN_K,
+		GETCLICK,
+		INT_K,
+		0,
+		0,
+		_DECLARATION);
+
+	// drawPoint
+	entry = symTPut(headEnv,
+		FUN_K,
+		DRAWPOINT,
+		VOID_K,
+		0,
+		0,
+		_DECLARATION);
+	
+	symTSetParam(entry, 3, INT_K, INT_K, INT_K);
+
+	// drawMouse
+	entry = symTPut(headEnv,
+		FUN_K,
+		DRAWMOUSE,
+		VOID_K,
+		0,
+		0,
+		_DECLARATION);
+	
+	symTSetParam(entry, 1, INT_K);
+
+	// RGB
+	entry = symTPut(headEnv,
+		FUN_K,
+		RGB,
+		INT_K,
+		0,
+		0,
+		_DECLARATION);
+	
+	symTSetParam(entry, 3, INT_K, INT_K, INT_K);
+
+	// getMouseXY
+	entry = symTPut(headEnv,
+		FUN_K,
+		GETMOUSEXY,
+		INT_K,
+		0,
+		0,
+		_DECLARATION);
+	
+	// mouseToX
+	entry = symTPut(headEnv,
+		FUN_K,
+		MOUSETOX,
+		INT_K,
+		0,
+		0,
+		_DECLARATION);
+	
+	symTSetParam(entry, 1, INT_K);
+
+	// mouseToY
+	entry = symTPut(headEnv,
+		FUN_K,
+		MOUSETOY,
+		INT_K,
+		0,
+		0,
+		_DECLARATION);
+	
+	symTSetParam(entry, 1, INT_K);
+
+	// mouseColor
+	entry = symTPut(headEnv,
+		FUN_K,
+		MOUSECOLOR,
+		VOID_K,
+		0,
+		0,
+		_DECLARATION);
+	
+	symTSetParam(entry, 1, INT_K);
+
 	return;
 }
-
 
 void semanticStart(){
 	headEnv = symTInit();

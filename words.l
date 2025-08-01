@@ -18,7 +18,7 @@ DIGIT [0-9]
 ID {CHAR}+
 NUM {DIGIT}+
 
-COMMENT \/\*(.|\n|\t)*\*\/
+COMMENT (\/\*(.|\n|\t)*\*\/)|(\/\/.*\n)
 
 %option yylineno noyywrap
 
